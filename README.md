@@ -32,30 +32,6 @@ Stop chasing clients for details.
 - **Review & Edit**: Freelancers get a summarized view of the intake before vitalizing the proposal.
 - **Track & Analyze**: See when clients view proposals and get notified instantly.
 
----
-
-## 🛠 **Tech Stack**
-
-- **Framework**: [Next.js 14+](https://nextjs.org/) (App Router)
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/) + [Framer Motion](https://www.framer.com/motion/)
-- **UI Components**: [Shadcn/UI](https://ui.shadcn.com/)
-- **AI**: [Vercel AI SDK](https://sdk.vercel.ai/docs) (OpenAI/Anthropic)
-- **Database & Auth**: [Supabase](https://supabase.com/)
-
----
-
-## ⚡ **Getting Started**
-
-> This project is currently in **Active Development**.
-
-### Installation
-
-```bash
-git clone https://github.com/NEER4J/habiv.git
-cd habiv
-npm install
-npm run dev
-```
 
 ---
 
