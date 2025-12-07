@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Habiv | AI Client Intake & Proposal Generation</title>
+    <link rel="icon" href="fevicon.png" type="image/png">
+
+    <!-- SEO & Meta Tags -->
+    <meta name="description"
+        content="Habiv - Let clients share project details through AI chat, then generate professional proposals instantly. From 'Hello' to Hired in 5 minutes.">
+    <meta name="keywords"
+        content="AI proposal generator, freelancer tools, client intake, AI chat, business automation, Habiv">
+    <meta name="author" content="Habiv">
+    <meta name="theme-color" content="#000000">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://habiv.com/">
+    <meta property="og:title" content="Habiv | The Intelligent Proposal">
+    <meta property="og:description"
+        content="Let clients share project details through AI chat, then generate professional proposals instantly.">
+    <meta property="og:image" content="https://habiv.com/og-image.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://habiv.com/">
+    <meta property="twitter:title" content="Habiv | The Intelligent Proposal">
+    <meta property="twitter:description"
+        content="Let clients share project details through AI chat, then generate professional proposals instantly.">
+    <meta property="twitter:image" content="https://habiv.com/og-image.jpg">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-color: #f0f0f0;
+            --accent-color: #d7ff00;
+            /* Yellowish accent from image */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Playfair Display', serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* --- Hero Section --- */
+        .hero-container {
+            text-align: left;
+            position: relative;
+            z-index: 10;
+            transform: translateY(-5%);
+            /* Visual balance */
+        }
+
+        .hero-text {
+            font-size: clamp(4rem, 15vw, 10rem);
+            line-height: 0.9;
+            font-weight: 400;
+            letter-spacing: -0.02em;
+        }
+
+        .line-1 {
+            display: block;
+            margin-left: -0.5em;
+            /* Offset for aesthetic */
+        }
+
+        .line-2 {
+            display: flex;
+            align-items: center;
+            margin-left: 1.5em;
+            /* Indent */
+        }
+
+        /* Hourglass Container */
+        .hourglass-wrapper {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 0.8em;
+            height: 0.8em;
+            margin: 0 0.05em;
+            animation: rotate 6s infinite linear;
+            margin-top: 45px;
+        }
+
+        /* SVG Hourglass Style */
+        .hourglass-svg {
+            width: 100%;
+            height: 100%;
+            fill: var(--accent-color);
+        }
+
+        /* Handwritten Arrow */
+        .arrow-container {
+            position: absolute;
+            top: 55%;
+            left: 13%;
+            width: 120px;
+            height: 120px;
+            pointer-events: none;
+        }
+
+        @media (max-width: 768px) {
+            .arrow-container {
+                width: 80px;
+                height: 61px;
+                top: 50%;
+                left: 13px;
+            }
+
+            .hourglass-wrapper {
+                margin-top: 25px;
+            }
+        }
+
+        .arrow-svg {
+            width: 100%;
+            height: 100%;
+            stroke: var(--accent-color);
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 0 2px rgba(230, 230, 0, 0.3));
+        }
+
+        /* --- Footer Section --- */
+        .footer {
+            position: absolute;
+            bottom: 3rem;
+            left: 0;
+            width: 100%;
+            padding: 0 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            font-family: 'Inter', sans-serif;
+            /* Cleaner font for small text */
+        }
+
+        @media (max-width: 768px) {
+            .footer {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 0 1.5rem;
+                bottom: 2rem;
+                gap: 2rem;
+            }
+
+
+        }
+
+        .left-content {
+            max-width: 500px;
+        }
+
+        .main-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #d8d8d8;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #888;
+            font-weight: 300;
+        }
+
+        .emojis {
+            display: inline-block;
+            margin: 0 4px;
+            filter: grayscale(100%);
+            /* Keeps it minimal/classy */
+            transition: filter 0.3s;
+        }
+
+        .left-content:hover .emojis {
+            filter: grayscale(0%);
+        }
+
+        .right-content {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        /* --- Animations --- */
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            20% {
+                transform: rotate(0deg);
+            }
+
+            /* Pause */
+            25% {
+                transform: rotate(180deg);
+            }
+
+            /* Flip */
+            70% {
+                transform: rotate(180deg);
+            }
+
+            /* Pause */
+            75% {
+                transform: rotate(360deg);
+            }
+
+            /* Flip back */
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Simple Grainy Texture Overlay (Optional, for that static feel) */
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+            z-index: 100;
+        }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 1.1rem;
+            }
+        }
+
+        .header {
+            position: absolute;
+            top: 2rem;
+            left: 3rem;
+            font-size: 2.2rem;
+            font-weight: 500;
+            z-index: 20;
+            color: var(--text-color);
+            letter-spacing: -0.01em;
+            font-family: 'Inter', sans-serif;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                left: 1.5rem;
+                top: 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="noise"></div>
+
+    <div class="header" style="display: flex; align-items: center; gap: 10px;">
+        <img src="fevicon.png" alt="Logo" style="height: 1em; width: auto;">
+        Habiv.
+    </div>
+
+    <div class="hero-container">
+        <!-- SVG Arrow pointing from Top to Bottom text -->
+        <div class="arrow-container">
+
+
+
+            <svg class="arrow-svg" width="73" height="102" viewBox="0 0 73 102" fill="none"
+                xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M17.9353 1.22656C-4.06413 16.7266 -17.5639 92.2266 69.4354 76.7266M69.4354 76.7266L44.9351 66.7266M69.4354 76.7266L44.9351 100.227"
+                    stroke="#d7ff00" stroke-width="3" />
+            </svg>
+
+        </div>
+
+        <div class="hero-text">
+            <span class="line-1">Launching</span>
+            <div class="line-2">
+                So
+                <div class="hourglass-wrapper">
+
+
+
+                    <svg class="hourglass-svg" width="102" height="132" viewBox="0 0 102 132" fill="none"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path d="M57.0005 109.5L70.0005 109L70.0005 102.5L57.0005 103L57.0005 109.5Z" fill="#d7ff00" />
+                        <path d="M39.0005 110L52.0005 109.5L52.0005 103L39.0005 103.5L39.0005 110Z" fill="#d7ff00" />
+                        <path d="M26.0005 118L39.0005 117.5L39.0005 111L26.0005 111.5L26.0005 118Z" fill="#d7ff00" />
+                        <path d="M27.0005 123L26.5005 100L20.0005 100L20.5005 123L27.0005 123Z" fill="#d7ff00" />
+                        <path d="M57.0005 103L56.5005 72.0001L50.0005 72.0001L50.5005 103L57.0005 103Z"
+                            fill="#d7ff00" />
+                        <path d="M68.0005 78.0001L67.5005 72.0001L61.0005 72.0001L61.5005 78.0001L68.0005 78.0001Z"
+                            fill="#d7ff00" />
+                        <path d="M75.0005 84.0001L74.5005 78.0001L68.0005 78.0001L68.5005 84.0001L75.0005 84.0001Z"
+                            fill="#d7ff00" />
+                        <path d="M81.0005 95.0001L80.5005 84.0001L74.0005 84.0001L74.5005 95.0001L81.0005 95.0001Z"
+                            fill="#d7ff00" />
+                        <path d="M36.0005 80.0001L36.5005 74.0001L43.0005 74.0001L42.5005 80.0001L36.0005 80.0001Z"
+                            fill="#d7ff00" />
+                        <path d="M30.0005 88.0001L30.4291 80.0001L36.0005 80.0001L35.5719 88.0001L30.0005 88.0001Z"
+                            fill="#d7ff00" />
+                        <path d="M24.0005 100L24.5005 88.0001L31.0005 88.0001L30.5005 100L24.0005 100Z"
+                            fill="#d7ff00" />
+                        <path
+                            d="M101.5 118L101.5 124.5L8.50049 131.5L8.50049 124.5L81.5005 119.398L81.5005 114L70.0005 114.5L70.0005 107.5L81.5005 107L81.5005 94.5001L88.5005 94.5001L88.5005 118.909L101.5 118Z"
+                            fill="#d7ff00" />
+                        <path d="M75.3018 9.14464L75.8396 33.8831L82.8309 33.8831L82.2931 9.14464L75.3018 9.14464Z"
+                            fill="#d7ff00" />
+                        <path d="M20 37.1691L20.5378 49.0005L27.5291 49.0005L26.9913 37.1691L20 37.1691Z"
+                            fill="#d7ff00" />
+                        <path d="M78.5293 33.8839L77.9915 46.7909L71.0002 46.7909L71.538 33.8839L78.5293 33.8839Z"
+                            fill="#d7ff00" />
+                        <path
+                            d="M6.386e-06 14.5947L6.07884e-06 7.56768L94 0.000111248L94 7.56768L20.2151 13.0835L20.2151 18.919L20.2151 26.4866L20.2151 36.5001L13.1398 36.5001L13.1398 13.6124L6.386e-06 14.5947Z"
+                            fill="#d7ff00" />
+                        <path
+                            d="M61.5005 72.0001L42.5005 73.5001L41.5005 61.0001L35.0005 61.0001L35.0005 55.0001L27.5005 55.0001L27.5005 48.5001L73.0005 46.5001L73.0005 53.0001L66.5005 53.0001L66.5005 59.5001L61.0005 59.5001L61.5005 72.0001Z"
+                            fill="#d7ff00" />
+                    </svg>
+
+                </div>
+                n...
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="left-content">
+            <div class="main-title">AI Client Intake + AI Proposal Generation <span class="emojis">✨</span></div>
+            <div class="subtitle">
+                Let clients share project details through AI chat, then generate professional proposals instantly.
+            </div>
+        </div>
+
+        <div class="right-content">
+            &copy; <span id="year"></span> Habiv
+        </div>
+    </footer>
+
+    <!-- Simple script for interactive cursor or subtle effects eventually -->
+    <script>
+        console.log("Habiv.com - Coming Soon");
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        // Add a subtle drift to the arrow on mousemove
+        document.addEventListener('mousemove', (e) => {
+            const arrow = document.querySelector('.arrow-container');
+            const x = (e.clientX - window.innerWidth / 2) * 0.02;
+            const y = (e.clientY - window.innerHeight / 2) * 0.02;
+            arrow.style.transform = `translate(${x}px, ${y}px)`;
+        });
+    </script>
+
+</body>
+
+</html>
