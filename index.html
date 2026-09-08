@@ -1,100 +1,48 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Habiv — build habits that feel like you." />
-    <title>habiv</title>
-    <style>
-      :root {
-        color-scheme: dark;
-        --ink: #f7f5ef;
-        --muted: #a7a79f;
-        --background: #10110f;
-        --accent: #c8f169;
-      }
-
-      * { box-sizing: border-box; }
-
-      body {
-        min-height: 100vh;
-        margin: 0;
-        display: grid;
-        place-items: center;
-        overflow: hidden;
-        background:
-          radial-gradient(circle at 82% 18%, rgba(200, 241, 105, 0.18), transparent 25rem),
-          radial-gradient(circle at 10% 90%, rgba(120, 100, 255, 0.14), transparent 24rem),
-          var(--background);
-        color: var(--ink);
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      }
-
-      main {
-        width: min(92vw, 1180px);
-        padding: 3rem 0;
-      }
-
-      .eyebrow {
-        margin: 0 0 1.5rem;
-        color: var(--accent);
-        font-size: 0.75rem;
-        font-weight: 700;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-      }
-
-      h1 {
-        max-width: 100%;
-        margin: 0;
-        font-size: clamp(5rem, 20vw, 17rem);
-        font-weight: 800;
-        letter-spacing: -0.095em;
-        line-height: 0.78;
-      }
-
-      .wordmark { margin-left: -0.07em; }
-
-      .footer {
-        display: flex;
-        align-items: end;
-        justify-content: space-between;
-        gap: 2rem;
-        margin-top: clamp(3rem, 10vw, 7rem);
-        padding-top: 1.25rem;
-        border-top: 1px solid rgba(247, 245, 239, 0.2);
-      }
-
-      .footer p {
-        max-width: 20rem;
-        margin: 0;
-        color: var(--muted);
-        font-size: 0.95rem;
-        line-height: 1.5;
-      }
-
-      .mark {
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 50%;
-        background: var(--accent);
-        box-shadow: 0 0 3rem rgba(200, 241, 105, 0.35);
-      }
-
-      @media (max-width: 600px) {
-        main { padding: 2rem 0; }
-        .footer { align-items: start; flex-direction: column; }
-      }
-    </style>
-  </head>
-  <body>
-    <main>
-      <p class="eyebrow">Make room for better days</p>
-      <h1 class="wordmark" aria-label="habiv">habiv</h1>
-      <div class="footer">
-        <p>Small rituals. Real momentum. A calmer way to become who you want to be.</p>
-        <span class="mark" aria-hidden="true"></span>
-      </div>
-    </main>
-  </body>
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f1f2ee"><meta name="description" content="Turn your name and your mood into a little universe. Make an original piece of generative art, save it, and send your orbit to someone.">
+<meta property="og:title" content="Habiv — Your vibe, in orbit"><meta property="og:description" content="A name. A mood. A universe that's yours. Make your orbit."><meta property="og:type" content="website">
+<title>Habiv — Your vibe, in orbit</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' rx='20' fill='%23f14a28'/%3E%3Ctext x='17' y='60' font-family='Arial' font-weight='bold' font-size='65' fill='white'%3Eh%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="header"><a class="brand" href="./" aria-label="Habiv home">habiv<span class="brand-dot">✳</span></a><span class="header-note">A SMALL EXPERIMENT IN BEING YOU</span><button class="about-link" id="about">What is this? <span>↗</span></button></header>
+<main>
+<section class="intro" aria-labelledby="heading">
+<div class="edition"><span class="tiny-dot"></span> THE ORBIT EXPERIMENT <span class="edition-no">/ 001</span></div>
+<h1 id="heading">You’re a whole<br><em>universe.</em></h1>
+<p class="description">A name. A mood. A little cosmic coincidence.<br>Turn who you are today into art.</p>
+<form id="creator">
+<label class="field-label" for="name"><span>01</span> WHAT SHOULD WE CALL YOU?</label>
+<div class="name-wrap"><input id="name" name="name" maxlength="32" placeholder="Your name or alter ego" autocomplete="off" value="" aria-describedby="name-hint"><span aria-hidden="true">↗</span></div>
+<p id="name-hint" class="sr-only">Enter up to 32 characters. Your name becomes part of your share link only when you choose to share.</p>
+<fieldset><legend class="field-label"><span>02</span> WHAT’S YOUR FREQUENCY?</legend><div class="moods">
+<label class="mood"><input type="radio" name="mood" value="wild" checked><span><i class="mood-dot wild"></i>Wild</span></label>
+<label class="mood"><input type="radio" name="mood" value="calm"><span><i class="mood-dot calm"></i>Calm</span></label>
+<label class="mood"><input type="radio" name="mood" value="dreamy"><span><i class="mood-dot dreamy"></i>Dreamy</span></label>
+<label class="mood"><input type="radio" name="mood" value="electric"><span><i class="mood-dot electric"></i>Electric</span></label>
+</div></fieldset>
+<button class="create" type="submit">Make my orbit <span aria-hidden="true">↗</span></button>
+</form>
+<div class="under-form"><span>NO SIGN-UP. JUST A LITTLE WONDER.</span><button id="surprise" type="button">Surprise me <span>⤨</span></button></div>
+</section>
+<section class="art-section" aria-label="Your generated orbit">
+<div class="art-frame" id="art-frame">
+<div class="art-top"><span><i></i> LIVE GENERATIVE ART</span><button id="pause" aria-label="Pause animation" aria-pressed="false">Ⅱ</button></div>
+<canvas id="orbit" role="img" aria-label="An animated vermilion orbit, made from hundreds of fine, interwoven lines"></canvas>
+<div class="art-bottom"><div><span class="art-kicker" id="art-kicker">A LITTLE UNIVERSE FOR</span><h2 id="art-name">the beautifully wild.</h2></div><span class="art-id" id="art-id">H / 0001<br>WILD FREQUENCY</span></div>
+<div class="axis axis-top" aria-hidden="true">+</div><div class="axis axis-bottom" aria-hidden="true">+</div>
+</div>
+<div class="art-toolbar"><p><span class="tiny-dot"></span> <span id="art-note">Same name + same mood. Always your orbit.</span></p><div><button id="save" aria-label="Save orbit as a PNG image">↓ <span>Save art</span></button><button id="share" aria-label="Share a link to this orbit">↗ <span>Share orbit</span></button></div></div>
+</section>
+</main>
+<footer><p>A little corner of the internet for a little more <em>you.</em></p><span>MADE OF MATH. MEANT TO FEEL LIKE MAGIC. <span class="footer-star">✳</span></span></footer>
+<div id="status" class="toast" role="status" aria-live="polite"></div>
+<dialog id="about-dialog"><button class="close" aria-label="Close explanation">×</button><div class="edition">THE ORBIT EXPERIMENT / 001</div><h2>Small inputs.<br><em>Infinite feeling.</em></h2><p>Habiv turns a name and a mood into an orbit of interwoven lines. Every curve comes from a little mathematics seeded by your choices.</p><p>The same name and mood always make the same design. Try your name, a friend’s nickname, or a word that feels like today.</p><p>This is a creative toy, not a personality test. Your inputs stay in your browser. Sharing includes your chosen name and mood in the link.</p><button class="create close-about">Back to my universe <span>↗</span></button></dialog>
+<script src="app.js" defer></script>
+</body>
 </html>
