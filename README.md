@@ -1,6 +1,6 @@
 # Habiv — YouTube for AI games.
 
-A one-screen, glass-themed coming-soon page for a browser-first marketplace of tiny AI-made games.
+A one-screen, black-and-white coming-soon page for a browser-first marketplace of tiny AI-made games.
 
 Habiv is being shaped as a place to discover, play, remix, and share 10–45 second games. Creators can upload finished games or publish them directly from Codex, Claude Code, and other MCP-ready coding agents.
 
@@ -18,4 +18,6 @@ The project uses `.openai/hosting.json` and the static `dist/` output for deploy
 
 ## Asset
 
-`assets/tiny-game-hero.png` is an original stylized concept image for the featured-game glass card.
+`assets/tiny-game-hero.png` is an original stylized concept image for the featured-game preview.
+
+The supplied vector marks live in `assets/brand/` and are used for the hero lockup and favicon.
