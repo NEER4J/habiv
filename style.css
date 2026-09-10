@@ -86,7 +86,7 @@ a:focus-visible { outline: 2px solid var(--paper); outline-offset: 5px; }
 .eyebrow { margin: 0; color: var(--muted); font: 11px var(--mono); letter-spacing: .13em; }
 .eyebrow span { padding: 0 7px; color: #ffffff43; }
 
-h1 { margin: 28px 0 27px; color: var(--paper); font-size: clamp(4.2rem, 7.4vw, 7.5rem); font-weight: 500; line-height: .86; letter-spacing: -.12em; }
+h1 { margin: 28px 0 27px; color: var(--paper); font-size: clamp(3.8rem, 5.35vw, 5.9rem); font-weight: 500; line-height: .9; letter-spacing: -.11em; }
 h1 em { color: #bfbfbb; font-style: normal; }
 .hero-lede { max-width: 450px; margin: 0; color: var(--muted); font-size: 18px; line-height: 1.58; }
 
@@ -149,7 +149,7 @@ h1 em { color: #bfbfbb; font-style: normal; }
   .hero-grid { gap: 32px; padding-top: 45px; padding-bottom: 36px; }
   .brand-lockup { margin-bottom: 28px; font-size: 21px; }
   .brand-lockup img { width: 27px; height: 27px; }
-  h1 { margin: 24px 0 21px; font-size: clamp(4rem, 18.7vw, 5.8rem); }
+  h1 { margin: 24px 0 21px; font-size: clamp(3.45rem, 14.5vw, 4.75rem); }
   .hero-lede { font-size: 16px; }
   .hero-actions { align-items: flex-start; flex-direction: column; gap: 14px; margin-top: 27px; }
   .hero-spec { font-size: 9px; }
