@@ -2,47 +2,49 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#f1f2ee"><meta name="description" content="Turn your name and your mood into a little universe. Make an original piece of generative art, save it, and send your orbit to someone.">
-<meta property="og:title" content="Habiv — Your vibe, in orbit"><meta property="og:description" content="A name. A mood. A universe that's yours. Make your orbit."><meta property="og:type" content="website">
-<title>Habiv — Your vibe, in orbit</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' rx='20' fill='%23f14a28'/%3E%3Ctext x='17' y='60' font-family='Arial' font-weight='bold' font-size='65' fill='white'%3Eh%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#0c2119"><meta name="description" content="Step into a quieter, greener corner of the internet. Turn your name and mood into flowing art inspired by nature.">
+<meta property="og:title" content="Habiv — A little closer to nature"><meta property="og:description" content="Find your natural rhythm. Create, keep, and share a little moment of green."><meta property="og:type" content="website">
+<title>Habiv — A little closer to nature</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Crect width='80' height='80' rx='20' fill='%238bb977'/%3E%3Ctext x='17' y='60' font-family='Arial' font-weight='bold' font-size='65' fill='white'%3Eh%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header class="header"><a class="brand" href="./" aria-label="Habiv home">habiv<span class="brand-dot">✳</span></a><span class="header-note">A SMALL EXPERIMENT IN BEING YOU</span><button class="about-link" id="about">What is this? <span>↗</span></button></header>
+<div class="forest" aria-hidden="true"></div><div class="forest-shade" aria-hidden="true"></div>
+<header class="header"><a class="brand" href="./" aria-label="Habiv home">habiv<span class="brand-dot">✳</span></a><span class="header-note">A QUIETER CORNER OF THE INTERNET</span><button class="about-link" id="about">What is this? <span>↗</span></button></header>
 <main>
 <section class="intro" aria-labelledby="heading">
-<div class="edition"><span class="tiny-dot"></span> THE ORBIT EXPERIMENT <span class="edition-no">/ 001</span></div>
-<h1 id="heading">You’re a whole<br><em>universe.</em></h1>
-<p class="description">A name. A mood. A little cosmic coincidence.<br>Turn who you are today into art.</p>
+<div class="edition"><span class="tiny-dot"></span> FIND YOUR NATURAL RHYTHM <span class="edition-no">/ 001</span></div>
+<h1 id="heading">A little closer<br>to <em>nature.</em></h1>
+<p class="description">Let the world soften for a moment.<br>A name, a feeling, a little art that flows like you.</p>
 <form id="creator">
 <label class="field-label" for="name"><span>01</span> WHAT SHOULD WE CALL YOU?</label>
 <div class="name-wrap"><input id="name" name="name" maxlength="32" placeholder="Your name or alter ego" autocomplete="off" value="" aria-describedby="name-hint"><span aria-hidden="true">↗</span></div>
 <p id="name-hint" class="sr-only">Enter up to 32 characters. Your name becomes part of your share link only when you choose to share.</p>
-<fieldset><legend class="field-label"><span>02</span> WHAT’S YOUR FREQUENCY?</legend><div class="moods">
+<fieldset><legend class="field-label"><span>02</span> HOW DO YOU FEEL TODAY?</legend><div class="moods">
 <label class="mood"><input type="radio" name="mood" value="wild" checked><span><i class="mood-dot wild"></i>Wild</span></label>
 <label class="mood"><input type="radio" name="mood" value="calm"><span><i class="mood-dot calm"></i>Calm</span></label>
 <label class="mood"><input type="radio" name="mood" value="dreamy"><span><i class="mood-dot dreamy"></i>Dreamy</span></label>
 <label class="mood"><input type="radio" name="mood" value="electric"><span><i class="mood-dot electric"></i>Electric</span></label>
 </div></fieldset>
-<button class="create" type="submit">Make my orbit <span aria-hidden="true">↗</span></button>
+<button class="create" type="submit">Find my rhythm <span aria-hidden="true">↗</span></button>
 </form>
-<div class="under-form"><span>NO SIGN-UP. JUST A LITTLE WONDER.</span><button id="surprise" type="button">Surprise me <span>⤨</span></button></div>
+<div class="under-form"><span>NOTHING TO KEEP UP WITH. JUST BE.</span><button id="surprise" type="button">Surprise me <span>⤨</span></button></div>
 </section>
 <section class="art-section" aria-label="Your generated orbit">
+<p class="scene-caption"><span class="tiny-dot"></span> Somewhere green. Somewhere slow.</p>
 <div class="art-frame" id="art-frame">
-<div class="art-top"><span><i></i> LIVE GENERATIVE ART</span><button id="pause" aria-label="Pause animation" aria-pressed="false">Ⅱ</button></div>
-<canvas id="orbit" role="img" aria-label="An animated vermilion orbit, made from hundreds of fine, interwoven lines"></canvas>
-<div class="art-bottom"><div><span class="art-kicker" id="art-kicker">A LITTLE UNIVERSE FOR</span><h2 id="art-name">the beautifully wild.</h2></div><span class="art-id" id="art-id">H / 0001<br>WILD FREQUENCY</span></div>
+<div class="art-top"><span><i></i> YOUR LIVING PATTERN</span><button id="pause" aria-label="Pause animation" aria-pressed="false">Ⅱ</button></div>
+<canvas id="orbit" role="img" aria-label="A slowly moving fern-green pattern of interwoven lines"></canvas>
+<div class="art-bottom"><div><span class="art-kicker" id="art-kicker">A LITTLE WILDER. A LITTLE MORE YOU.</span><h2 id="art-name">the beautifully wild.</h2></div><span class="art-id" id="art-id">H / 0001<br>WILD AT HEART</span></div>
 <div class="axis axis-top" aria-hidden="true">+</div><div class="axis axis-bottom" aria-hidden="true">+</div>
 </div>
-<div class="art-toolbar"><p><span class="tiny-dot"></span> <span id="art-note">Same name + same mood. Always your orbit.</span></p><div><button id="save" aria-label="Save orbit as a PNG image">↓ <span>Save art</span></button><button id="share" aria-label="Share a link to this orbit">↗ <span>Share orbit</span></button></div></div>
+<div class="art-toolbar"><p><span class="tiny-dot"></span> <span id="art-note">Rooted in your name. Shaped by your mood.</span></p><div><button id="save" aria-label="Save orbit as a PNG image">↓ <span>Save art</span></button><button id="share" aria-label="Share a link to this orbit">↗ <span>Share a moment</span></button></div></div>
 </section>
 </main>
-<footer><p>A little corner of the internet for a little more <em>you.</em></p><span>MADE OF MATH. MEANT TO FEEL LIKE MAGIC. <span class="footer-star">✳</span></span></footer>
+<footer><p>Take a breath. You’re right where you need to <em>be.</em></p><span>INSPIRED BY NATURE. MADE FOR A MOMENT. <span class="footer-star">✳</span></span></footer>
 <div id="status" class="toast" role="status" aria-live="polite"></div>
-<dialog id="about-dialog"><button class="close" aria-label="Close explanation">×</button><div class="edition">THE ORBIT EXPERIMENT / 001</div><h2>Small inputs.<br><em>Infinite feeling.</em></h2><p>Habiv turns a name and a mood into an orbit of interwoven lines. Every curve comes from a little mathematics seeded by your choices.</p><p>The same name and mood always make the same design. Try your name, a friend’s nickname, or a word that feels like today.</p><p>This is a creative toy, not a personality test. Your inputs stay in your browser. Sharing includes your chosen name and mood in the link.</p><button class="create close-about">Back to my universe <span>↗</span></button></dialog>
+<dialog id="about-dialog"><button class="close" aria-label="Close explanation">×</button><div class="edition">FIND YOUR NATURAL RHYTHM / 001</div><h2>Less noise.<br><em>More nature.</em></h2><p>Habiv is a small escape into green. A name and a mood become a flowing pattern of interwoven lines, inspired by the rhythms of the natural world.</p><p>The same name and mood always make the same design. Try your name, a friend’s nickname, or a word that feels like today.</p><p>This is a creative toy, not a personality test. Your inputs stay in your browser. Sharing includes your chosen name and mood in the link.</p><button class="create close-about">Back to the quiet <span>↗</span></button></dialog>
 <script src="app.js" defer></script>
 </body>
 </html>
