@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://habiv.vercel.app/sitemap.xml
