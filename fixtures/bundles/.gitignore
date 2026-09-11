@@ -1,0 +1,7 @@
+*
+!.gitignore
+!README.md
+!single-html/
+!single-html/**
+!generic-zip/
+!generic-zip/**

@@ -1,0 +1,15 @@
+name: keep-alive
+
+# Supabase Free pauses projects after 7 idle days; this pings a route that hits Postgres.
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoint
+        run: |
+          curl -fsS --retry 3 --retry-delay 10 "${{ vars.SITE_URL || 'https://habiv.com' }}/api/health"

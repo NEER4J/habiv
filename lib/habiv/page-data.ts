@@ -1,0 +1,203 @@
+/**
+ * Server-side loaders that assemble the props each Habiv view receives. Pages call these
+ * inside <Suspense>; views are client components that render the result.
+ */
+import "server-only";
+import { cookies } from "next/headers";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/database.types";
+import { createClient } from "@/lib/supabase/server";
+import { getFeed, getCategoryCounts, getGameByHandleSlug, getCreatorGames, getOwnGames } from "@/lib/db/games";
+import { getDaily, getRunsToday } from "@/lib/db/feed";
+import { getLeaderboard, getViewerRank, type LeaderboardView } from "@/lib/db/leaderboards";
+import { listComments, type CommentItem } from "@/lib/db/comments";
+import { getViewerState, getSavedGames, getFollowers } from "@/lib/db/social";
+import { getPublicStats, getCreatorTotals } from "@/lib/db/stats";
+import { getOwnProfile, type OwnProfile, type PublicProfile } from "@/lib/db/profiles";
+import { listTokens, type ApiTokenSummary } from "@/lib/db/tokens";
+import { fromFeedGame, fromGameDetail, type CategoryInfo, type Game, type GameFull } from "@/lib/habiv/games";
+import type { CreatorGame } from "@/lib/db/types";
+
+export type Section = { key: string; title: string; note: string; games: Game[] };
+
+export type HomeData = {
+  hero: Game | null;
+  featured: Game[];
+  daily: { game: Game; resetsAt: string; runsToday: number; board: LeaderboardView | null } | null;
+  runsToday: number;
+  categories: CategoryInfo[];
+  sections: Section[];
+  feed: { items: Game[]; nextOffset: number | null };
+};
+
+export async function loadHome(): Promise<HomeData> {
+  const [featured, trending, quick, plays, remixes, newest, daily, runsToday, categories, feed] = await Promise.all([
+    getFeed({ sort: "featured", limit: 6 }),
+    getFeed({ sort: "trending", limit: 5 }),
+    getFeed({ sort: "quick", limit: 5 }),
+    getFeed({ sort: "plays", limit: 5 }),
+    getFeed({ sort: "remixes", limit: 5 }),
+    getFeed({ sort: "new", limit: 5 }),
+    getDaily(),
+    getRunsToday(),
+    getCategoryCounts(),
+    getFeed({ sort: "new", limit: 12 }),
+  ]);
+  const featuredGames = featured.items.map(fromFeedGame);
+  const hero = featuredGames[0] ?? trending.items.map(fromFeedGame)[0] ?? feed.items.map(fromFeedGame)[0] ?? null;
+  const board = daily ? await getLeaderboard(daily.game.id, "daily", "daily", 5) : null;
+  const sections: Section[] = [
+    { key: "trending", title: "Trending right now", note: "activity in the last 24 hours", games: trending.items.map(fromFeedGame) },
+    { key: "quick", title: "Quick play", note: "finish a run in under 45 seconds", games: quick.items.map(fromFeedGame) },
+    { key: "plays", title: "Most played", note: "by lifetime runs", games: plays.items.map(fromFeedGame) },
+    { key: "remixes", title: "Most remixed", note: "originals and their forks", games: remixes.items.map(fromFeedGame) },
+    { key: "new", title: "New this week", note: "fresh builds", games: newest.items.map(fromFeedGame) },
+    { key: "featured", title: "Staff picks", note: "chosen by hand", games: featuredGames },
+  ].filter((s) => s.games.length > 0);
+  return {
+    hero,
+    featured: featuredGames.length ? featuredGames.slice(0, 4) : trending.items.slice(0, 4).map(fromFeedGame),
+    daily: daily ? { game: fromFeedGame(daily.game), resetsAt: daily.resetsAt, runsToday: daily.runsToday, board } : null,
+    runsToday,
+    categories,
+    sections,
+    feed: { items: feed.items.map(fromFeedGame), nextOffset: feed.nextOffset },
+  };
+}
+
+export type ExploreData = { categories: CategoryInfo[]; feed: { items: Game[]; nextOffset: number | null } };
+
+export async function loadExplore(sort: "trending" | "new" | "plays" | "quick" = "new", category: string | null = null): Promise<ExploreData> {
+  const [categories, feed] = await Promise.all([getCategoryCounts(), getFeed({ sort, category: category as never, limit: 24 })]);
+  return { categories, feed: { items: feed.items.map(fromFeedGame), nextOffset: feed.nextOffset } };
+}
+
+export type WatchViewer = {
+  signedIn: boolean;
+  userId: string | null;
+  handle: string | null;
+  playerId: string | null;
+  liked: boolean;
+  saved: boolean;
+  following: boolean;
+  isCreator: boolean;
+  isAdmin: boolean;
+  rank: { rank: number; score: number; total: number } | null;
+};
+
+export type WatchData = {
+  game: GameFull;
+  leaderboard: LeaderboardView | null;
+  comments: { items: CommentItem[]; nextOffset: number | null };
+  viewer: WatchViewer;
+  queue: Game[];
+  runsToday: number;
+};
+
+export async function loadWatch(handle: string, slug: string): Promise<WatchData | null> {
+  const detail = await getGameByHandleSlug(handle, slug);
+  if (!detail) return null;
+  const supabase = await createClient();
+  const cookieStore = await cookies();
+  const playerId = cookieStore.get("hv_pid")?.value ?? null;
+  const [own, viewerState, leaderboard, comments, queue, stats, runsToday] = await Promise.all([
+    getOwnProfile(supabase),
+    getViewerState(supabase, [detail.id], [detail.creator.id]),
+    detail.leaderboardEnabled ? getLeaderboard(detail.id, "main", "daily", 10) : Promise.resolve(null),
+    listComments(supabase, detail.id, { sort: "top", limit: 20 }),
+    getFeed({ sort: "hot", limit: 13 }),
+    getPublicStats(detail.id),
+    getRunsToday(),
+  ]);
+  const rank = detail.leaderboardEnabled ? await getViewerRank(detail.id, playerId, own?.id ?? null, "main", "daily") : null;
+  const game = fromGameDetail(detail);
+  if (stats) {
+    game.plays = Number(stats.plays); game.likes = stats.likes; game.saves = stats.saves; game.comments = stats.comments;
+    game.remixes = stats.remixes; game.runs = Number(stats.runs); game.completions = Number(stats.completions); game.bestScore = stats.best_score;
+  }
+  return {
+    game,
+    leaderboard,
+    comments,
+    viewer: {
+      signedIn: !!own,
+      userId: own?.id ?? null,
+      handle: own?.handle ?? null,
+      playerId,
+      liked: viewerState.liked.has(detail.id),
+      saved: viewerState.saved.has(detail.id),
+      following: viewerState.following.has(detail.creator.id),
+      isCreator: own?.id === detail.creator.id,
+      isAdmin: !!own?.isAdmin,
+      rank,
+    },
+    queue: queue.items.filter((g) => g.id !== detail.id).slice(0, 12).map(fromFeedGame),
+    runsToday,
+  };
+}
+
+export type ProfileData = {
+  profile: PublicProfile;
+  isSelf: boolean;
+  following: boolean;
+  games: Game[];
+  remixes: Game[];
+  liked: Game[];
+  followers: { id: string; handle: string; display_name: string | null; avatar_path: string | null; is_verified: boolean }[];
+  totals: { published: number; plays: number; runs: number; likes: number; remixes: number };
+};
+
+export async function loadProfile(profile: PublicProfile): Promise<ProfileData> {
+  const supabase = await createClient();
+  const [own, games, followers, totals, state] = await Promise.all([
+    getOwnProfile(supabase),
+    getCreatorGames(profile.id),
+    getFollowers(profile.id, 30),
+    getCreatorTotals(supabase, profile.id),
+    getViewerState(supabase, [], [profile.id]),
+  ]);
+  const isSelf = own?.id === profile.id;
+  const remixes = games.filter((g) => !!g.remixLicence && false);
+  const { data: remixRows } = await supabase.from("game_feed_v").select("*").eq("creator_id", profile.id).not("remixed_from_game_id", "is", null).limit(30);
+  const { asFeedRow, toFeedGame } = await import("@/lib/db/games");
+  const remixGames = (remixRows ?? []).map((r) => fromFeedGame(toFeedGame(asFeedRow(r))));
+  let liked: Game[] = [];
+  if (isSelf) {
+    const { data: likes } = await supabase.from("likes").select("game_id").eq("user_id", profile.id).order("created_at", { ascending: false }).limit(30);
+    const ids = (likes ?? []).map((l) => l.game_id);
+    if (ids.length) {
+      const { data: rows } = await supabase.from("game_feed_v").select("*").in("id", ids);
+      liked = (rows ?? []).map((r) => fromFeedGame(toFeedGame(asFeedRow(r))));
+    }
+  }
+  void remixes;
+  return {
+    profile,
+    isSelf,
+    following: state.following.has(profile.id),
+    games: games.map(fromFeedGame),
+    remixes: remixGames,
+    liked,
+    followers,
+    totals,
+  };
+}
+
+export type MyGamesData = { games: CreatorGame[]; totals: { published: number; plays: number; runs: number; likes: number; remixes: number }; handle: string; followers: number };
+
+export async function loadMyGames(supabase: SupabaseClient<Database>, own: OwnProfile): Promise<MyGamesData> {
+  const [games, totals] = await Promise.all([getOwnGames(supabase), getCreatorTotals(supabase, own.id)]);
+  return { games, totals, handle: own.handle, followers: own.followersCount };
+}
+
+export type SettingsData = { profile: OwnProfile; tokens: ApiTokenSummary[]; email: string | null; provider: string | null };
+
+export async function loadSettings(supabase: SupabaseClient<Database>, own: OwnProfile): Promise<SettingsData> {
+  const [{ data: user }, tokens] = await Promise.all([supabase.auth.getUser(), listTokens(supabase)]);
+  return { profile: own, tokens, email: user.user?.email ?? null, provider: (user.user?.app_metadata?.provider as string | undefined) ?? null };
+}
+
+export async function loadSaved(supabase: SupabaseClient<Database>): Promise<Game[]> {
+  const games = await getSavedGames(supabase, 60);
+  return games.map(fromFeedGame);
+}

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tap Rush</title>
+<style>
+  html,body{margin:0;height:100%;background:#0f0f0f;color:#f1f1f1;font-family:system-ui,sans-serif;overflow:hidden}
+  #hud{position:fixed;top:12px;left:12px;font:600 14px/1 monospace}
+  #target{position:absolute;width:56px;height:56px;border-radius:50%;background:#7ed08a;cursor:pointer;touch-action:manipulation}
+  #end{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.7);font-size:24px}
+</style>
+</head>
+<body>
+<div id="hud">SCORE 0 · TIME 20</div>
+<div id="target"></div>
+<div id="end"></div>
+<script>
+  // A 20 second reaction game that reports runs and scores through the Habiv bridge.
+  var score = 0, time = 20, running = false, timer;
+  var hud = document.getElementById('hud'), t = document.getElementById('target'), end = document.getElementById('end');
+  function place(){ t.style.left = Math.random()*(innerWidth-60)+'px'; t.style.top = (40+Math.random()*(innerHeight-100))+'px'; }
+  function draw(){ hud.textContent = 'SCORE '+score+' · TIME '+time; }
+  function start(){
+    if (running) return; running = true; score = 0; time = 20; end.style.display='none'; draw(); place();
+    if (window.Habiv) Habiv.runStart({ level: '1' });
+    timer = setInterval(function(){ time--; draw(); if (time<=0) finish(); }, 1000);
+  }
+  function finish(){
+    clearInterval(timer); running=false; end.style.display='grid'; end.textContent='Final score '+score+' — tap to play again';
+    if (window.Habiv) { Habiv.scoreSubmit({ value: score }); Habiv.runEnd({ outcome: 'complete', score: score, progress_pct: 100 }); }
+  }
+  t.addEventListener('pointerdown', function(e){ e.preventDefault(); if(!running) start(); else { score += 10; draw(); place(); } });
+  end.addEventListener('pointerdown', start);
+  place();
+  if (window.Habiv) Habiv.ready();
+</script>
+</body>
+</html>
