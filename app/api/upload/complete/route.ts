@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { getRequestUser } from "@/lib/supabase/request-user";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { buckets, completeMultipart, headObject } from "@/lib/r2";
+import { buckets, completeMultipart, headObject } from "@/lib/storage";
 import { enqueueIngest } from "@/lib/jobs/trigger";
 import { MAX_UPLOAD_BYTES } from "@/lib/contracts/upload";
 import { fail, ok, parseJson } from "@/lib/upload/http";
@@ -13,7 +13,7 @@ const schema = z.object({
   parts: z.array(z.object({ PartNumber: z.number().int().min(1), ETag: z.string().min(1) })).min(1).optional(),
 });
 
-/** Step 3: closes the R2 upload, verifies the object and enqueues ingest. Idempotent per session. */
+/** Step 3: closes the storage upload, verifies the object and enqueues ingest. Idempotent per session. */
 export async function POST(request: NextRequest) {
   const user = await getRequestUser(request);
   if (!user) return fail("unauthorized", "Sign in first.", 401);

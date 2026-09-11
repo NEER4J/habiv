@@ -8,7 +8,7 @@ export const contentType = "image/png";
 
 type Params = Promise<{ handle: string; slug: string }>;
 
-/** Social card: the cover from cdn.habiv.com with a title bar, or a hue gradient fallback. */
+/** Social card: the cover from the public storage bucket with a title bar, or a hue gradient fallback. */
 export default async function OpenGraphImage({ params }: { params: Params }) {
   const { handle: raw, slug } = await params;
   const handle = handleFromRouteParam(raw);

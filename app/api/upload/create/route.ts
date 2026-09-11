@@ -17,7 +17,7 @@ const schema = z.object({
   changelog: z.string().trim().max(500).optional(),
 });
 
-/** Step 1 of an upload: creates the draft game + version and opens an R2 upload session. */
+/** Step 1 of an upload: creates the draft game + version and opens a storage upload session. */
 export async function POST(request: NextRequest) {
   const user = await getRequestUser(request);
   if (!user) return fail("unauthorized", "Sign in first.", 401);

@@ -79,7 +79,7 @@ export function normalizeHtml(input: string, opts: { paths: string[] }): HtmlRes
     if (!BENIGN_HOSTS.test(host)) hosts.add(host);
   }
 
-  // Case-mismatched references break on R2 (case-sensitive keys) even if they worked on Windows.
+  // Case-mismatched references break on object storage (case-sensitive keys) even if they worked on Windows.
   const known = new Set(opts.paths);
   const lowerToReal = new Map(opts.paths.map((p) => [p.toLowerCase(), p]));
   for (const m of html.matchAll(/(?:src|href)\s*=\s*["'](?!https?:|data:|blob:|#|\/\/|mailto:)\.?\/?([^"'?#]+)["']/gi)) {

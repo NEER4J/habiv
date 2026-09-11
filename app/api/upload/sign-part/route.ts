@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { getRequestUser } from "@/lib/supabase/request-user";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { buckets, presignPart } from "@/lib/r2";
+import { buckets, presignPart } from "@/lib/storage";
 import { MAX_PARTS } from "@/lib/contracts/upload";
 import { fail, ok, parseJson } from "@/lib/upload/http";
 

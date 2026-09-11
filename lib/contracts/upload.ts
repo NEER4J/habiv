@@ -1,6 +1,7 @@
-/** Upload limits while on free tiers (platform-plan §4.1). Raise once R2 storage is paid. */
+/** Upload limits while on free tiers (platform-plan §4.1). Raise once storage is paid. */
 export const MiB = 1024 * 1024;
-export const MAX_UPLOAD_BYTES = 100 * MiB;
+/** Supabase Storage's free plan caps every object at 50 MB. */
+export const MAX_UPLOAD_BYTES = 50 * MiB;
 export const SINGLE_PUT_THRESHOLD = 20 * MiB;
 export const PART_SIZE = 8 * MiB;
 export const MAX_PARTS = Math.ceil(MAX_UPLOAD_BYTES / PART_SIZE);

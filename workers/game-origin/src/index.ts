@@ -1,4 +1,5 @@
 import { applySecurityHeaders, contentEncodingFor, guessContentType, sdkHeaders } from "./headers";
+import { readObject } from "./storage";
 import { applyHook, getVersion, isGameBlocked, isUuid, type Env, type HookPayload } from "./versions";
 
 const json = (body: unknown, status = 200, headers: HeadersInit = {}) =>
@@ -71,39 +72,33 @@ export default {
     }
 
     const key = `${meta.g}/${versionId}/${path}`;
-    const obj = await env.GAMES.get(key, { range: request.headers, onlyIf: request.headers });
-    if (!obj) return json({ error: "not_found" }, 404);
+    const upstream = await readObject(env, key, request.method === "HEAD" ? "HEAD" : "GET", request.headers);
+    // Storage answers a missing object with 400 or 404 depending on its version.
+    if (upstream.status === 400 || upstream.status === 404) return json({ error: "not_found" }, 404);
+    if (!upstream.ok && upstream.status !== 304) return json({ error: "storage_unavailable" }, 502);
 
     const h = new Headers();
-    obj.writeHttpMetadata(h);
-    h.set("etag", obj.httpEtag);
-    h.set("accept-ranges", "bytes");
-    const guessed = guessContentType(path);
-    if (guessed && (!h.get("content-type") || h.get("content-type") === "application/octet-stream")) {
-      h.set("content-type", guessed);
+    for (const name of ["etag", "last-modified", "content-range"]) {
+      const v = upstream.headers.get(name);
+      if (v) h.set(name, v);
     }
+    // The upstream length only matches the body when fetch() did not decode it on the way in.
+    const length = upstream.headers.get("content-length");
+    if (length && !upstream.headers.get("content-encoding")) h.set("content-length", length);
+    h.set("accept-ranges", "bytes");
+    // Supabase Storage serves HTML as text/plain on purpose, so the file extension always wins.
+    h.set("content-type", guessContentType(path) ?? upstream.headers.get("content-type") ?? "application/octet-stream");
     const enc = contentEncodingFor(path);
     if (enc) h.set("content-encoding", enc);
     applySecurityHeaders(h, meta, path, env.FRAME_ANCESTORS);
 
-    // onlyIf matched (If-None-Match etc.): body is absent.
-    if (!("body" in obj) || !obj.body) {
+    // A conditional request (If-None-Match etc.) matched: no body.
+    if (upstream.status === 304) {
       return new Response(null, { status: 304, headers: h });
     }
+    const status = upstream.status === 206 ? 206 : 200;
 
-    let status = 200;
-    if (obj.range && "offset" in obj.range) {
-      const start = obj.range.offset ?? 0;
-      const length = obj.range.length ?? obj.size - start;
-      const end = start + length - 1;
-      h.set("content-range", `bytes ${start}-${end}/${obj.size}`);
-      h.set("content-length", String(length));
-      status = 206;
-    } else {
-      h.set("content-length", String(obj.size));
-    }
-
-    const response = new Response(request.method === "HEAD" ? null : obj.body, {
+    const response = new Response(request.method === "HEAD" ? null : upstream.body, {
       status,
       headers: h,
       // Do not let the runtime re-compress bodies that are already br/gzip on disk.

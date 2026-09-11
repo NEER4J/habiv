@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { buckets, createMultipart, presignPut } from "@/lib/r2";
+import { buckets, createMultipart, presignPut } from "@/lib/storage";
 import { enqueueIngest } from "@/lib/jobs/trigger";
 import {
   ACCEPTED_UPLOAD_EXT,
@@ -28,7 +28,7 @@ export type CreateVersionInput = {
   prompt?: string | null;
   changelog?: string | null;
   autoPublish?: boolean;
-  /** When true, skip the R2 session (caller writes the object itself) and return the key only. */
+  /** When true, skip the storage session (caller writes the object itself) and return the key only. */
   serverWritesObject?: boolean;
 };
 
@@ -40,8 +40,8 @@ export class UploadError extends Error {
 
 /**
  * Shared by POST /api/upload/create and the MCP publish tool: validates caps and quota,
- * creates the draft game (if needed) and the version row, dedupes by sha256, and opens an
- * R2 upload session (single presigned PUT or multipart).
+ * creates the draft game (if needed) and the version row, dedupes by sha256, and opens a
+ * storage upload session (single presigned PUT or multipart).
  */
 export async function createVersionForUpload(input: CreateVersionInput): Promise<Extract<CreateUploadResponse, { ok: true }>> {
   const filename = safeFilename(input.filename);

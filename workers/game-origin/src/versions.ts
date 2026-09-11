@@ -1,5 +1,5 @@
 export interface Env {
-  GAMES: R2Bucket;
+  GAMES_BUCKET: string;
   VERSIONS: KVNamespace;
   ASSETS: Fetcher;
   FRAME_ANCESTORS: string;

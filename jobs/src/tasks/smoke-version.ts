@@ -1,7 +1,7 @@
 import { task, logger } from "@trigger.dev/sdk";
 import { admin, loadVersion } from "../lib/supabase";
 import { makeCard, makeCover, smokeTest } from "../lib/smoke";
-import { putBuffer } from "../lib/r2";
+import { putBuffer } from "../lib/storage";
 import { jobEnv } from "../lib/env";
 
 /**

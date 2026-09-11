@@ -1,5 +1,5 @@
 /**
- * Engine-specific conversions that add or replace files before upload to R2.
+ * Engine-specific conversions that add or replace files before upload to storage.
  * Each returns extra files to write and, when it generates an entry, the new index.html.
  */
 import type { EngineId } from "../../contracts/ingest";

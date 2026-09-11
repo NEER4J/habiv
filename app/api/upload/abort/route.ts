@@ -2,7 +2,7 @@ import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { getRequestUser } from "@/lib/supabase/request-user";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { abortMultipart, buckets } from "@/lib/r2";
+import { abortMultipart, buckets } from "@/lib/storage";
 import { fail, ok, parseJson } from "@/lib/upload/http";
 
 const schema = z.object({ key: z.string().min(1), uploadId: z.string().min(1).optional() });

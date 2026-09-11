@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { buckets, completeMultipart, headObject, presignPart, putObject } from "@/lib/r2";
+import { buckets, completeMultipart, headObject, presignPart, putObject } from "@/lib/storage";
 import { createVersionForUpload, UploadError } from "@/lib/upload/create";
 import { enqueueIngest } from "@/lib/jobs/trigger";
 import { MAX_UPLOAD_BYTES, PART_SIZE, SINGLE_PUT_THRESHOLD, extensionOf } from "@/lib/contracts/upload";
@@ -183,7 +183,7 @@ export function registerPublishTools(server: McpServer, auth: TokenAuth) {
     {
       title: "Create an upload session for a large bundle",
       description:
-        "Returns presigned URLs to PUT a zip (or html) up to 100 MB directly into storage. Single PUT under 20 MB; " +
+        "Returns presigned URLs to PUT a zip (or html) up to 50 MB directly into storage. Single PUT under 20 MB; " +
         "multipart (8 MB parts, keep each response's ETag) above. Then call publish_game with upload_id (and upload_parts for multipart).",
       inputSchema: z.object({
         filename: z.string().min(1).max(255).describe("e.g. game.zip"),

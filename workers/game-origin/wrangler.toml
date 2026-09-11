@@ -1,13 +1,9 @@
-# Game origin: serves extracted bundles from R2 on an isolated site (workers.dev is on the
-# Public Suffix List, so game code can never read habiv.com cookies).
+# Game origin: serves extracted bundles from Supabase Storage on an isolated site (workers.dev
+# is on the Public Suffix List, so game code can never read habiv.com cookies).
 name = "habiv-play"
 main = "src/index.ts"
 compatibility_date = "2026-09-01"
 workers_dev = true
-
-[[r2_buckets]]
-binding = "GAMES"
-bucket_name = "habiv-games"
 
 [[kv_namespaces]]
 binding = "VERSIONS"
@@ -20,8 +16,9 @@ run_worker_first = true
 
 [vars]
 FRAME_ANCESTORS = "https://habiv.com https://*.habiv.com https://*.vercel.app http://localhost:3000"
+GAMES_BUCKET = "habiv-games"
 
 # Secrets (set with `npx wrangler secret put <NAME>`):
 #   SUPABASE_URL              https://apppassecstqpncmfyzw.supabase.co
-#   SUPABASE_SERVICE_ROLE_KEY service role key (KV-miss fallback lookups only)
+#   SUPABASE_SERVICE_ROLE_KEY service role key (version lookups and reading bundles from Storage)
 #   HOOK_SECRET               shared with GAME_ORIGIN_HOOK_SECRET in the app / Vault

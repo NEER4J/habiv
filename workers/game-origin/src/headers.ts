@@ -3,7 +3,7 @@ import type { VersionMeta } from "./versions";
 const ONE_YEAR = "public, max-age=31536000, immutable";
 const SHORT = "public, max-age=60";
 
-/** Content types we override regardless of what R2 stored (belt and braces for .br/.gz). */
+/** Content types we set regardless of what storage returns (it serves HTML as text/plain; also .br/.gz). */
 export function guessContentType(path: string): string | null {
   const p = path.toLowerCase();
   const bare = p.replace(/\.(br|gz)$/, "");

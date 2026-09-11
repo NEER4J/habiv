@@ -1,12 +1,12 @@
 import { schedules, logger } from "@trigger.dev/sdk";
 import { admin } from "../lib/supabase";
-import { deleteKeys, listPrefix } from "../lib/r2";
+import { deleteKeys, listPrefix } from "../lib/storage";
 import { jobEnv } from "../lib/env";
 
 const KEEP_PER_GAME = Number(process.env.KEEP_VERSIONS_PER_GAME ?? 3);
 
 /**
- * Nightly: keep the last N ready versions per game; older bundles leave R2 and their rows
+ * Nightly: keep the last N ready versions per game; older bundles leave storage and their rows
  * become `archived` (history stays, bundle does not).
  */
 export const pruneVersions = schedules.task({

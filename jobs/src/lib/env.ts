@@ -7,11 +7,13 @@ function req(name: string): string {
 export const jobEnv = {
   supabaseUrl: () => req("SUPABASE_URL"),
   serviceRoleKey: () => req("SUPABASE_SERVICE_ROLE_KEY"),
-  r2AccountId: () => req("R2_ACCOUNT_ID"),
-  r2AccessKeyId: () => req("R2_ACCESS_KEY_ID"),
-  r2SecretAccessKey: () => req("R2_SECRET_ACCESS_KEY"),
-  uploadsBucket: () => process.env.R2_UPLOADS_BUCKET ?? "habiv-uploads",
-  gamesBucket: () => process.env.R2_GAMES_BUCKET ?? "habiv-games",
-  publicBucket: () => process.env.R2_PUBLIC_BUCKET ?? "habiv-public",
+  /** Supabase Storage's S3 endpoint for the project unless overridden (e.g. to move to R2). */
+  s3Endpoint: () => process.env.STORAGE_S3_ENDPOINT || `https://${new URL(req("SUPABASE_URL")).hostname.split(".")[0]}.storage.supabase.co/storage/v1/s3`,
+  s3Region: () => req("STORAGE_S3_REGION"),
+  s3AccessKeyId: () => req("STORAGE_S3_ACCESS_KEY_ID"),
+  s3SecretAccessKey: () => req("STORAGE_S3_SECRET_ACCESS_KEY"),
+  uploadsBucket: () => process.env.STORAGE_UPLOADS_BUCKET ?? "habiv-uploads",
+  gamesBucket: () => process.env.STORAGE_GAMES_BUCKET ?? "habiv-games",
+  publicBucket: () => process.env.STORAGE_PUBLIC_BUCKET ?? "habiv-public",
   gameOrigin: () => (process.env.GAME_ORIGIN ?? "").replace(/\/$/, ""),
 };

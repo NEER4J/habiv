@@ -748,7 +748,7 @@ export function PublishView({
                 </div>
               ) : null}
               <div style={{ marginTop: "14px", fontFamily: mono, fontSize: "10.5px", color: "var(--ink-6)" }}>
-                MAX 100 MB · SANDBOXED IFRAME · NETWORK OFF BY DEFAULT
+                MAX 50 MB · SANDBOXED IFRAME · NETWORK OFF BY DEFAULT
               </div>
             </div>
           </div>

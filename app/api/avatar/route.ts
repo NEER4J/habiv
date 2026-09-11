@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { getRequestUser } from "@/lib/supabase/request-user";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { buckets, deleteObject, putObject } from "@/lib/r2";
+import { buckets, deleteObject, putObject } from "@/lib/storage";
 import { profileTag } from "@/lib/db/profiles";
 import { cdnUrl } from "@/lib/site";
 

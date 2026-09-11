@@ -6,7 +6,7 @@ import { readFile } from "node:fs/promises";
 import pLimit from "p-limit";
 import type { EngineId, IngestManifest, IngestPayload, ManifestFile } from "../contracts/ingest";
 import { admin, loadVersion, notify, setVersionStatus, type VersionRow } from "../lib/supabase";
-import { copyObject, downloadToFile, NotFoundError, listPrefix, putBuffer, putStream } from "../lib/r2";
+import { copyObject, downloadToFile, NotFoundError, listPrefix, putBuffer, putStream } from "../lib/storage";
 import { jobEnv } from "../lib/env";
 import { entryBuffer, entryStream, openZip, type ZipEntry } from "../lib/zip";
 import { RejectError, validateEntries, extOf } from "../lib/validate";

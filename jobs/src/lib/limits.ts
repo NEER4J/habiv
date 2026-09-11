@@ -2,7 +2,8 @@
 export const MiB = 1024 * 1024;
 export const MAX_EXTRACTED_BYTES = 300 * MiB;
 export const MAX_FILES = 1000;
-export const MAX_SINGLE_FILE = 100 * MiB;
+/** Supabase Storage's free plan caps every object at 50 MB. */
+export const MAX_SINGLE_FILE = 50 * MiB;
 export const MAX_PATH_LENGTH = 240;
 export const MAX_ENTRY_RATIO = 200;
 export const MAX_BUNDLE_RATIO = 100;
