@@ -3,11 +3,12 @@
  * inside <Suspense>; views are client components that render the result.
  */
 import "server-only";
+import { cacheLife, cacheTag } from "next/cache";
 import { cookies } from "next/headers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
-import { getFeed, getCategoryCounts, getGameByHandleSlug, getCreatorGames, getOwnGames } from "@/lib/db/games";
+import { FEED_TAG, getFeed, getCategoryCounts, getGameByHandleSlug, getCreatorGames, getOwnGames } from "@/lib/db/games";
 import { getDaily, getRunsToday } from "@/lib/db/feed";
 import { getLeaderboard, getViewerRank, type LeaderboardView } from "@/lib/db/leaderboards";
 import { listComments, type CommentItem } from "@/lib/db/comments";
@@ -30,7 +31,14 @@ export type HomeData = {
   feed: { items: Game[]; nextOffset: number | null };
 };
 
+/**
+ * Public data only, so it is cached like the feed it reads. The cache scope is also what lets
+ * relativeTime() call Date.now() while "/" is prerendered.
+ */
 export async function loadHome(): Promise<HomeData> {
+  "use cache";
+  cacheTag(FEED_TAG);
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
   const [featured, trending, quick, plays, remixes, newest, daily, runsToday, categories, feed] = await Promise.all([
     getFeed({ sort: "featured", limit: 6 }),
     getFeed({ sort: "trending", limit: 5 }),
@@ -68,6 +76,9 @@ export async function loadHome(): Promise<HomeData> {
 export type ExploreData = { categories: CategoryInfo[]; feed: { items: Game[]; nextOffset: number | null } };
 
 export async function loadExplore(sort: "trending" | "new" | "plays" | "quick" = "new", category: string | null = null): Promise<ExploreData> {
+  "use cache";
+  cacheTag(FEED_TAG);
+  cacheLife({ stale: 60, revalidate: 60, expire: 300 });
   const [categories, feed] = await Promise.all([getCategoryCounts(), getFeed({ sort, category: category as never, limit: 24 })]);
   return { categories, feed: { items: feed.items.map(fromFeedGame), nextOffset: feed.nextOffset } };
 }
