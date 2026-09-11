@@ -102,9 +102,11 @@ async function serve(request: Request, { params }: { params: Promise<{ versionId
   const rel = (path ?? []).join("/") || version.entry_path || "index.html";
   if (badPath(rel)) return new Response("Bad path", { status: 400 });
   const isHtml = /\.html?$/i.test(rel);
-  // Relative asset URLs only resolve under a trailing slash on the entry document.
-  if (!path?.length && !url.pathname.endsWith("/")) {
-    return Response.redirect(`${url.origin}${url.pathname}/${url.search}`, 301);
+  // Relative asset URLs only resolve inside the version folder, and Next strips trailing slashes
+  // (/v/id/ -> /v/id), so a bare version URL goes straight to its entry document instead.
+  if (!path?.length) {
+    const entry = rel.split("/").map(encodeURIComponent).join("/");
+    return Response.redirect(`${url.origin}${url.pathname.replace(/\/$/, "")}/${entry}${url.search}`, 307);
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
