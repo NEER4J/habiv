@@ -28,7 +28,7 @@ export function attachGameFrame(
   iframe: HTMLIFrameElement,
   opts: { gameOrigin?: string; onMessage: (msg: GameToParent) => void },
 ): AttachedFrame {
-  const origin = (opts.gameOrigin ?? gameOrigin).replace(/\/$/, "") || window.location.origin;
+  const origin = (opts.gameOrigin ?? gameOrigin).replace(/\/$/, "");
   const handler = (ev: MessageEvent) => {
     if (ev.origin !== origin) return;
     if (ev.source !== iframe.contentWindow) return;

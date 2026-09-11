@@ -63,7 +63,7 @@ async function postJson<T>(url: string, body: unknown, keepalive = false): Promi
  * or tab hide ends it as "quit").
  */
 export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
-  const origin = (opts.gameOrigin ?? defaultGameOrigin).replace(/\/$/, "") || window.location.origin;
+  const origin = (opts.gameOrigin ?? defaultGameOrigin).replace(/\/$/, "");
   const collector = opts.collector ?? getCollector();
   const preview = !!opts.preview;
   const base = { game_id: opts.gameId, version_id: opts.versionId };
