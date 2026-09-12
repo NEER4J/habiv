@@ -1,0 +1,9 @@
+{
+  "name": "habiv-play",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sdk": "mkdir -p public/sdk && cp ../../lib/bridge/habiv-bridge.js ../../lib/bridge/shims/*.js public/sdk/",
+    "deploy": "npm run sdk && vercel deploy --prod --yes"
+  }
+}

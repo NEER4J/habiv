@@ -1,0 +1,24 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/v/:version/", "destination": "/api/serve?__v=:version" },
+    { "source": "/v/:version/:path*", "destination": "/api/serve?__v=:version&__p=:path*" },
+    { "source": "/v/:version", "destination": "/api/serve?__v=:version" },
+    { "source": "/", "destination": "/api/serve" },
+    { "source": "/health", "destination": "/api/serve" }
+  ],
+  "headers": [
+    {
+      "source": "/sdk/(.*)",
+      "headers": [
+        { "key": "content-type", "value": "application/javascript; charset=utf-8" },
+        { "key": "cross-origin-resource-policy", "value": "cross-origin" },
+        { "key": "access-control-allow-origin", "value": "*" },
+        { "key": "x-content-type-options", "value": "nosniff" },
+        { "key": "cache-control", "value": "public, max-age=300" }
+      ]
+    }
+  ]
+}
