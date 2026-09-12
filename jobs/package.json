@@ -6,7 +6,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "sync-contracts": "cp ../lib/contracts/ingest.ts src/contracts/ingest.ts && cp ../lib/bridge/habiv-bridge.js src/lib/habiv-bridge.js",
+    "sync-contracts": "cp ../lib/contracts/ingest.ts src/contracts/ingest.ts && cp ../lib/contracts/thumb-job.ts src/contracts/thumb-job.ts &&cp ../lib/bridge/habiv-bridge.js src/lib/habiv-bridge.js",
     "ingest": "tsx src/cli.ts ingest-version",
     "smoke": "tsx src/cli.ts smoke-version",
     "prune": "tsx src/cli.ts prune"

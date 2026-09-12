@@ -131,8 +131,8 @@ export default function DocsMcpPage() {
       <Table
         head={["Tool", "What it does"]}
         rows={[
-          [t("publish_game"), "Uploads a game from inline files, a public zip/HTML URL or an upload session, and publishes it once it's ready. Pass game_id for a new version."],
-          [t("create_upload"), "Opens a direct upload for bundles over 3 MB (up to 50 MB). Returns URLs to PUT the zip to, then call publish_game with upload_id."],
+          [t("publish_game"), "Uploads a game from inline files (text files as plain text, binary files as base64), a public zip/HTML URL or an upload session, and publishes it once it's ready. Pass game_id for a new version."],
+          [t("create_upload"), "Opens an upload for a zip on disk or a bundle over 3 MB (up to 50 MB). Up to 4 MB the URL is on habiv.com, so sandboxes only need www.habiv.com allowed. Then call publish_game with upload_id."],
           [t("get_publish_status"), "Processing status (processing, ready, rejected), engine, warnings, the details found in the build, which page fields are still empty, a preview link and the game URL."],
         ]}
       />
@@ -144,8 +144,18 @@ export default function DocsMcpPage() {
           [t("get_game"), "Every editable field of one of your games, or the public page of anyone's game."],
           [t("get_game_files"), "Lists or reads the source files of a version, so the agent can keep working on a game."],
           [t("update_game"), "Title, tagline, description, category, tags, orientation, controls, run length, remix licence, leaderboard, published or draft."],
-          [t("set_game_art"), "Sets the cover (16:9) or card (3:4) image from a PNG, JPEG or WebP."],
           [t("unpublish_game"), "Hides a game. It stays in My games and can be published again."],
+        ]}
+      />
+      <h3>Store art</h3>
+      <Table
+        head={["Tool", "What it does"]}
+        rows={[
+          [t("list_thumbnail_designs"), "The ready-made thumbnail styles, colour themes and modes, the same ones as the picker on the publish and edit pages."],
+          [t("make_thumbnail"), "Makes the cover and card from a ready-made design, or from the agent's own HTML design. Renders in 1 to 3 minutes."],
+          [t("get_thumbnail_status"), "Whether a thumbnail is still rendering, done (with the new images) or failed."],
+          [t("create_art_upload"), "An upload URL on habiv.com for an image the agent made or generated."],
+          [t("set_game_art"), "Sets the cover (16:9) or card (3:4) from an uploaded file, a public image URL or base64. PNG, JPEG or WebP."],
         ]}
       />
       <h3>Versions</h3>
@@ -169,6 +179,8 @@ export default function DocsMcpPage() {
           ["Publishing", "20 publishes per hour per connection"],
           ["get_game_files", "512 KB per file, 2 MB per call. Images, audio and engine builds come back as links"],
           ["set_game_art", "3 MB image, PNG, JPEG or WebP"],
+          ["make_thumbnail", "10 per hour"],
+          ["Upload URLs on habiv.com", "4 MB per file; bigger bundles get a direct storage URL"],
         ]}
       />
       <p>

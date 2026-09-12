@@ -215,10 +215,10 @@ supabase.channel(`notifications:${userId}`)
 Settings → Connect AI (`?tab=api`): the main path is a copyable plain-language message (`connectPrompt` in `settings-view.tsx`) the user pastes into Claude Code or Codex. The agent adds the server and starts the OAuth browser approval, so no token is needed. Below that: the server URL for the Claude app's custom connectors, then manual commands in a collapsed section. The list underneath shows OAuth connections and personal tokens together: `listTokens(supabase)`; actions `createToken(name)` (returns the full token once, only needed for scripts and CI) and `revokeToken(id)`. Client config with no headers, since OAuth handles sign-in:
 
 ```json
-{ "mcpServers": { "habiv": { "type": "http", "url": "https://habiv.com/api/mcp" } } }
+{ "mcpServers": { "habiv": { "type": "http", "url": "https://www.habiv.com/api/mcp" } } }
 ```
 
-Tools exposed: `publish_game`, `create_upload`, `get_publish_status`, `get_game`, `list_my_games`, `list_versions`, `publish_version` (switch live version / roll back), `update_version` (changelog, prompt, model, agent), `get_game_files` (read a version's source), `update_game`, `set_game_art` (cover or card image, base64), `unpublish_game`. Edits made through MCP expire the same cache tags as the server actions.
+Tools exposed: `publish_game`, `create_upload`, `get_publish_status`, `get_game`, `list_my_games`, `list_versions`, `publish_version` (switch live version / roll back), `update_version` (changelog, prompt, model, agent), `get_game_files` (read a version's source), `update_game`, `set_game_art` (cover or card image from an upload_key, image_url or base64), `create_art_upload`, `list_thumbnail_designs`, `make_thumbnail` and `get_thumbnail_status` (ready-made or agent-written HTML thumbnails, rendered by the jobs workflow), `unpublish_game`. Edits made through MCP expire the same cache tags as the server actions.
 
 ## 6. Local setup for the UI session
 

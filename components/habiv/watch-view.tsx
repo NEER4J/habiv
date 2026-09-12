@@ -17,7 +17,7 @@ import { Maximize, Pause, Play, RectangleHorizontal, Repeat, RotateCcw, Volume2,
 import { CreatorAvatar, RailRow } from "./game-card";
 import { useShell } from "./shell-context";
 
-type PlayerState = "cover" | "loading" | "playing" | "paused" | "finished";
+type PlayerState = "cover" | "loading" | "playing" | "paused";
 
 const READY_TIMEOUT_MS = 5000;
 
@@ -79,12 +79,6 @@ const smallActionBtn: CSSProperties = {
   cursor: "pointer",
 };
 
-function durationLabelMs(ms: number | null) {
-  if (ms == null) return null;
-  const s = Math.max(0, Math.round(ms / 1000));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-}
-
 function Avatar({ name, url, size }: { name: string; url: string | null; size: number }) {
   return (
     <div
@@ -122,10 +116,6 @@ export function WatchView({ data }: { data: WatchData }) {
   const [state, setState] = useState<PlayerState>("cover");
   const [frameOn, setFrameOn] = useState(false);
   const [frameKey, setFrameKey] = useState(0);
-  const [score, setScore] = useState<number | null>(null);
-  const [beatPct, setBeatPct] = useState<number | null>(null);
-  const [durationMs, setDurationMs] = useState<number | null>(null);
-  const [rankResult, setRankResult] = useState<{ rank: number; personalBest: boolean } | null>(null);
   // Runs this viewer started since the page loaded, so the count moves on Play without a refresh.
   const [playsBump, setPlaysBump] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
@@ -190,10 +180,6 @@ export function WatchView({ data }: { data: WatchData }) {
     clearTimeout(loadTimer.current);
     setState("cover");
     setFrameOn(false);
-    setScore(null);
-    setBeatPct(null);
-    setDurationMs(null);
-    setRankResult(null);
     setPlaysBump(0);
     setMoreOpen(false);
     setDescOpen(false);
@@ -224,22 +210,12 @@ export function WatchView({ data }: { data: WatchData }) {
           break;
         case "run_start":
           if (e.counted) setPlaysBump((n) => n + 1);
-          setScore(null);
-          setBeatPct(null);
-          setDurationMs(null);
-          setRankResult(null);
           setState("playing");
           break;
-        case "run_end":
-          setScore((s) => e.score ?? s);
-          setBeatPct(e.beatPct);
-          setDurationMs(e.durationMs);
-          // A quit (tab hidden, page left) is not a result worth an overlay.
-          if (e.outcome !== "quit") setState("finished");
-          break;
+        // The game draws its own end screen and restart; the page only notes where the score landed.
         case "score_result": {
           const daily = e.boards.find((b) => b.period === "daily") ?? e.boards[0];
-          if (daily) setRankResult({ rank: daily.rank, personalBest: daily.personal_best });
+          if (e.accepted && daily) showToast(`#${daily.rank} on today's board${daily.personal_best ? " · personal best" : ""}`);
           break;
         }
         case "happytime":
@@ -287,10 +263,6 @@ export function WatchView({ data }: { data: WatchData }) {
       if (!game.versionId) return;
       clearTimeout(loadTimer.current);
       if (fromPlayButton) getCollector().track({ name: "play_click", game_id: game.id, version_id: game.versionId });
-      setScore(null);
-      setBeatPct(null);
-      setDurationMs(null);
-      setRankResult(null);
       setFrameKey((k) => k + 1);
       setFrameOn(true);
       setState("loading");
@@ -309,8 +281,6 @@ export function WatchView({ data }: { data: WatchData }) {
     } else if (state === "paused") {
       hostRef.current?.resume();
       setState("playing");
-    } else if (state === "finished") {
-      restart();
     } else if (state === "cover") {
       start();
     }
@@ -320,10 +290,6 @@ export function WatchView({ data }: { data: WatchData }) {
     clearTimeout(loadTimer.current);
     setFrameOn(false);
     setState("cover");
-    setScore(null);
-    setBeatPct(null);
-    setDurationMs(null);
-    setRankResult(null);
   };
 
   // Keys only reach the game while its iframe has focus. Take it when play starts or resumes,
@@ -334,8 +300,6 @@ export function WatchView({ data }: { data: WatchData }) {
   useEffect(() => {
     if (state === "playing") iframeRef.current?.focus({ preventScroll: true });
   }, [state, muted, theatre, fullscreen]);
-
-  const nextGame = data.queue[0] ?? null;
 
   // Real fullscreen (browser chrome hidden) where the Fullscreen API exists; elsewhere (iPhone Safari)
   // the player box stays a fixed full-window layer.
@@ -476,7 +440,7 @@ export function WatchView({ data }: { data: WatchData }) {
   const remixable = game.remixLicence !== "no_remix";
   const pauseLabel = state === "playing" ? "Pause" : state === "paused" ? "Resume" : "Play";
   const soundLabel = muted ? "Sound off" : "Sound on";
-  const stateLabel = { cover: "READY", loading: "LOADING", playing: "PLAYING", paused: "PAUSED", finished: "COMPLETE" }[state];
+  const stateLabel = { cover: "READY", loading: "LOADING", playing: "PLAYING", paused: "PAUSED" }[state];
 
   // Up-next queue, filtered client-side.
   let recPool = data.queue;
@@ -622,12 +586,6 @@ export function WatchView({ data }: { data: WatchData }) {
   const summary = (game.desc || description).split(".")[0];
   const highlightedRow = !!viewer.userId && !!leaderboard?.entries.some((e) => e.user?.id === viewer.userId);
 
-  const resultBits: string[] = [];
-  if (beatPct != null) resultBits.push(`Beat ${Math.round(beatPct)}% of players today`);
-  if (rankResult) resultBits.push(`#${rankResult.rank} on today's board${rankResult.personalBest ? " · personal best" : ""}`);
-  else if (viewer.rank) resultBits.push(`Personal best ${viewer.rank.score.toLocaleString()}`);
-  const runTime = durationLabelMs(durationMs);
-
   const playerBox: CSSProperties = fullscreen
     ? {
         position: "fixed",
@@ -649,7 +607,7 @@ export function WatchView({ data }: { data: WatchData }) {
         transition: "border-radius 300ms ease, box-shadow 340ms ease",
       };
 
-  // Paused, finished and loading keep the fullscreen controls up; only active play hides them.
+  // Paused and loading keep the fullscreen controls up; only active play hides them.
   const fsControlsShown = fsControls || state !== "playing";
 
   const controlBar = (
@@ -857,40 +815,6 @@ export function WatchView({ data }: { data: WatchData }) {
                     </button>
                     <button onClick={quit} style={onPlayerChip}>
                       Quit
-                    </button>
-                  </div>
-                </div>
-              ) : null}
-
-              {state === "finished" ? (
-                <div style={{ ...overlayBase, gap: "20px", background: "rgba(0,0,0,0.86)", animation: "hbRise 300ms ease-out both" }}>
-                  <div style={{ textAlign: "center" }}>
-                    <div style={{ fontFamily: mono, fontSize: "11.5px", letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.66)" }}>
-                      Run complete{runTime ? ` · ${runTime}` : ""}
-                    </div>
-                    {score != null ? (
-                      <div style={{ fontFamily: mono, fontSize: "54px", fontWeight: 500, letterSpacing: "-0.03em", margin: "6px 0 2px" }}>{score.toLocaleString()}</div>
-                    ) : (
-                      <div style={{ fontSize: "22px", fontWeight: 600, margin: "10px 0 4px" }}>{game.title}</div>
-                    )}
-                    {resultBits.length ? <div style={{ fontSize: "13.5px", color: "rgba(255,255,255,0.76)" }}>{resultBits.join(" · ")}</div> : null}
-                  </div>
-                  <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "9px" }}>
-                    <button onClick={restart} style={onPlayerPrimary}>
-                      Play again
-                    </button>
-                    {remixable ? (
-                      <button onClick={openRemix} style={onPlayerChip}>
-                        Remix
-                      </button>
-                    ) : null}
-                    {nextGame ? (
-                      <Link href={nextGame.url} style={onPlayerChip}>
-                        Next game
-                      </Link>
-                    ) : null}
-                    <button onClick={() => setState("playing")} style={{ ...onPlayerChip, background: "transparent", color: "rgba(255,255,255,0.7)" }}>
-                      Back to game
                     </button>
                   </div>
                 </div>

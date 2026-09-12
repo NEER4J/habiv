@@ -138,8 +138,8 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
     }
     const seq = runSeq;
     const res = await postJson<{ duration_ms: number; beat_pct: number | null }>("/api/runs/end", { run_id: run.id, run_token: run.token, outcome, ...extra }, keepalive);
-    // The player retried inside the game before this reply came back: a results screen now would land
-    // in the middle of the new round. The run is closed on the server either way.
+    // The player retried inside the game before this reply came back: the old round's result would land
+    // in the middle of the new one. The run is closed on the server either way.
     if (seq !== runSeq) return;
     emit({ type: "run_end", outcome, score: extra.score ?? null, durationMs: res?.duration_ms ?? Date.now() - run.startedAt, beatPct: res?.beat_pct ?? null });
   };

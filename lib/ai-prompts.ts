@@ -13,7 +13,7 @@ export const habivRules = `How games work on Habiv (${siteUrl}):
 - A game is one HTML file, or a zip with index.html at the root (up to 50 MB and 1,000 files).
 - It runs in a sandboxed iframe with network access off. Ship every image, sound, font and library inside the bundle and load it with a relative path such as ./sprites/hero.png. No CDNs, no http:// URLs, no pop-ups, and don't rely on service workers. File names are case sensitive.
 - The same page runs on phones and desktops: scale to the window size and support touch as well as keyboard or mouse.
-- Arrow keys and Space are safe to use. The player page has its own pause and sound buttons, and its "Play again" button reloads the game, so the game must start cleanly from page load.
+- Arrow keys and Space are safe to use. The player page has its own pause and sound buttons, and its Restart button reloads the game, so the game must start cleanly from page load. Habiv shows nothing over the game when a round ends: the game needs its own game-over screen and a way to play again.
 ${detailsRule}
 - Habiv adds window.Habiv to the game on upload. It's missing when testing locally, so always call it with ?. and the game keeps working:
     const habiv = window.Habiv;
@@ -31,9 +31,10 @@ ${detailsRule}
 export const publishSteps = `Getting it onto Habiv. First check whether you have the Habiv MCP tools (publish_game, list_my_games). Both ways below work, so don't stop if you don't have them.
 
 If you have the Habiv tools:
-- Call publish_game with the files (index.html at the root). For bundles over 3 MB, use create_upload first.
+- Call publish_game with the files (index.html at the root). Put text files (html, js, css, json) in content exactly as written; only images and audio need content_base64. For bundles over 3 MB, use create_upload first.
 - If the game is already on Habiv, pass its game_id (find it with list_my_games) and a one-line changelog, so it becomes a new version and keeps its page, stats and leaderboard. If it's new, also pass a title, a short tagline, a description, the categories, the controls, duration_sec, the model and agent you are, and the prompt I gave you: the same details as in habiv.json.
 - Poll get_publish_status until it says ready, then give me the link. Keep it a draft unless I asked for it to go live.
+- Give it store art: call list_thumbnail_designs, pick a design that suits the game and call make_thumbnail (or make your own image and upload it with create_art_upload and set_game_art). Tell me which design you picked.
 
 If you don't have them:
 - Package the game: a single index.html, or a folder (or zip) with index.html at its root. The upload page takes a whole folder and zips it itself. If you can write files, save it and tell me exactly where it is. In a chat app, give me the complete file to save as index.html.
@@ -130,12 +131,12 @@ ${habivRules}`,
     id: "leaderboard",
     group: "improve",
     title: "Add a leaderboard",
-    when: "Daily, weekly and all-time boards, plus the “you beat 72% of today's players” line on the results screen.",
+    when: "Daily, weekly and all-time boards, with the player's rank shown after every scored round.",
     text: `Add a Habiv leaderboard to this game.
 
 - Decide whether a higher score or a lower time is better. For times, submit milliseconds as a whole number.
 - Call window.Habiv?.runStart() when a round begins. When it ends, call window.Habiv?.scoreSubmit({ value }) once, then window.Habiv?.runEnd({ outcome, score }). Round scores to whole numbers.
-- After runEnd with "complete" or "fail", Habiv shows its own results screen with the player's rank and a Play again button.
+- Habiv doesn't show a results screen, so keep the game's own game-over screen with the score and a way to play again. Habiv adds a short note with the player's rank.
 - Keep everything working when window.Habiv is missing.
 - The leaderboard also has to be switched on. If you have the Habiv MCP tools, call update_game for this game with leaderboard: { enabled: true, sort: "desc" } (use "asc" when the lowest time wins). If you don't, tell me where to switch it on: in the Details step while uploading, or for a game already on Habiv in My games → Edit, choosing Highest wins or Lowest wins.
 

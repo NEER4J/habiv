@@ -144,8 +144,8 @@ export default function DocsSdkPage() {
           <code>&quot;quit&quot;</code> means they gave up. Anything else counts as quit.
         </li>
         <li>
-          <strong>Results screen.</strong> Ending with <code>complete</code> or <code>fail</code> shows Habiv&apos;s results screen over your game,
-          with a Play again button. Pass a <code>score</code> to add &ldquo;you beat X% of today&apos;s players&rdquo;.
+          <strong>Your own end screen.</strong> Habiv draws nothing over your game when a run ends, so keep your game-over screen and its
+          way to play again. A score sent with <code>scoreSubmit</code> goes on the leaderboard and the player gets a short note with their rank.
         </li>
         <li>
           <strong>Starting again.</strong> Calling <code>runStart()</code> while a run is going ends the old one as a quit first.

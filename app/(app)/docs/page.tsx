@@ -139,8 +139,7 @@ export default function DocsOverviewPage() {
         </li>
       </ul>
       <p>
-        Add the <Link href="/docs/sdk">SDK</Link> and you also get completions, leaderboards, level drop-off and the &ldquo;you beat 72% of today&apos;s
-        players&rdquo; message on the results screen.
+        Add the <Link href="/docs/sdk">SDK</Link> and you also get completions, leaderboards and level drop-off.
       </p>
       <Note>
         <p>

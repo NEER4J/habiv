@@ -39,8 +39,13 @@ async function ingestInApp(payload: IngestPayload) {
   }
 }
 
-/** Fires the GitHub Actions jobs workflow. False when it is not configured or GitHub refuses. */
-export async function dispatchJob(task: "ingest-version" | "smoke-version", versionId: string): Promise<boolean> {
+export type JobTask = "ingest-version" | "smoke-version" | "render-thumb";
+
+/**
+ * Fires the GitHub Actions jobs workflow for a version (ingest, smoke) or a thumbnail request
+ * (render-thumb). False when it is not configured or GitHub refuses.
+ */
+export async function dispatchJob(task: JobTask, id: string): Promise<boolean> {
   const token = process.env.GITHUB_DISPATCH_TOKEN;
   const vercelRepo = process.env.VERCEL_GIT_REPO_OWNER && process.env.VERCEL_GIT_REPO_SLUG ? `${process.env.VERCEL_GIT_REPO_OWNER}/${process.env.VERCEL_GIT_REPO_SLUG}` : "";
   const repo = process.env.GITHUB_REPOSITORY || vercelRepo;
@@ -49,7 +54,7 @@ export async function dispatchJob(task: "ingest-version" | "smoke-version", vers
     const res = await fetch(`https://api.github.com/repos/${repo}/dispatches`, {
       method: "POST",
       headers: { authorization: `Bearer ${token}`, accept: "application/vnd.github+json", "x-github-api-version": "2022-11-28", "content-type": "application/json" },
-      body: JSON.stringify({ event_type: task, client_payload: { versionId } }),
+      body: JSON.stringify({ event_type: task, client_payload: task === "render-thumb" ? { requestId: id } : { versionId: id } }),
     });
     if (!res.ok) console.error("dispatch failed", task, res.status, (await res.text().catch(() => "")).slice(0, 200));
     return res.ok;

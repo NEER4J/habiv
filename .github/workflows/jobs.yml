@@ -4,22 +4,23 @@ name: jobs
 # repository_dispatch (lib/jobs/trigger.ts); everything else runs on Vercel.
 #   smoke-version   smoke test + cover/card screenshots after a version is ready
 #   ingest-version  full ingest for Flash / Scratch / LÖVE bundles (converters), then smoke
+#   render-thumb    render a thumbnail design (HTML) into a game's cover/card (MCP make_thumbnail)
 on:
   repository_dispatch:
-    types: [ingest-version, smoke-version]
+    types: [ingest-version, smoke-version, render-thumb]
   workflow_dispatch:
     inputs:
       task:
         description: Task to run
         type: choice
-        options: [smoke-version, ingest-version]
+        options: [smoke-version, ingest-version, render-thumb]
         default: smoke-version
       version_id:
-        description: game_versions.id
+        description: game_versions.id (the thumbnail request id for render-thumb)
         required: true
 
 concurrency:
-  group: jobs-${{ github.event.client_payload.versionId || inputs.version_id }}
+  group: jobs-${{ github.event.client_payload.versionId || github.event.client_payload.requestId || inputs.version_id }}
 
 jobs:
   run:
@@ -31,7 +32,7 @@ jobs:
     env:
       # Passed through env (never interpolated into scripts) and validated below.
       TASK: ${{ github.event.action || inputs.task }}
-      VERSION_ID: ${{ github.event.client_payload.versionId || inputs.version_id }}
+      JOB_ID: ${{ github.event.client_payload.versionId || github.event.client_payload.requestId || inputs.version_id }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       STORAGE_S3_REGION: ${{ secrets.STORAGE_S3_REGION }}
@@ -42,8 +43,8 @@ jobs:
       - name: Validate input
         working-directory: .
         run: |
-          [[ "$TASK" == "smoke-version" || "$TASK" == "ingest-version" ]] || { echo "unknown task"; exit 1; }
-          [[ "$VERSION_ID" =~ ^[0-9a-f-]{36}$ ]] || { echo "bad version id"; exit 1; }
+          [[ "$TASK" == "smoke-version" || "$TASK" == "ingest-version" || "$TASK" == "render-thumb" ]] || { echo "unknown task"; exit 1; }
+          [[ "$JOB_ID" =~ ^[0-9a-f-]{36}$ ]] || { echo "bad id"; exit 1; }
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
@@ -56,4 +57,4 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ hashFiles('jobs/package-lock.json') }}
       - run: npx playwright install --with-deps chromium
-      - run: npx tsx src/cli.ts "$TASK" "$VERSION_ID"
+      - run: npx tsx src/cli.ts "$TASK" "$JOB_ID"

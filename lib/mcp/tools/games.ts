@@ -10,7 +10,6 @@ import { normalizeAgent, normalizeModel } from "@/lib/ai/catalog";
 import type { IngestManifest, ManifestFile } from "@/lib/contracts/ingest";
 import { buckets, getObjectBytes } from "@/lib/storage";
 import type { TokenAuth } from "@/lib/mcp/auth";
-import { ART_MAX_BYTES, saveGameArt } from "@/lib/art";
 import { cdnUrl } from "@/lib/site";
 import { deleteVersionForCreator } from "@/lib/versions/cleanup";
 import { gameUrls, guarded, handleOf, ok, ownedGame, previewUrl, refreshGame, ToolError, versionBaseUrl } from "@/lib/mcp/tools/shared";
@@ -392,30 +391,6 @@ export function registerGameTools(server: McpServer, auth: TokenAuth) {
         await refreshGame(auth, g.id);
         const updated = await ownedGame(auth, g.id);
         return ok({ id: updated.id, short_id: updated.short_id, slug: updated.slug, title: updated.title, status: updated.status, current_version_id: updated.current_version_id, ...gameUrls(await handleOf(auth.userId), updated.slug, updated.short_id) });
-      }),
-  );
-
-  server.registerTool(
-    "set_game_art",
-    {
-      title: "Set a game's cover or card image",
-      description:
-        "Uploads store art from a PNG, JPEG or WebP image (base64, max 3 MB). kind 'cover' is the 16:9 landscape image for feed tiles, the player " +
-        "and link previews (1280x720 works best); 'card' is the 3:4 portrait poster (600x800). It is centre-cropped, resized and compressed to WebP. Uploaded art replaces " +
-        "the automatic screenshot and is kept when new versions are published.",
-      inputSchema: z.object({
-        game_id: z.string().uuid(),
-        kind: z.enum(["cover", "card"]),
-        image_base64: z.string().min(1).max(Math.ceil((ART_MAX_BYTES * 4) / 3) + 200).describe("The image file as base64 (a data: URL prefix is accepted)"),
-      }),
-    },
-    (args) =>
-      guarded(async () => {
-        const g = await ownedGame(auth, args.game_id);
-        const bytes = new Uint8Array(Buffer.from(args.image_base64.replace(/^data:[^,]*,/, "").replace(/\s+/g, ""), "base64"));
-        const res = await saveGameArt(auth.userId, g.id, args.kind, bytes);
-        if (!res.ok) throw new ToolError(res.error, res.code);
-        return ok({ game_id: g.id, kind: args.kind, url: res.url });
       }),
   );
 

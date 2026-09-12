@@ -17,6 +17,7 @@ import { MAX_UPLOAD_BYTES, PART_SIZE, SINGLE_PUT_THRESHOLD, extensionOf } from "
 import { buildZip } from "@/lib/mcp/zip";
 import type { TokenAuth } from "@/lib/mcp/auth";
 import { assertPublishRate, gameUrls, guarded, handleOf, ok, ownedGame, previewUrl, ToolError } from "@/lib/mcp/tools/shared";
+import { RELAY_MAX_BYTES, relayUrl } from "@/lib/uploads/relay";
 
 const MAX_INLINE_BYTES = 3 * 1024 * 1024;
 const MAX_URL_BYTES = 25 * 1024 * 1024;
@@ -51,11 +52,19 @@ const publishInput = z
       .default(false)
       .describe("Make the game public automatically once processing succeeds. Leave false (the default) to save it as a draft the creator reviews and publishes; pass true only when the user asked for it to go live"),
     files: z
-      .array(z.object({ path: z.string().regex(/^[\w\-./ ]{1,240}$/), content_base64: z.string() }))
+      .array(
+        z
+          .object({
+            path: z.string().regex(/^[\w\-./ ]{1,240}$/),
+            content: z.string().optional().describe("A text file (html, js, css, json, svg) exactly as written: no encoding"),
+            content_base64: z.string().optional().describe("A binary file (image, audio, font) as base64"),
+          })
+          .refine((f) => (f.content === undefined) !== (f.content_base64 === undefined), { message: "Give each file either content (text) or content_base64 (binary)." }),
+      )
       .min(1)
       .max(40)
       .optional()
-      .describe("Inline files (total under 3 MB decoded). Use create_upload for bigger bundles."),
+      .describe("Inline files, 3 MB in total. Put text files in content as they are; only binary files need content_base64. Use create_upload for bigger bundles."),
     upload_id: z.string().uuid().optional().describe("An upload session from create_upload"),
     upload_parts: z.array(z.object({ part_number: z.number().int().min(1), etag: z.string() })).optional().describe("ETags returned by the multipart PUTs"),
     bundle_url: z.string().url().optional().describe("Public https URL of a .zip or .html (under 25 MB)"),
@@ -101,7 +110,8 @@ export function registerPublishTools(server: McpServer, auth: TokenAuth) {
       description:
         "Uploads a game (single index.html or a zip of html/js/assets) as a private draft under your handle. " +
         "It goes public only with publish_when_ready: true, the publish_version tool, or the creator publishing it from My games. " +
-        "Inline `files` must total under 3 MB decoded; for bigger bundles call create_upload first and pass its upload_id. " +
+        "Inline `files` must total under 3 MB: put html/js/css/json in `content` as plain text (no base64); only images and audio need content_base64. " +
+        "For bigger bundles, or a zip already on disk, call create_upload first and pass its upload_id. " +
         "Describe the game for its page: pass tagline, description (the goal, how a round goes, tips) and controls, and also put the same details in a habiv.json " +
         `at the bundle root (or a <script type="application/habiv+json"> block in index.html) so they travel with the code (${siteUrl}/docs/details). ` +
         "Arguments you pass win; habiv.json only fills fields that are still empty. " +
@@ -149,7 +159,10 @@ export function registerPublishTools(server: McpServer, auth: TokenAuth) {
         let bytes: Uint8Array;
         let filename: string;
         if (args.files) {
-          const decoded = args.files.map((f) => ({ path: f.path.replace(/^\.?\//, ""), body: Buffer.from(f.content_base64, "base64") }));
+          const decoded = args.files.map((f) => ({
+            path: f.path.replace(/^\.?\//, ""),
+            body: f.content !== undefined ? Buffer.from(f.content, "utf8") : Buffer.from(f.content_base64!, "base64"),
+          }));
           const total = decoded.reduce((n, f) => n + f.body.length, 0);
           if (total > MAX_INLINE_BYTES) throw new ToolError("Inline files are capped at 3 MB decoded. Use create_upload for bigger bundles.", "too_large");
           if (decoded.length === 1 && /\.html?$/i.test(decoded[0].path)) {
@@ -221,8 +234,10 @@ export function registerPublishTools(server: McpServer, auth: TokenAuth) {
     {
       title: "Create an upload session for a large bundle",
       description:
-        "Returns presigned URLs to PUT a zip (or html) up to 50 MB directly into storage. Single PUT under 20 MB; " +
-        "multipart (8 MB parts, keep each response's ETag) above. Then call publish_game with upload_id (and upload_parts for multipart).",
+        "Returns URLs to PUT a zip (or html) up to 50 MB, so a file on disk never has to be pasted into a tool call. Up to 4 MB the url is on " +
+        "habiv.com, which works from sandboxes that only reach allowed domains (allow www.habiv.com); storage_url is the direct alternative. " +
+        "Above that the URLs go straight to storage: a single PUT under 20 MB, multipart (8 MB parts, keep each response's ETag) above. " +
+        "Then call publish_game with upload_id (and upload_parts for multipart).",
       inputSchema: z.object({
         filename: z.string().min(1).max(255).describe("e.g. game.zip"),
         size_bytes: z.number().int().positive().max(MAX_UPLOAD_BYTES),
@@ -247,7 +262,21 @@ export function registerPublishTools(server: McpServer, auth: TokenAuth) {
         const { data: session } = await admin.from("upload_sessions").select("id, r2_upload_id").eq("version_id", created.versionId).maybeSingle();
         if (!session) throw new ToolError("Could not open an upload session.", "internal");
         if (created.mode === "single") {
-          return ok({ upload_id: session.id, game_id: created.gameId, version_id: created.versionId, key: created.key, method: "put", url: created.putUrl, expires_at: created.expiresAt });
+          const viaHabiv =
+            args.size_bytes <= RELAY_MAX_BYTES
+              ? relayUrl({ key: created.key, contentType: extensionOf(args.filename) === ".zip" ? "application/zip" : "text/html", maxBytes: args.size_bytes, ttlSec: 3600 })
+              : null;
+          return ok({
+            upload_id: session.id,
+            game_id: created.gameId,
+            version_id: created.versionId,
+            key: created.key,
+            method: "put",
+            url: viaHabiv ?? created.putUrl,
+            ...(viaHabiv ? { storage_url: created.putUrl } : {}),
+            expires_at: created.expiresAt,
+            next: "PUT the file to url (curl -X PUT --data-binary @game.zip '<url>'), then call publish_game with upload_id.",
+          });
         }
         const n = Math.ceil(args.size_bytes / PART_SIZE);
         const parts = await Promise.all(Array.from({ length: n }, async (_, i) => ({ part_number: i + 1, url: await presignPart(buckets().uploads, created.key, session.r2_upload_id!, i + 1, 3600) })));
@@ -288,6 +317,12 @@ export function registerPublishTools(server: McpServer, auth: TokenAuth) {
             ? undefined
             : `The game page has no ${missing.join(", ")} yet. Write them from what you know about the game and call update_game, ` +
               `and add a habiv.json to the bundle so the next version carries them (${siteUrl}/docs/details).`;
+        // Art the creator uploaded or picked is stored as u-*.webp or t-*.webp; anything else is the smoke screenshot.
+        const artHint =
+          v.status === "ready" && !/\/[ut]-\d+\.webp$/.test(g.cover_path ?? "")
+            ? "The cover is an automatic screenshot. Offer designed store art: make_thumbnail with a ready-made design (list_thumbnail_designs) or your own HTML, " +
+              "or an image you made via create_art_upload and set_game_art."
+            : undefined;
         return ok({
           version_id: v.id,
           game_id: v.game_id,
@@ -305,6 +340,7 @@ export function registerPublishTools(server: McpServer, auth: TokenAuth) {
           ...(sdkHint ? { sdk_hint: sdkHint } : {}),
           build_details: buildDetailsForTools(readBuildDetails(v.manifest)),
           ...(detailsHint ? { details_hint: detailsHint } : {}),
+          ...(artHint ? { art_hint: artHint } : {}),
           game_status: g.status,
           preview_url: v.status === "ready" ? previewUrl(v.id) : null,
           ...gameUrls(await handleOf(auth.userId), g.slug, g.short_id),
