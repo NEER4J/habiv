@@ -22,6 +22,7 @@ import { siteUrl } from "@/lib/site";
 import { UserAvatar } from "./avatar";
 import { railThumbStyle, shimmer } from "./game-card";
 import { AuthModal } from "@/components/habiv/auth-modal";
+import { WelcomeModal } from "./welcome-modal";
 import { createScoreShare, type ScoreShareLink } from "@/lib/actions/share";
 import { useShell, type ModalKind } from "./shell-context";
 
@@ -1165,9 +1166,9 @@ function Toast() {
     <div
       style={{
         position: "fixed",
-        left: "50%",
-        bottom: "26px",
-        transform: "translateX(-50%)",
+        right: "20px",
+        bottom: "20px",
+        maxWidth: "calc(100vw - 40px)",
         zIndex: 130,
         padding: "12px 18px",
         borderRadius: "10px",
@@ -1189,6 +1190,7 @@ export function Overlays() {
     <>
       <SearchOverlay />
       <AuthModal />
+      <WelcomeModal />
       <ShareModal />
       <RemixModal />
       <ReportModal />

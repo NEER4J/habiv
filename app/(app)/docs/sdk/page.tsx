@@ -78,7 +78,7 @@ const player = habiv?.player;  // { id, handle, muted, locale }`;
 
 const moreCode = `habiv?.gameplayStart();   // real play begins (not menus or cutscenes)
 habiv?.gameplayStop();    // back to a menu, paused, game over
-habiv?.happytime();       // a great moment: Habiv shows a small "Nice!"
+habiv?.happytime();       // marks a great moment in play
 habiv?.design({ key: "picked_class", value: "mage" });  // your own stat
 habiv?.error("Level file failed to load");`;
 
@@ -254,7 +254,7 @@ export default function DocsSdkPage() {
           [<code key="c">save({"{ key, value }"})</code>, "Stores a JSON value for this game in the player's browser."],
           [<code key="c">load({"{ key }"})</code>, "Promise of the saved value, or null."],
           [<code key="c">gameplayStart / gameplayStop</code>, "Marks active play versus menus."],
-          [<code key="c">happytime()</code>, "Shows a small “Nice!” on the player page."],
+          [<code key="c">happytime()</code>, "Marks a great moment in play. Nothing shows on the page."],
           [<code key="c">design({"{ key, value? }"})</code>, "Your own stat. Up to 100 keys."],
           [<code key="c">error(message)</code>, "Reports a problem you caught."],
           [<code key="c">on(type, fn) / off(type, fn)</code>, "Listen for pause, resume, mute or init."],

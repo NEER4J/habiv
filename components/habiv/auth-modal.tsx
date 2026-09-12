@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useShell, type AuthMode } from "@/components/habiv/shell-context";
 import { createClient } from "@/lib/supabase/client";
-import { signInWithProvider, type OAuthProvider } from "@/lib/auth/oauth";
-import { fieldLabelStyle, fieldStyle, mono, modalScrimStyle, modalSmStyleFor } from "@/lib/habiv/ui";
+import { openOAuthPopup, signInWithProvider, type OAuthProvider } from "@/lib/auth/oauth";
+import { OAUTH_POPUP_CHANNEL, type OAuthPopupResult } from "@/lib/auth/popup";
+import { chipBtn, fieldLabelStyle, fieldStyle, mono, modalScrimStyle, modalSmStyleFor } from "@/lib/habiv/ui";
 
 const bigBtn: CSSProperties = {
   display: "flex",
@@ -61,6 +62,7 @@ const TITLES: Record<AuthMode, string> = {
 export function AuthModal() {
   const { modal, closeModal, light, authIntent, openAuth } = useShell();
   const pathname = usePathname();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
@@ -68,14 +70,24 @@ export function AuthModal() {
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState<"confirm" | "reset" | null>(null);
 
+  // The Google / GitHub popup in flight, if any (lib/auth/popup.ts).
+  const [popup, setPopup] = useState<{ id: string; provider: OAuthProvider } | null>(null);
+
   const mode = authIntent.mode;
   const next = authIntent.next || pathname || "/";
+  // Signing in on the page you are on refreshes its server data in place: no reload, no redirect
+  // hop. router.refresh() also drops pages the router cached while you were signed out. The box
+  // stays on "One moment…" until the shell sees the session; auth-sync.tsx then closes it, or swaps
+  // it for profile setup when there is no handle yet. Headed to another page (or after a new
+  // password) it is a full load, which adds the handle step there.
+  const inPlace = (mode === "signin" || mode === "signup") && (!authIntent.next || authIntent.next === pathname);
 
   useEffect(() => {
     if (modal !== "signin") {
       setBusy(null);
       setError(null);
       setSent(null);
+      setPopup(null);
       setPassword("");
       setPassword2("");
     } else if (authIntent.error) {
@@ -83,24 +95,52 @@ export function AuthModal() {
     }
   }, [modal, authIntent.error]);
 
+  // The popup reports back once /auth/callback has set the session cookies.
+  useEffect(() => {
+    if (!popup) return;
+    const ch = new BroadcastChannel(OAUTH_POPUP_CHANNEL);
+    ch.onmessage = (e: MessageEvent<OAuthPopupResult>) => {
+      const d = e.data;
+      if (d?.id !== popup.id) return;
+      setPopup(null);
+      const to = d.to && d.to.startsWith("/") && !d.to.startsWith("//") && !d.to.startsWith("/\\") ? d.to : null;
+      if (d.error || !to) {
+        setError(d.error || "Sign-in failed. Try again.");
+        return;
+      }
+      setBusy(popup.provider);
+      if (inPlace) router.refresh();
+      else window.location.assign(to);
+    };
+    return () => ch.close();
+  }, [popup, inPlace, router]);
+
   if (modal !== "signin") return null;
 
   const oauth = async (provider: OAuthProvider) => {
     if (busy) return;
-    setBusy(provider);
     setError(null);
+    // Opened before any await so the browser counts it as part of the click. Null means redirect.
+    const win = openOAuthPopup();
+    const id = win ? crypto.randomUUID() : null;
+    setBusy(provider);
     try {
-      await signInWithProvider(provider, next);
+      await signInWithProvider(provider, next, win && id ? { window: win, id } : undefined);
+      if (win && id) {
+        setPopup({ id, provider });
+        setBusy(null);
+      }
     } catch (e) {
+      win?.close();
       setError(e instanceof Error ? e.message : "Sign-in failed. Try again.");
       setBusy(null);
     }
   };
 
-  // A full page load, not router.push + refresh: pages the router cached or prefetched while signed
-  // out (for up to 5 minutes under cacheComponents) would otherwise still show you as a guest.
-  // Other open tabs catch up through auth-sync.tsx.
-  const finishSignIn = () => window.location.assign(`/auth/post-login?next=${encodeURIComponent(next)}`);
+  const finishSignIn = () => {
+    if (inPlace) router.refresh();
+    else window.location.assign(`/auth/post-login?next=${encodeURIComponent(next)}`);
+  };
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -108,6 +148,7 @@ export function AuthModal() {
     setError(null);
     const supabase = createClient();
     setBusy("email");
+    // Stays busy after a sign-in: the box closes (or the page leaves) once it lands.
     try {
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -126,11 +167,13 @@ export function AuthModal() {
           finishSignIn();
         } else {
           setSent("confirm");
+          setBusy(null);
         }
       } else if (mode === "reset") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(next)}` });
         if (error) throw error;
         setSent("reset");
+        setBusy(null);
       } else {
         if (password.length < 8) throw new Error("Use at least 8 characters.");
         if (password !== password2) throw new Error("Passwords do not match.");
@@ -140,7 +183,6 @@ export function AuthModal() {
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
-    } finally {
       setBusy(null);
     }
   };
@@ -155,7 +197,12 @@ export function AuthModal() {
     <div style={modalScrimStyle}>
       <div onClick={closeModal} style={{ position: "absolute", inset: 0 }} />
       <div role="dialog" aria-modal="true" aria-labelledby="auth-title" style={{ ...modalSmStyleFor(light), color: "var(--ink)" }}>
-        <div id="auth-title" style={{ fontSize: "20px", fontWeight: 600, letterSpacing: "-0.02em" }}>{TITLES[mode]}</div>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "14px" }}>
+          <div id="auth-title" style={{ fontSize: "20px", fontWeight: 600, letterSpacing: "-0.02em" }}>{TITLES[mode]}</div>
+          <button type="button" onClick={closeModal} style={{ ...chipBtn, flex: "none" }}>
+            Close
+          </button>
+        </div>
         <div style={{ marginTop: "8px", fontSize: "14px", lineHeight: 1.6, color: "var(--ink-4)" }}>
           {mode === "signin" && "Playing never needs an account. Sign in to publish, save, like or comment."}
           {mode === "signup" && "Publish tiny games, save the ones you love, and climb the boards."}
@@ -187,7 +234,7 @@ export function AuthModal() {
                     style={{ ...oauthBtn, opacity: busy && busy !== "google" ? 0.6 : 1 }}
                   >
                     <GoogleLogo />
-                    {busy === "google" ? "Opening…" : "Google"}
+                    {busy === "google" ? "One moment…" : "Google"}
                   </button>
                   <button
                     type="button"
@@ -197,9 +244,14 @@ export function AuthModal() {
                     style={{ ...oauthBtn, opacity: busy && busy !== "github" ? 0.6 : 1 }}
                   >
                     <GitHubLogo />
-                    {busy === "github" ? "Opening…" : "GitHub"}
+                    {busy === "github" ? "One moment…" : "GitHub"}
                   </button>
                 </div>
+                {popup && !busy ? (
+                  <div role="status" style={{ fontSize: "12.5px", lineHeight: 1.5, color: "var(--ink-4)", textAlign: "center" }}>
+                    Finish signing in with {popup.provider === "google" ? "Google" : "GitHub"} in the popup. Closed it? Press the button again.
+                  </div>
+                ) : null}
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "6px 0 2px", color: "var(--ink-6)", fontFamily: mono, fontSize: "10.5px", letterSpacing: "0.08em" }}>
                   <span style={{ flex: 1, height: 1, background: "var(--divider)" }} />
                   OR WITH EMAIL

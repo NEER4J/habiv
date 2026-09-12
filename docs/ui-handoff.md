@@ -18,7 +18,6 @@ The view model components render is `Game` / `GameFull` in `lib/habiv/games.ts`,
 | `/my-games/[gameId]/edit` | `loadGameEdit(supabase, own, gameId)` + categories | `GameEditView({ data: GameEditData, categories })` |
 | `/publish?game=` | categories + `loadGameEdit` (prefills a new version) | `PublishView({ categories, existingGame, handle })` |
 | `/settings?tab=` | `loadSettings(supabase, own)` | `SettingsView({ initialTab, data })` |
-| `/onboarding?next=&suggest=&step=` | own profile | `OnboardingView({ initialStep, next, suggested })` |
 | `/profile` | redirect | → `/@handle` |
 | `/docs`, `/docs/prompts`, `/docs/details`, `/docs/sdk`, `/docs/mcp` | static | `DocsPage` (`components/habiv/docs-page.tsx`); tab list in `lib/docs.ts`. Update the SDK page when `lib/bridge/*` changes and the MCP page when `lib/mcp/tools/*` changes. The copy-paste prompts live in `lib/ai-prompts.ts` (also served as Markdown at `/docs/prompts.md`); keep their rules and tool names in step with both. `/docs/details` documents habiv.json from `lib/habiv/details-file.ts` (also the JSON Schema at `/habiv.schema.json`); keep its fields in step with the ingest reader `jobs/src/lib/game-meta.ts` |
 | `/admin/*` | `lib/db/admin.ts` | admin pages in `app/admin/*` (admin-only, see `admin_emails`) |
@@ -67,7 +66,7 @@ job only fills empty slots, so uploaded art is kept across new versions.
 
 
 The backend session owns `lib/db/*`, `lib/actions/*`, `lib/player/*`, `lib/analytics/*`, `lib/bridge/*`, `app/api/*`,
-`app/auth/*`, `app/onboarding/*`, `app/(app)/[handle]/*`, `supabase/`, `workers/`, `jobs/`.
+`app/auth/*`, `app/(app)/[handle]/*`, `supabase/`, `workers/`, `jobs/`.
 The UI session owns `components/habiv/*` and the `(app)` view pages. This file is the contract between the two.
 
 Rules that keep `cacheComponents: true` happy:
@@ -84,7 +83,7 @@ Rules that keep `cacheComponents: true` happy:
 | Sign-in modal "Continue with GitHub / Google" | `signInWithProvider("github" \| "google", nextPath)` from `lib/auth/oauth.ts` (client). |
 | Password sign-in success | `router.push("/auth/post-login?next=" + encodeURIComponent(path))`. |
 | After any sign-in | call `linkPlayer()` from `lib/analytics/link-player.ts` once (attaches anonymous plays). |
-| Handle onboarding | `/onboarding` (bento `OnboardingView`). Proxy redirects creators there until `handle_set`. |
+| Handle onboarding | Popup, not a page: `WelcomeModal` (`components/habiv/welcome-modal.tsx`), username then avatar. Sign-in and the proxy send anyone without `handle_set` to `welcomePath(next)` (`lib/auth/protected.ts`): `?welcome=1&suggest=` on the page itself, or `/?welcome=1&next=` for creator routes. `useShell().openWelcome("avatar")` opens just the avatar step (Settings → Choose avatar). |
 | Settings → handle | `checkHandle(input)` (debounce 300 ms) and `setHandle(input)` from `lib/actions/handles.ts`. `lib/handles.ts` has `normalizeHandle`, `validateHandle`, `HANDLE_MAX`. `takenHandles` mock is gone. |
 | Settings → profile | `updateProfile({ displayName, bio, pronouns, links })` from `lib/actions/profile.ts`; avatar: `POST /api/avatar` multipart `file` (resize to 256 px client-side first), `PUT /api/avatar` JSON `{ seed }` to pick a generated face, `DELETE /api/avatar` to clear. `avatarUrl` is a CDN URL or a `seed:<seed>` token, so always render it with `<UserAvatar url seed>` from `components/habiv/avatar.tsx`, never a raw `<img>`. |
 | Header profile / avatar | `getOwnProfile(await createClient())` → `OwnProfile` (`lib/db/profiles.ts`), inside Suspense. |

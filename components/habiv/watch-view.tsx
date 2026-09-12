@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { preconnect } from "react-dom";
-import { art, best, controlsFor, fmt, relativeTime, touchHintFor, type Game } from "@/lib/habiv/games";
+import { best, controlsFor, fmt, relativeTime, touchHintFor, type Game } from "@/lib/habiv/games";
 import { loadFeedPage } from "@/lib/actions/feed";
 import type { WatchData } from "@/lib/habiv/page-data";
 import { gameFrameSrc } from "@/lib/bridge/parent";
@@ -20,6 +20,7 @@ import { bpanel, chipBtn, chipStyle, ctrlBtn, modalScrimStyle, modalSmStyleFor, 
 import { Maximize, RectangleHorizontal, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { UserAvatar } from "./avatar";
 import { CreatorAvatar, RailRow, shimmer } from "./game-card";
+import { GeneratedThumb, thumbInputForGame } from "./generated-thumb";
 import { useShell } from "./shell-context";
 
 type RailKey = "all" | "model" | "creator" | "type";
@@ -382,9 +383,6 @@ export function WatchView({ data }: { data: WatchData }) {
           noteTimer.current = setTimeout(() => setNote(null), 7000);
           break;
         }
-        case "happytime":
-          showToast("Nice!");
-          break;
         case "error":
           console.error("[habiv] game error:", e.message);
           break;
@@ -392,7 +390,7 @@ export function WatchView({ data }: { data: WatchData }) {
           break;
       }
     },
-    [showToast, refreshBoard, refreshNowPlaying],
+    [refreshBoard, refreshNowPlaying],
   );
 
   // One bridge host per mounted iframe; a new frameKey is a fresh iframe.
@@ -500,6 +498,17 @@ export function WatchView({ data }: { data: WatchData }) {
       setFsClosing(false);
     }, 190);
   };
+
+  // Where fullscreen is only the fixed layer (iPhone Safari), the page behind it must not scroll under a swipe.
+  useEffect(() => {
+    if (!fullscreen) return;
+    const root = document.documentElement;
+    const prev = root.style.overflow;
+    root.style.overflow = "hidden";
+    return () => {
+      root.style.overflow = prev;
+    };
+  }, [fullscreen]);
 
   // The browser's own Esc (or a swipe) leaves real fullscreen without a keydown reaching the page.
   useEffect(() => {
@@ -994,7 +1003,9 @@ export function WatchView({ data }: { data: WatchData }) {
               // The game reported content taller than the frame: grow to it, still within the cap.
               minHeight: mobile && !theatre && fitHeight ? `min(${fitHeight}px, var(--player-max-h))` : undefined,
               transition: "height 340ms cubic-bezier(.22,.8,.3,1), min-height 240ms ease",
-              zIndex: theatre ? 50 : 1,
+              // The slot is the fixed player box's stacking context, so in fullscreen it must clear the
+              // sticky header (zIndex 40); otherwise the header paints over the game on iPhone.
+              zIndex: fullscreen ? 100 : theatre ? 50 : 1,
             }}
           >
             <div ref={playerBoxRef} style={playerBox} onPointerMove={fullscreen ? pokeFsControls : undefined}>
@@ -1019,12 +1030,14 @@ export function WatchView({ data }: { data: WatchData }) {
                     position: "absolute",
                     inset: 0,
                     zIndex: 3,
-                    backgroundImage: `url("${art(game, 1280)}")`,
+                    backgroundImage: game.coverUrl || game.cardUrl ? `url("${game.coverUrl ?? game.cardUrl}")` : undefined,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     backgroundColor: "#1c1d22",
                   }}
-                />
+                >
+                  {!game.coverUrl && !game.cardUrl ? <GeneratedThumb input={thumbInputForGame(game)} size={{ w: 1280, h: 720 }} /> : null}
+                </div>
               ) : null}
 
               {state === "cover" ? (

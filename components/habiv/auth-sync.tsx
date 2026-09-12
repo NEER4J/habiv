@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useShell } from "@/components/habiv/shell-context";
 
@@ -17,14 +17,16 @@ const CHANNEL = "habiv-auth";
  *   GitHub and email-link sign-ins (they finish on the server, so Supabase broadcasts nothing);
  * - the tab becoming visible or focused again, or coming back from the back/forward cache.
  * router.refresh() also clears the router's cache, so pages it cached or prefetched under the old
- * session (x-nextjs-stale-time is up to 5 minutes) aren't reused. The tab where you sign in or out
- * does a full page load instead (auth-modal.tsx, app-shell.tsx).
+ * session (x-nextjs-stale-time is up to 5 minutes) aren't reused. A password sign-in refreshes the
+ * same way in its own tab (auth-modal.tsx); sign-out does a full page load (app-shell.tsx).
  * Only a mismatch refreshes, so tabs settle instead of refreshing each other in a loop.
  */
 export function AuthSync() {
-  const { profile, sessionReady, modal, closeModal, authIntent } = useShell();
+  const { profile, sessionReady, modal, closeModal, authIntent, openWelcome } = useShell();
   const router = useRouter();
+  const pathname = usePathname();
   const uid = profile.id;
+  const handleSet = profile.handleSet;
   const uidRef = useRef(uid);
   const refreshing = useRef(false);
   const channel = useRef<BroadcastChannel | null>(null);
@@ -76,14 +78,20 @@ export function AuthSync() {
     };
   }, [sessionReady, router]);
 
-  // Signed in (here or in another tab) while this tab's sign-in box was open: close it and carry
-  // on to where the box was sending you, e.g. the MCP approval page.
+  // Signed in (here or in another tab) while this tab's sign-in box was open: swap it for profile
+  // setup when there is no handle yet, otherwise close it and carry on to where it was sending you,
+  // e.g. the MCP approval page.
   useEffect(() => {
     if (!sessionReady || !uid || modal !== "signin") return;
     if (authIntent.mode !== "signin" && authIntent.mode !== "signup") return;
+    const elsewhere = authIntent.next && authIntent.next !== pathname ? authIntent.next : null;
+    if (!handleSet) {
+      openWelcome("handle", elsewhere);
+      return;
+    }
     closeModal();
-    if (authIntent.next) router.push(authIntent.next);
-  }, [sessionReady, uid, modal, authIntent, closeModal, router]);
+    if (elsewhere) router.push(elsewhere);
+  }, [sessionReady, uid, handleSet, modal, authIntent, pathname, closeModal, openWelcome, router]);
 
   return null;
 }

@@ -7,85 +7,147 @@ import { spanFor } from "@/lib/habiv/bento";
 import { accentOf, art, best, chipsFor, fmt, matchesChip, shortModel, type Game } from "@/lib/habiv/games";
 import type { HomeData } from "@/lib/habiv/page-data";
 import { bpanel, chipStyle, mono, monoLabel, onArtBtn, pill, primaryBtn } from "@/lib/habiv/ui";
-import { ArtFrame, BentoGrid, BentoStack, CategoryCells, GameCard, GameCards, SkeletonCard } from "./game-card";
+import { ArtFrame, bentoRowMetrics, BentoGrid, BentoStack, CategoryCells, GameCard, GameCards, SkeletonCard } from "./game-card";
 import { thumbInputForGame } from "./generated-thumb";
 import { useShell } from "./shell-context";
 
 function HeroCell({ hero, onHover }: { hero: Game; onHover: (on: boolean) => void }) {
-  const { cols, isSaved, toggleSaved, openModal, setModalGameId } = useShell();
+  const { cols, light, isSaved, toggleSaved, openModal, setModalGameId } = useShell();
+  // Below desktop the hero is full width and its rows follow the 16:9 cover, so the art is never cropped.
+  // Phones and small tablets are too short for the text to sit on the art, so they stack the whole cover above it.
+  const fitted = cols !== 12;
+  const stacked = cols === 2 || cols === 6;
+  const cellRef = useRef<HTMLDivElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const [rows, setRows] = useState<number | null>(null);
+
+  useEffect(() => {
+    const cell = cellRef.current;
+    const body = bodyRef.current;
+    if (!fitted || !cell || !body) {
+      setRows(null);
+      return;
+    }
+    const { row, gap } = bentoRowMetrics(cols);
+    const toRows = (px: number) => (px + gap) / (row + gap);
+    const measure = () => {
+      const artH = (cell.clientWidth * 9) / 16;
+      const bodyH = body.offsetHeight;
+      // Round the art to the nearest row (a few px of crop at most), but always make room for all of the text.
+      setRows(stacked ? Math.ceil(toRows(artH + bodyH)) : Math.max(Math.round(toRows(artH)), Math.ceil(toRows(bodyH))));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(cell);
+    ro.observe(body);
+    return () => ro.disconnect();
+  }, [fitted, stacked, cols]);
+
+  const bigBtn: CSSProperties = { height: "42px", padding: "0 22px", borderRadius: "21px", fontSize: "14px" };
+  const sideBtn: CSSProperties = stacked ? { ...pill(), ...bigBtn } : onArtBtn;
+
   return (
     <div
+      ref={cellRef}
       onMouseEnter={() => onHover(true)}
       onMouseLeave={() => onHover(false)}
       style={{
         position: "relative",
-        gridColumn: `span ${spanFor(cols, [2, 6, 6, 9])}`,
-        gridRow: `span ${cols === 2 ? 7 : 9}`,
+        gridColumn: `span ${spanFor(cols, [2, 6, 8, 9])}`,
+        gridRow: `span ${rows ?? 9}`,
+        display: stacked ? "flex" : undefined,
+        flexDirection: "column",
         borderRadius: "18px",
         overflow: "hidden",
         background: "var(--well)",
-        color: "#f5f5f7",
+        color: stacked ? "var(--ink)" : "#f5f5f7",
       }}
     >
-      <ArtFrame src={art(hero, 1440)} fallback={thumbInputForGame(hero)} fallbackSize={{ w: 1280, h: 720 }} style={{ position: "absolute", inset: 0 }} />
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          // Darkens only the bottom-left corner behind the text, leaving the rest of the art clear.
-          background: "radial-gradient(ellipse 70% 90% at 0% 100%, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 35%, rgba(0,0,0,0) 75%)",
-        }}
+      <ArtFrame
+        src={art(hero, 1440)}
+        fallback={thumbInputForGame(hero)}
+        fallbackSize={{ w: 1280, h: 720 }}
+        style={stacked ? { width: "100%", aspectRatio: "16 / 9", flex: "0 0 auto" } : { position: "absolute", inset: 0 }}
       />
+      {stacked ? null : (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            // Darkens only the bottom-left corner behind the text, leaving the rest of the art clear.
+            background: "radial-gradient(ellipse 70% 90% at 0% 100%, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 35%, rgba(0,0,0,0) 75%)",
+          }}
+        />
+      )}
       <div
         style={{
           position: "relative",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "flex-end",
-          height: "100%",
+          // Stacked, any spare space from rounding up to whole rows splits evenly above and below the text.
+          justifyContent: stacked ? "center" : "flex-end",
+          flex: stacked ? 1 : undefined,
+          height: stacked ? undefined : "100%",
           maxWidth: "540px",
-          padding: "clamp(18px, 3.2%, 34px)",
         }}
       >
-        <div
-          style={{
-            fontFamily: mono,
-            fontSize: "10.5px",
-            letterSpacing: "0.16em",
-            textTransform: "uppercase",
-            color: accentOf(hero, 0.78, 0.15),
-          }}
-        >
-          Featured today
-        </div>
-        <div style={{ marginTop: "10px", fontSize: "clamp(24px, 3.2vw, 40px)", fontWeight: 600, letterSpacing: "-0.03em", lineHeight: 1.05 }}>
-          {hero.title}
-        </div>
-        <div style={{ marginTop: "10px", fontSize: "14px", lineHeight: 1.6, color: "rgba(255,255,255,0.86)", maxWidth: "44ch" }}>
-          {hero.desc}
-        </div>
-        <div style={{ marginTop: "12px", fontFamily: mono, fontSize: "11px", color: "rgba(255,255,255,0.72)" }}>
-          {hero.creator} · {fmt(hero.plays)} runs · best {best(hero)} · {shortModel(hero.model)}
-        </div>
-        <div style={{ display: "flex", gap: "8px", marginTop: "16px", flexWrap: "wrap" }}>
-          <Link
-            href={hero.url}
-            style={{ ...pill("primary"), height: "42px", padding: "0 22px", borderRadius: "21px", fontSize: "14px", background: "#ffffff", color: "#0f0f0f" }}
-          >
-            Play now
-          </Link>
-          <button onClick={() => toggleSaved(hero.id)} style={onArtBtn}>
-            {isSaved(hero.id) ? "Saved" : "Save"}
-          </button>
-          <button
-            onClick={() => {
-              setModalGameId(hero.id);
-              openModal("remix");
+        <div ref={bodyRef} style={{ padding: stacked ? "16px 18px 18px" : "clamp(18px, 3.2%, 34px)" }}>
+          <div
+            style={{
+              fontFamily: mono,
+              fontSize: "10.5px",
+              letterSpacing: "0.16em",
+              textTransform: "uppercase",
+              color: accentOf(hero, stacked && light ? 0.55 : 0.78, 0.15),
             }}
-            style={onArtBtn}
           >
-            Remix
-          </button>
+            Featured today
+          </div>
+          <div style={{ marginTop: stacked ? "8px" : "10px", fontSize: "clamp(24px, 3.2vw, 40px)", fontWeight: 600, letterSpacing: "-0.03em", lineHeight: 1.05 }}>
+            {hero.title}
+          </div>
+          <div
+            style={{
+              marginTop: stacked ? "6px" : "10px",
+              fontSize: "14px",
+              lineHeight: 1.6,
+              color: stacked ? "var(--ink-4)" : "rgba(255,255,255,0.86)",
+              maxWidth: "44ch",
+              ...(stacked ? { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" } : null),
+            }}
+          >
+            {hero.desc}
+          </div>
+          <div
+            style={{
+              marginTop: stacked ? "8px" : "12px",
+              fontFamily: mono,
+              fontSize: "11px",
+              color: stacked ? "var(--ink-5)" : "rgba(255,255,255,0.72)",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {hero.creator} · {fmt(hero.plays)} runs · best {best(hero)} · {shortModel(hero.model)}
+          </div>
+          <div style={{ display: "flex", gap: "8px", marginTop: stacked ? "14px" : "16px", flexWrap: "wrap" }}>
+            <Link href={hero.url} style={{ ...pill("primary"), ...bigBtn, ...(stacked ? null : { background: "#ffffff", color: "#0f0f0f" }) }}>
+              Play now
+            </Link>
+            <button onClick={() => toggleSaved(hero.id)} style={sideBtn}>
+              {isSaved(hero.id) ? "Saved" : "Save"}
+            </button>
+            <button
+              onClick={() => {
+                setModalGameId(hero.id);
+                openModal("remix");
+              }}
+              style={sideBtn}
+            >
+              Remix
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -126,7 +188,8 @@ function FeaturedQueue({
       <div
         style={{
           ...bpanel,
-          gridColumn: `span ${spanFor(cols, [2, 6, 2, 3])}`,
+          // Full width wherever the hero is, so the queue lines up in whole rows beneath it.
+          gridColumn: `span ${spanFor(cols, [2, 6, 8, 3])}`,
           gridRow: "span 1",
           display: "flex",
           alignItems: "center",
@@ -154,7 +217,7 @@ function FeaturedQueue({
             position: "relative",
             // Keeps the progress fill (z-index -1) above the card background but under its content.
             isolation: "isolate",
-            gridColumn: `span ${spanFor(cols, [1, 2, 2, 3])}`,
+            gridColumn: `span ${spanFor(cols, [1, 3, 2, 3])}`,
             // Phones stack the 16:9 art over the title, which needs the extra row.
             gridRow: `span ${cols === 2 ? 3 : 2}`,
             alignSelf: "stretch",

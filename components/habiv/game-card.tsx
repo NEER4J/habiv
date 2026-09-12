@@ -227,16 +227,22 @@ export function GameCard({ game: g, showModel = true, showCreator = true, showSt
 }
 
 /** The auto-row bento grid shared by the browse pages. */
+/** Row height and gap of BentoGrid, in px, for cells that size their row span to their content. */
+export function bentoRowMetrics(cols: number) {
+  return cols === 2 ? { row: 54, gap: 10 } : { row: 56, gap: 12 };
+}
+
 export function BentoGrid({ children }: { children: ReactNode }) {
   const { cols } = useShell();
+  const { row, gap } = bentoRowMetrics(cols);
   return (
     <div
       style={{
         display: "grid",
         gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-        gridAutoRows: cols === 2 ? "54px" : "56px",
+        gridAutoRows: `${row}px`,
         gridAutoFlow: "dense",
-        gap: cols === 2 ? "10px" : "12px",
+        gap: `${gap}px`,
       }}
     >
       {children}

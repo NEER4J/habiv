@@ -82,10 +82,10 @@ export async function loadHome(): Promise<HomeData> {
   const board = daily ? await getLeaderboard(daily.game.id, "daily", "daily", 5) : null;
   const sections: Section[] = [
     { key: "trending", title: "Trending right now", note: "activity in the last 24 hours", games: trending.items.map(fromFeedGame) },
+    { key: "new", title: "New this week", note: "fresh builds", games: newest.items.map(fromFeedGame) },
     { key: "quick", title: "Quick play", note: "finish a run in under 45 seconds", games: quickPlay },
     { key: "plays", title: "Most played", note: "by lifetime runs", games: plays.items.map(fromFeedGame) },
     { key: "remixes", title: "Most remixed", note: "originals and their forks", games: remixes.items.map(fromFeedGame) },
-    { key: "new", title: "New this week", note: "fresh builds", games: newest.items.map(fromFeedGame) },
     { key: "featured", title: "Staff picks", note: "chosen by hand", games: featuredGames },
   ].filter((s) => s.games.length > 0);
   return {

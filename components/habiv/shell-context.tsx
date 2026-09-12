@@ -18,9 +18,11 @@ import { avatarSeedOf } from "@/lib/site";
 import type { Game } from "@/lib/habiv/games";
 
 /** "shareScore" is the share modal opened on the viewer's own result instead of the game. */
-export type ModalKind = "signin" | "share" | "shareScore" | "remix" | "report" | "notif" | null;
+export type ModalKind = "signin" | "welcome" | "share" | "shareScore" | "remix" | "report" | "notif" | null;
 export type AuthMode = "signin" | "signup" | "reset" | "newpassword";
 export type AuthIntent = { mode: AuthMode; next: string | null; error: string | null };
+/** Profile setup popup: the full username + avatar flow, or just the avatar step. */
+export type WelcomeIntent = { step: "handle" | "avatar"; next: string | null; suggest: string };
 export type { Theme };
 
 /** The signed-in user as the shell sees them. `id` is null for guests. */
@@ -107,6 +109,9 @@ type ShellValue = {
   /** Opens the auth modal in a given mode; `next` is where to go after signing in. */
   openAuth: (mode?: AuthMode, next?: string | null) => void;
   authIntent: AuthIntent;
+  /** Opens the profile setup popup; "avatar" skips straight to the avatar picker. */
+  openWelcome: (step?: WelcomeIntent["step"], next?: string | null) => void;
+  welcomeIntent: WelcomeIntent;
   unread: number;
   setUnread: (n: number) => void;
   /** Seed for the generated avatar when the user has no image. */
@@ -147,6 +152,7 @@ export function ShellProvider({ children }: { children: ReactNode }) {
   const searchParams = useSearchParams();
   const [vw, setVw] = useState(1440);
   const [authIntent, setAuthIntent] = useState<AuthIntent>({ mode: "signin", next: null, error: null });
+  const [welcomeIntent, setWelcomeIntent] = useState<WelcomeIntent>({ step: "handle", next: null, suggest: "" });
   // Separate flags so the drawer always starts shut (no open-then-slide-away flash after hydration).
   const [railOpen, setRailOpen] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -197,19 +203,24 @@ export function ShellProvider({ children }: { children: ReactNode }) {
     setModal(null);
   }, [pathname]);
 
-  // ?auth=signin|signup|reset|newpassword&next=/path&error=... opens the modal (used by redirects and email links).
+  // ?auth=signin|signup|reset|newpassword&next=/path&error=... opens the auth modal (used by redirects and email links);
+  // ?welcome=1&next=/path&suggest=name opens profile setup (where sign-in lands anyone without a handle).
   useEffect(() => {
     const auth = searchParams?.get("auth");
-    if (!auth) return;
-    const mode: AuthMode = auth === "signup" || auth === "reset" || auth === "newpassword" ? auth : "signin";
-    const next = searchParams.get("next");
-    const error = searchParams.get("error");
-    setAuthIntent({ mode, next: next && next.startsWith("/") ? next : null, error });
-    setModal("signin");
+    const welcome = searchParams?.get("welcome");
+    if (!auth && !welcome) return;
+    const nextParam = searchParams.get("next");
+    const next = nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : null;
+    if (auth) {
+      const mode: AuthMode = auth === "signup" || auth === "reset" || auth === "newpassword" ? auth : "signin";
+      setAuthIntent({ mode, next, error: searchParams.get("error") });
+      setModal("signin");
+    } else {
+      setWelcomeIntent({ step: welcome === "avatar" ? "avatar" : "handle", next, suggest: searchParams.get("suggest") ?? "" });
+      setModal("welcome");
+    }
     const rest = new URLSearchParams(searchParams.toString());
-    rest.delete("auth");
-    rest.delete("next");
-    rest.delete("error");
+    for (const k of ["auth", "welcome", "next", "error", "suggest"]) rest.delete(k);
     const qs = rest.toString();
     router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
   }, [searchParams, pathname, router]);
@@ -259,6 +270,11 @@ export function ShellProvider({ children }: { children: ReactNode }) {
   const openAuth = useCallback((mode: AuthMode = "signin", next: string | null = null) => {
     setAuthIntent({ mode, next, error: null });
     setModal("signin");
+  }, []);
+
+  const openWelcome = useCallback((step: WelcomeIntent["step"] = "handle", next: string | null = null) => {
+    setWelcomeIntent({ step, next, suggest: "" });
+    setModal("welcome");
   }, []);
 
   const requireAuth = useCallback(() => {
@@ -332,6 +348,8 @@ export function ShellProvider({ children }: { children: ReactNode }) {
       requireAuth,
       openAuth,
       authIntent,
+      openWelcome,
+      welcomeIntent,
       unread,
       setUnread,
       avatarSeed,
@@ -340,7 +358,7 @@ export function ShellProvider({ children }: { children: ReactNode }) {
       builtThisWeek,
       totalPlays,
     }),
-    [vw, mobile, tablet, drawerMode, collapsed, drawerOpen, theme, theatre, searchOpen, closeSearch, query, modal, modalGameId, toast, showToast, savedIds, toggleSaved, profile, signedIn, sessionReady, setSession, requireAuth, openAuth, authIntent, unread, avatarSeed, pinned, builtThisWeek, totalPlays],
+    [vw, mobile, tablet, drawerMode, collapsed, drawerOpen, theme, theatre, searchOpen, closeSearch, query, modal, modalGameId, toast, showToast, savedIds, toggleSaved, profile, signedIn, sessionReady, setSession, requireAuth, openAuth, authIntent, openWelcome, welcomeIntent, unread, avatarSeed, pinned, builtThisWeek, totalPlays],
   );
 
   return <ShellContext.Provider value={value}>{children}</ShellContext.Provider>;

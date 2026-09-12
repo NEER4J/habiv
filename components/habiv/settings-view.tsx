@@ -123,7 +123,7 @@ function copyText(text: string) {
 
 function AccountPanel({ data }: { data: SettingsData }) {
   const router = useRouter();
-  const { profile, setProfile, showToast } = useShell();
+  const { profile, setProfile, showToast, openWelcome } = useShell();
   const own = data.profile;
 
   // Baseline the form compares against; updated after a successful save.
@@ -138,6 +138,10 @@ function AccountPanel({ data }: { data: SettingsData }) {
   const [bio, setBio] = useState(saved.bio);
   const [pronouns, setPronouns] = useState(saved.pronouns);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(own.avatarUrl);
+  // The avatar popup saves through the shell profile; show its pick here straight away.
+  useEffect(() => {
+    if (profile.avatarUrl) setAvatarUrl(profile.avatarUrl);
+  }, [profile.avatarUrl]);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [handleCheck, setHandleCheck] = useState<{ ok: boolean; label: string }>({ ok: true, label: "Current handle" });
@@ -260,9 +264,9 @@ function AccountPanel({ data }: { data: SettingsData }) {
             e.target.value = "";
           }}
         />
-        <Link href="/onboarding?step=avatar&next=/settings" style={chipBtn}>
+        <button onClick={() => openWelcome("avatar")} style={chipBtn}>
           Choose avatar
-        </Link>
+        </button>
         <button onClick={() => fileRef.current?.click()} disabled={uploading} style={uploading ? { ...chipBtn, opacity: 0.6, cursor: "wait" } : chipBtn}>
           {uploading ? "Uploading…" : "Upload photo"}
         </button>

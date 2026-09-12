@@ -13,19 +13,21 @@ import { fromFeedGame } from "@/lib/habiv/games";
  */
 export async function SessionBridge() {
   const supabase = await createClient();
-  const [own, featured, builtThisWeek, totalPlays] = await Promise.all([
-    getOwnProfile(supabase),
+  // The token is checked locally (asymmetric keys), so the user id is known before any query and
+  // the profile, saves and unread count load in one round trip instead of two.
+  const { data: claims } = await supabase.auth.getClaims();
+  const uid = claims?.claims?.sub ?? null;
+  const [own, featured, builtThisWeek, totalPlays, saves, unread] = await Promise.all([
+    uid ? getOwnProfile(supabase) : null,
     getFeed({ sort: "featured", limit: 5 }),
     getBuiltThisWeek(),
     getTotalPlays(),
+    uid ? supabase.from("saves").select("game_id").eq("user_id", uid).order("created_at", { ascending: false }).limit(500).then((r) => r.data) : null,
+    uid ? unreadCount(supabase) : 0,
   ]);
   const pinned = featured.items.map(fromFeedGame);
   let session: ShellSession = { profile: null, savedIds: [], unread: 0, pinned, builtThisWeek, totalPlays };
   if (own) {
-    const [{ data: saves }, unread] = await Promise.all([
-      supabase.from("saves").select("game_id").eq("user_id", own.id).order("created_at", { ascending: false }).limit(500),
-      unreadCount(supabase),
-    ]);
     session = {
       profile: {
         id: own.id,

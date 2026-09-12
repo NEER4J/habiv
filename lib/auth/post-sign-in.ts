@@ -1,6 +1,7 @@
 import "server-only";
 import type { SupabaseClient, User } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
+import { welcomePath } from "@/lib/auth/protected";
 
 /** Only same-origin paths are honoured as a post-login destination. */
 export function safeNextPath(next: string | null | undefined, fallback = "/"): string {
@@ -11,8 +12,8 @@ export function safeNextPath(next: string | null | undefined, fallback = "/"): s
 }
 
 /**
- * Where to send a user right after signing in: the handle picker if they have not chosen
- * one yet, otherwise the requested `next` path.
+ * Where to send a user right after signing in: the requested `next` path, with the profile-setup
+ * popup open over it if they have not chosen a handle yet.
  */
 export async function resolvePostSignInPath(
   supabase: SupabaseClient<Database>,
@@ -32,10 +33,8 @@ export async function resolvePostSignInPath(
 
   if (profile?.handle_set) return target;
 
-  const params = new URLSearchParams({ next: target });
   const meta = user?.user_metadata as Record<string, unknown> | undefined;
   const provider = (user?.app_metadata as Record<string, unknown> | undefined)?.provider;
   const suggested = provider === "github" ? meta?.user_name ?? meta?.preferred_username : undefined;
-  if (typeof suggested === "string" && suggested) params.set("suggest", suggested);
-  return `/onboarding?${params.toString()}`;
+  return welcomePath(target, typeof suggested === "string" ? suggested : null);
 }

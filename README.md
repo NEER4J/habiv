@@ -32,7 +32,6 @@ The UI is a port of the **Habiv Bento** Claude Design project: floating panels o
 | `/profile` | Public creator profile |
 | `/publish` | Five-step publish flow: source → automatic checks → details → store art → review with public / unlisted / draft visibility |
 | `/settings` | Account, API & MCP tokens, playback toggles, safety |
-| `/onboarding` | Player profile setup — handle, generated avatar, done (`?step=avatar` jumps to the avatar picker) |
 | `/coming-soon` | The previous one-screen launch page |
 | `/auth/*`, `/protected` | Supabase starter auth flow |
 
