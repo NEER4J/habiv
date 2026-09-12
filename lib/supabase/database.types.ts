@@ -349,6 +349,53 @@ export type Database = {
           },
         ]
       }
+      dislikes: {
+        Row: {
+          created_at: string
+          game_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          game_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          game_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dislikes_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "game_feed_v"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dislikes_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "games"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dislikes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "game_feed_v"
+            referencedColumns: ["creator_id"]
+          },
+          {
+            foreignKeyName: "dislikes_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string
@@ -476,6 +523,7 @@ export type Database = {
           best_score: number | null
           comments: number
           completions: number
+          dislikes: number
           game_id: string
           hot_score: number
           likes: number
@@ -491,6 +539,7 @@ export type Database = {
           best_score?: number | null
           comments?: number
           completions?: number
+          dislikes?: number
           game_id: string
           hot_score?: number
           likes?: number
@@ -506,6 +555,7 @@ export type Database = {
           best_score?: number | null
           comments?: number
           completions?: number
+          dislikes?: number
           game_id?: string
           hot_score?: number
           likes?: number

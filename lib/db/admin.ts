@@ -68,7 +68,7 @@ export async function listVersions(ctx: AdminContext, opts: { status?: string | 
 export type AdminGame = {
   id: string; shortId: string; slug: string; title: string; status: string; hiddenReason: string | null; category: string; coverUrl: string | null;
   featuredAt: string | null; featuredRank: number | null; publishedAt: string | null; createdAt: string; updatedAt: string;
-  currentVersion: number | null; plays: number; likes: number; remixes: number; comments: number;
+  currentVersion: number | null; plays: number; likes: number; dislikes: number; remixes: number; comments: number;
   creator: { id: string; handle: string; displayName: string }; url: string;
 };
 
@@ -84,7 +84,7 @@ export async function listGamesAdmin(ctx: AdminContext, opts: { status?: string 
   const ids = list.map((g) => g.id);
   const creatorIds = Array.from(new Set(list.map((g) => g.creator_id)));
   const [{ data: stats }, { data: profiles }, { data: versions }] = await Promise.all([
-    ids.length ? ctx.admin.from("game_stats").select("game_id, plays, likes, remixes, comments").in("game_id", ids) : Promise.resolve({ data: [] as Pick<Tables<"game_stats">, "game_id" | "plays" | "likes" | "remixes" | "comments">[] }),
+    ids.length ? ctx.admin.from("game_stats").select("game_id, plays, likes, dislikes, remixes, comments").in("game_id", ids) : Promise.resolve({ data: [] as Pick<Tables<"game_stats">, "game_id" | "plays" | "likes" | "dislikes" | "remixes" | "comments">[] }),
     creatorIds.length ? ctx.admin.from("profiles").select("id, handle, display_name").in("id", creatorIds) : Promise.resolve({ data: [] as Pick<Tables<"profiles">, "id" | "handle" | "display_name">[] }),
     ids.length ? ctx.admin.from("game_versions").select("id, version").in("id", list.map((g) => g.current_version_id).filter((x): x is string => !!x)) : Promise.resolve({ data: [] as { id: string; version: number }[] }),
   ]);
@@ -98,7 +98,7 @@ export async function listGamesAdmin(ctx: AdminContext, opts: { status?: string 
       id: g.id, shortId: g.short_id, slug: g.slug, title: g.title, status: g.status, hiddenReason: g.hidden_reason, category: g.category,
       coverUrl: cdnUrl(g.cover_path), featuredAt: g.featured_at, featuredRank: g.featured_rank, publishedAt: g.published_at, createdAt: g.created_at, updatedAt: g.updated_at,
       currentVersion: g.current_version_id ? verMap.get(g.current_version_id) ?? null : null,
-      plays: s?.plays ?? 0, likes: s?.likes ?? 0, remixes: s?.remixes ?? 0, comments: s?.comments ?? 0,
+      plays: s?.plays ?? 0, likes: s?.likes ?? 0, dislikes: s?.dislikes ?? 0, remixes: s?.remixes ?? 0, comments: s?.comments ?? 0,
       creator: { id: g.creator_id, handle: p?.handle ?? "", displayName: p?.display_name ?? p?.handle ?? "" },
       url: `/@${p?.handle ?? ""}/${g.slug}`,
     };

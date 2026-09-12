@@ -129,6 +129,7 @@ export type WatchViewer = {
   handle: string | null;
   playerId: string | null;
   liked: boolean;
+  disliked: boolean;
   saved: boolean;
   following: boolean;
   isCreator: boolean;
@@ -184,6 +185,7 @@ export async function loadWatch(handle: string, slug: string, versionNo?: number
       handle: own?.handle ?? null,
       playerId,
       liked: viewerState.liked.has(detail.id),
+      disliked: viewerState.disliked.has(detail.id),
       saved: viewerState.saved.has(detail.id),
       following: viewerState.following.has(detail.creator.id),
       isCreator: own?.id === detail.creator.id,

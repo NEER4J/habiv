@@ -25,6 +25,20 @@ export async function toggleLike(gameId: string): Promise<Toggle> {
   return { ok: true, active: !existing, count: s?.likes ?? 0 };
 }
 
+/** Dislikes are private, so `count` is the game's like count, which disliking can lower. */
+export async function toggleDislike(gameId: string): Promise<Toggle> {
+  const { supabase, uid: me } = await uid();
+  if (!me) return { ok: false, code: "auth", error: "Sign in to rate games." };
+  const { data: existing } = await supabase.from("dislikes").select("game_id").eq("user_id", me).eq("game_id", gameId).maybeSingle();
+  const { error } = existing
+    ? await supabase.from("dislikes").delete().eq("user_id", me).eq("game_id", gameId)
+    : await supabase.from("dislikes").insert({ user_id: me, game_id: gameId });
+  if (error) return { ok: false, code: "unknown", error: error.message };
+  const { data: s } = await supabase.from("game_stats").select("likes").eq("game_id", gameId).maybeSingle();
+  revalidateTag(gameTag(gameId), "max");
+  return { ok: true, active: !existing, count: s?.likes ?? 0 };
+}
+
 export async function toggleSave(gameId: string): Promise<Toggle> {
   const { supabase, uid: me } = await uid();
   if (!me) return { ok: false, code: "auth", error: "Sign in to save games." };

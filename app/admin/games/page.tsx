@@ -55,7 +55,7 @@ async function Games({ searchParams }: { searchParams: SearchParams }) {
         <Table minWidth={1180}>
           <thead>
             <tr>
-              <Th></Th><Th>Title</Th><Th>Creator</Th><Th>Status</Th><Th>Category</Th><Th>Plays</Th><Th>Likes</Th><Th>Remixes</Th><Th>Comments</Th><Th>Featured</Th><Th>Published</Th><Th>Actions</Th>
+              <Th></Th><Th>Title</Th><Th>Creator</Th><Th>Status</Th><Th>Category</Th><Th>Plays</Th><Th>Likes</Th><Th>Dislikes</Th><Th>Remixes</Th><Th>Comments</Th><Th>Featured</Th><Th>Published</Th><Th>Actions</Th>
             </tr>
           </thead>
           <tbody>
@@ -79,6 +79,7 @@ async function Games({ searchParams }: { searchParams: SearchParams }) {
                 <Td><CategorySelect gameId={g.id} value={g.category} categories={categories} /></Td>
                 <Td style={{ fontFamily: mono }}>{fmt(g.plays)}</Td>
                 <Td style={{ fontFamily: mono }}>{fmt(g.likes)}</Td>
+                <Td style={{ fontFamily: mono }}>{fmt(g.dislikes)}</Td>
                 <Td style={{ fontFamily: mono }}>{fmt(g.remixes)}</Td>
                 <Td style={{ fontFamily: mono }}>{fmt(g.comments)}</Td>
                 <Td><FeaturedControl gameId={g.id} featured={g.featuredAt !== null} rank={g.featuredRank} /></Td>

@@ -9,7 +9,7 @@ import type { WatchData } from "@/lib/habiv/page-data";
 import { gameFrameSrc } from "@/lib/bridge/parent";
 import { mountBridgeHost, type BridgeHost, type HostEvent } from "@/lib/player/bridge-host";
 import { getCollector } from "@/lib/analytics/collector";
-import { toggleFollow, toggleLike } from "@/lib/actions/social";
+import { toggleDislike, toggleFollow, toggleLike } from "@/lib/actions/social";
 import { deleteComment, pinComment, postComment, toggleCommentLike } from "@/lib/actions/comments";
 import { refreshLeaderboard } from "@/lib/actions/leaderboard";
 import { createClient } from "@/lib/supabase/client";
@@ -163,6 +163,7 @@ export function WatchView({ data }: { data: WatchData }) {
   // Social
   const [liked, setLiked] = useState(viewer.liked);
   const [likes, setLikes] = useState(game.likes);
+  const [disliked, setDisliked] = useState(viewer.disliked);
   const [following, setFollowing] = useState(viewer.following);
   const [followers, setFollowers] = useState(game.followers);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -259,6 +260,7 @@ export function WatchView({ data }: { data: WatchData }) {
     setCopied(false);
     setLiked(viewer.liked);
     setLikes(game.likes);
+    setDisliked(viewer.disliked);
     setFollowing(viewer.following);
     setFollowers(game.followers);
     setRailFilter("all");
@@ -272,7 +274,7 @@ export function WatchView({ data }: { data: WatchData }) {
     setReplyTo(null);
     setReplyDraft("");
     setRepliesOpen(null);
-  }, [game.id, game.likes, game.followers, game.comments, viewer.liked, viewer.following, viewer.rank, data.comments.items, data.leaderboard, data.nowPlaying, data.queue, data.queueNext]);
+  }, [game.id, game.likes, game.followers, game.comments, viewer.liked, viewer.disliked, viewer.following, viewer.rank, data.comments.items, data.leaderboard, data.nowPlaying, data.queue, data.queueNext]);
 
   useEffect(
     () => () => {
@@ -593,21 +595,52 @@ export function WatchView({ data }: { data: WatchData }) {
     openModal("report");
   };
 
+  // A like and a dislike cancel each other out; the server clears the other one too.
   const onLike = () => {
     if (!requireAuth()) return;
     const next = !liked;
+    const wasDisliked = disliked;
     setLiked(next);
     setLikes((n) => Math.max(0, n + (next ? 1 : -1)));
+    if (next) setDisliked(false);
     void toggleLike(game.id).then((res) => {
       if (!res.ok) {
         setLiked(!next);
         setLikes((n) => Math.max(0, n + (next ? -1 : 1)));
+        setDisliked(wasDisliked);
         showToast(res.error);
         if (res.code === "auth") requireAuth();
         return;
       }
       setLiked(res.active);
       setLikes(res.count);
+      if (res.active) setDisliked(false);
+    });
+  };
+
+  const onDislike = () => {
+    if (!requireAuth()) return;
+    const next = !disliked;
+    const wasLiked = liked;
+    setDisliked(next);
+    if (next && wasLiked) {
+      setLiked(false);
+      setLikes((n) => Math.max(0, n - 1));
+    }
+    void toggleDislike(game.id).then((res) => {
+      if (!res.ok) {
+        setDisliked(!next);
+        if (next && wasLiked) {
+          setLiked(true);
+          setLikes((n) => n + 1);
+        }
+        showToast(res.error);
+        if (res.code === "auth") requireAuth();
+        return;
+      }
+      setDisliked(res.active);
+      setLikes(res.count);
+      if (res.active) setLiked(false);
     });
   };
 
@@ -1299,6 +1332,28 @@ export function WatchView({ data }: { data: WatchData }) {
                     }}
                   >
                     ♥ {fmt(likes)}
+                  </button>
+                  <div style={{ width: "1px", height: "22px", background: "var(--divider)" }} />
+                  {/* No public count, like YouTube: only the viewer sees their own dislike. */}
+                  <button
+                    onClick={onDislike}
+                    aria-pressed={disliked}
+                    aria-label="Dislike"
+                    title="I don't like this"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      height: "36px",
+                      padding: mobile ? "0 10px" : "0 13px",
+                      background: "transparent",
+                      color: disliked ? "var(--ink)" : "var(--ink-3)",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill={disliked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M17 14V2" />
+                      <path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z" />
+                    </svg>
                   </button>
                   <div style={{ width: "1px", height: "22px", background: "var(--divider)" }} />
                   <button
