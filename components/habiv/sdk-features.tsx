@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import type { SdkFeature, SdkInfo } from "@/lib/contracts/ingest";
 import { SDK_FEATURES, hasScores } from "@/lib/habiv/sdk";
-import { detailsRule } from "@/lib/habiv/details-file";
+import { exampleDetails } from "@/lib/habiv/details-file";
+import { CONTROL_ACTION_MAX, CONTROL_KEY_MAX, DESCRIPTION_MAX, MAX_CONTROL_ROWS, MAX_TAGS, TOUCH_HINT_MAX } from "@/lib/habiv/game-details";
 import { chipBtn, chipStyle, fieldLabelStyle, mono, primaryBtn } from "@/lib/habiv/ui";
 import { siteUrl } from "@/lib/site";
 
@@ -149,17 +150,50 @@ export function LeaderboardSettings({
 
 /* ---------- "have your AI add it" ---------- */
 
-/** Scanned features, pause and sound (which the scan does not report on), and the habiv.json details file. */
-type PromptPart = SdkFeature | "controls" | "details";
+/** Scanned features plus pause and sound, which the scan does not report on. Game details are always part of the prompt. */
+type PromptPart = SdkFeature | "controls";
 
 const PROMPT_PARTS: { id: PromptPart; label: string; unlocks: string }[] = [
   ...SDK_FEATURES,
   { id: "controls", label: "Pause & sound", unlocks: "the player page's pause and sound buttons" },
-  { id: "details", label: "Game details", unlocks: "a details form that fills itself in (habiv.json)" },
 ];
 
-/** The instructions a creator pastes into the AI that made the game. Mirrors /docs/sdk. */
-export function buildSdkPrompt(parts: Set<PromptPart>, title: string, sort: "desc" | "asc"): string {
+const CATEGORY_LIST = "arcade, puzzle, reaction, ambient, rhythm, racing, cozy, horror, experimental, other";
+
+/**
+ * The habiv.json part of the prompt: the AI reads the game and writes its details, so the upload form
+ * (and the game page's How to play) fill themselves in. Fields mirror lib/habiv/details-file.ts.
+ */
+function detailsSection(title: string, changelog: string, hasDetails: boolean | undefined): string[] {
+  const example = JSON.stringify({ ...exampleDetails, changelog: "Adds scores and a leaderboard" }, null, 2);
+  return [
+    "",
+    "Also describe the game for its Habiv page, so the upload form fills itself in and I don't have to type anything:",
+    hasDetails
+      ? "- The game already has a habiv.json (or a <script type=\"application/habiv+json\"> block). Update that one; do not add a second."
+      : "- Put a habiv.json file at the root of the folder. For a single HTML file, put the same JSON inside <script type=\"application/habiv+json\"> in the <head> instead.",
+    "- Read the game's code to fill it in, so every field matches what the game really does:",
+    `  - controls: every key, mouse or touch input the game uses, as up to ${MAX_CONTROL_ROWS} { "key": "Space", "action": "Jump" } rows (key up to ${CONTROL_KEY_MAX} characters, action up to ${CONTROL_ACTION_MAX}), plus "touch": a one-line hint for phones (up to ${TOUCH_HINT_MAX}).`,
+    `  - title${title.trim() ? ` (keep "${title.trim()}")` : ""}; tagline: one line for game cards, up to 140 characters; description: for players, not developers: the goal, how a round goes, tips. Plain text, line breaks allowed, up to ${DESCRIPTION_MAX.toLocaleString()} characters.`,
+    `  - categories: 1 to 3 of ${CATEGORY_LIST}, main one first. tags: up to ${MAX_TAGS} lower-case words, like "one button" or "pixel art".`,
+    "  - orientation: portrait, landscape or any. duration_sec: how long a typical round lasts in seconds (3600 if it never ends).",
+    "  - model and agent: the AI model and tool you are, e.g. \"Claude Sonnet 4.5\" and \"Claude Code\". prompt: the brief I originally gave you, if you have it; otherwise leave it out.",
+    `  - changelog: one line on what this version changes, e.g. "${changelog}".`,
+    "- Only valid JSON: no comments, no trailing commas.",
+    `Example (for a different game; format: ${siteUrl}/docs/details):`,
+    example,
+  ];
+}
+
+/** "Adds scores, runs and levels" from the picked parts, as a starting changelog for the new version. */
+function suggestedChangelog(parts: Set<PromptPart>): string {
+  const names = PROMPT_PARTS.filter((p) => parts.has(p.id)).map((p) => p.label.toLowerCase());
+  if (!names.length) return "Adds game details";
+  return `Adds ${names.length > 1 ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}` : names[0]}`;
+}
+
+/** The instructions a creator pastes into the AI that made the game. Mirrors /docs/sdk and /docs/details. */
+export function buildSdkPrompt(parts: Set<PromptPart>, title: string, sort: "desc" | "asc", hasDetails?: boolean): string {
   const name = title.trim() ? `my game "${title.trim()}"` : "my game";
   const lines = [
     `Update ${name} so it reports to Habiv, the site it is published on. Keep the gameplay, look and files exactly as they are; only add what is listed below.`,
@@ -191,7 +225,7 @@ export function buildSdkPrompt(parts: Set<PromptPart>, title: string, sort: "des
   if (parts.has("controls")) {
     lines.push('- Pause and sound: `window.Habiv?.on("pause", pauseGame)`, `window.Habiv?.on("resume", resumeGame)` and `window.Habiv?.on("mute", (msg) => setMuted(msg.on))`. The game starts muted.');
   }
-  if (parts.has("details")) lines.push(detailsRule, "  Read the game's code to get the controls right, and write the description for players, not developers.");
+  lines.push(...detailsSection(title, suggestedChangelog(parts), hasDetails));
   lines.push("", `Reply with the complete updated files, packaged the same way as before (one index.html, or the whole folder: Habiv's upload page takes folders). Full reference: ${siteUrl}/docs/sdk`);
   return lines.join("\n");
 }
@@ -253,12 +287,11 @@ export function SdkUpgradePrompt({
     onOpenChange?.(v);
     if (openProp === undefined) setOpenState(v);
   };
-  const has = (id: PromptPart) => (id === "details" ? !!hasDetails : id !== "controls" && !!sdk?.features.includes(id as SdkFeature));
+  const has = (id: PromptPart) => id !== "controls" && !!sdk?.features.includes(id);
   // Scores and runs first: they are what most games are missing and what the game page shows.
   const [picked, setPicked] = useState<Set<PromptPart>>(() => {
     const core = (["scores", "runs"] as PromptPart[]).filter((id) => !has(id));
-    const start: PromptPart[] = core.length ? core : SDK_FEATURES.map((f) => f.id).filter((id) => !has(id));
-    return new Set(hasDetails === false ? [...start, "details"] : start);
+    return new Set(core.length ? core : SDK_FEATURES.map((f) => f.id).filter((id) => !has(id)));
   });
   const [copied, setCopied] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
@@ -270,7 +303,7 @@ export function SdkUpgradePrompt({
 
   if (!sdk || (SDK_FEATURES.every((f) => sdk.features.includes(f.id)) && hasDetails !== false)) return null;
 
-  const text = buildSdkPrompt(picked, title, sort);
+  const text = buildSdkPrompt(picked, title, sort, hasDetails);
   const toggle = (id: PromptPart) =>
     setPicked((s) => {
       const next = new Set(s);
@@ -303,9 +336,10 @@ export function SdkUpgradePrompt({
     <div ref={boxRef} style={{ marginTop: "14px", padding: "14px 16px", borderRadius: "12px", background: "var(--chip)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
         <div style={{ flex: "1 1 220px", minWidth: 0 }}>
-          <div style={{ fontSize: "14px", fontWeight: 600 }}>{hasScores(sdk) ? "Add levels, saves and more" : "Add scores and a leaderboard"}</div>
+          <div style={{ fontSize: "14px", fontWeight: 600 }}>{SDK_FEATURES.every((f) => sdk.features.includes(f.id)) ? "Add game details" : hasScores(sdk) ? "Add levels, saves and more" : "Add scores and a leaderboard"}</div>
           <div style={{ marginTop: "4px", fontSize: "12.5px", lineHeight: 1.5, color: "var(--ink-4)" }}>
-            Your game works as it is. Ask the AI that built it to add Habiv calls, then upload the new build. It takes about a minute.
+            Your game works as it is. Ask the AI that built it to add Habiv calls and write the game&apos;s details (controls, description, categories), then
+            upload the new build. The upload form fills itself in.
           </div>
         </div>
         <button type="button" onClick={() => setOpen(!open)} style={open ? chipBtn : primaryBtn}>
@@ -330,8 +364,15 @@ export function SdkUpgradePrompt({
                   </button>
                 ),
               )}
+              <span title="Controls, description, categories and more, written into habiv.json" style={chipStyle(true)}>
+                ✓ Game details · always
+              </span>
             </div>
-            <div style={note}>{chosen.length ? `Unlocks ${chosen.map((p) => p.unlocks).join("; ")}.` : "Pick at least one."}</div>
+            <div style={note}>
+              {chosen.length ? `Unlocks ${chosen.map((p) => p.unlocks).join("; ")}. ` : ""}
+              Game details are always included: the AI writes the controls, description, categories and the rest into habiv.json, so the upload form fills
+              itself in.
+            </div>
           </div>
 
           <div>
@@ -355,7 +396,7 @@ export function SdkUpgradePrompt({
             >
               {text}
             </pre>
-            <button type="button" onClick={() => void copy()} disabled={!chosen.length} style={{ ...primaryBtn, marginTop: "10px", opacity: chosen.length ? 1 : 0.45 }}>
+            <button type="button" onClick={() => void copy()} style={{ ...primaryBtn, marginTop: "10px" }}>
               {copied ? "Copied ✓" : "Copy prompt"}
             </button>
           </div>
