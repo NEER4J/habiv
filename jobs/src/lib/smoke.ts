@@ -60,7 +60,12 @@ export async function smokeTest(versionId: string, opts: { timeoutMs?: number } 
       // Nudge games that wait for input (click-to-start) so the capture is not a blank cover.
       try { await page.locator("#f").click({ position: { x: Math.floor(w / 2), y: Math.floor(h / 2) }, timeout: 1000 }); } catch { /* ignore */ }
       await page.waitForTimeout(800);
-      const shot = capture ? await page.locator("#f").screenshot({ type: "png" }) : null;
+      let shot = capture ? await page.locator("#f").screenshot({ type: "png" }) : null;
+      // Games that build a level after ready show a near-blank loading screen first; give them up to ~8 s more.
+      for (let i = 0; shot && i < 6 && !(await isPainted(shot)); i++) {
+        await page.waitForTimeout(1300);
+        shot = await page.locator("#f").screenshot({ type: "png" });
+      }
       const events = ((await page.evaluate("window.__habiv ? window.__habiv.msgs : []").catch(() => [])) as unknown[]).filter((e): e is string => typeof e === "string");
       await ctx.close();
       return { ready, loadMs, shot, events };
