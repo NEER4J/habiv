@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "02-jelly-stack.zip"
+  "upload_zip": "02-jelly-stack.zip",
+  "folder": "02-jelly-stack",
+  "design": {
+    "mode": "stack",
+    "scene": "candy",
+    "menu": "recipe",
+    "mission": "STACK HEIGHT"
+  }
 }

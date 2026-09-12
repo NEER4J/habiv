@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "28-plant-parent.zip"
+  "upload_zip": "28-plant-parent.zip",
+  "folder": "28-plant-parent",
+  "design": {
+    "mode": "serve",
+    "scene": "garden",
+    "menu": "sms",
+    "mission": "READ THE PLANT"
+  }
 }

@@ -30,6 +30,6 @@
     "touch": "Archive a note"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Soft Reset. A desktop is cluttered with half-finished notes, blinking reminders, and a sleeping cursor. Sort the windows, archive the noise, and make one corner quiet.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique sort browser-game design: CLEAR THE NOISE. Build Soft Reset around Collect the calm tasks and clear the desktop.",
+  "changelog": "Unique gameplay and menu redesign"
 }

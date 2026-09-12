@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "15-beat-the-buzzer.zip"
+  "upload_zip": "15-beat-the-buzzer.zip",
+  "folder": "15-beat-the-buzzer",
+  "design": {
+    "mode": "rhythm",
+    "scene": "show",
+    "menu": "show",
+    "mission": "SAFE BUZZER"
+  }
 }

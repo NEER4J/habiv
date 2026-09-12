@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "32-late-night-laundromat.zip"
+  "upload_zip": "32-late-night-laundromat.zip",
+  "folder": "32-late-night-laundromat",
+  "design": {
+    "mode": "sort",
+    "scene": "laundromat",
+    "menu": "ticket",
+    "mission": "SORT THE LOAD"
+  }
 }

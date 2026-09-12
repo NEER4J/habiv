@@ -30,6 +30,6 @@
     "touch": "Brew an order"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Moss & Mugs. Brew three drinks, arrange a mossy counter, and keep the sleepy café bell from ringing twice. Customers leave tiny notes that become tomorrow's décor.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique serve browser-game design: ORDER RAIL. Build Moss & Mugs around Collect the orders and keep the café glowing.",
+  "changelog": "Unique gameplay and menu redesign"
 }

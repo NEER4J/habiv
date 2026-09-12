@@ -2,7 +2,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAnonClient } from "@/lib/supabase/anon";
 import type { Database, Tables } from "@/lib/supabase/database.types";
-import { cdnUrl } from "@/lib/site";
+import { avatarUrlOf } from "@/lib/site";
 
 export type PublicProfile = {
   id: string;
@@ -31,7 +31,7 @@ export function toPublicProfile(row: Tables<"profiles">): PublicProfile {
     id: row.id,
     handle: row.handle,
     displayName: row.display_name ?? row.handle,
-    avatarUrl: cdnUrl(row.avatar_path),
+    avatarUrl: avatarUrlOf(row.avatar_path),
     bio: row.bio,
     links: Array.isArray(row.links) ? (row.links as unknown[]).filter((l): l is string => typeof l === "string") : [],
     pronouns: row.pronouns,

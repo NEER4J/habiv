@@ -30,6 +30,6 @@
     "touch": "Tune the pulse"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Soundcheck 404. A broadcast tower has lost its rhythm. Tap visible pulses to tune the signal, then catch the glitch beat that hides between them.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique slider browser-game design: TUNE THE SIGNAL. Build Soundcheck 404 around Tap the signal lane exactly on the pulse.",
+  "changelog": "Unique gameplay and menu redesign"
 }

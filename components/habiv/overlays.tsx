@@ -19,7 +19,7 @@ import { report } from "@/lib/actions/moderation";
 import { loadGameForModal, loadNotifications } from "@/lib/actions/shell";
 import type { NotificationItem } from "@/lib/db/notifications";
 import { siteUrl } from "@/lib/site";
-import { Avatar } from "./avatar";
+import { UserAvatar } from "./avatar";
 import { railThumbStyle, shimmer } from "./game-card";
 import { AuthModal } from "@/components/habiv/auth-modal";
 import { createScoreShare, type ScoreShareLink } from "@/lib/actions/share";
@@ -395,11 +395,24 @@ function ModalPlaceholder({ loading, label }: { loading: boolean; label: string 
   );
 }
 
+// Brand marks from Simple Icons (CC0), drawn white on each brand's own colour.
 const shareTargets = [
-  { label: "X", tint: "oklch(0.3 0 0)" },
-  { label: "Discord", tint: "oklch(0.55 0.16 275)" },
-  { label: "Reddit", tint: "oklch(0.62 0.19 35)" },
-  { label: "WhatsApp", tint: "oklch(0.6 0.15 150)" },
+  { label: "X", tint: "#000000", icon: "M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" },
+  {
+    label: "Discord",
+    tint: "#5865F2",
+    icon: "M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z",
+  },
+  {
+    label: "Reddit",
+    tint: "#FF4500",
+    icon: "M12 0C5.373 0 0 5.373 0 12c0 3.314 1.343 6.314 3.515 8.485l-2.286 2.286C.775 23.225 1.097 24 1.738 24H12c6.627 0 12-5.373 12-12S18.627 0 12 0Zm4.388 3.199c1.104 0 1.999.895 1.999 1.999 0 1.105-.895 2-1.999 2-.946 0-1.739-.657-1.947-1.539v.002c-1.147.162-2.032 1.15-2.032 2.341v.007c1.776.067 3.4.567 4.686 1.363.473-.363 1.064-.58 1.707-.58 1.547 0 2.802 1.254 2.802 2.802 0 1.117-.655 2.081-1.601 2.531-.088 3.256-3.637 5.876-7.997 5.876-4.361 0-7.905-2.617-7.998-5.87-.954-.447-1.614-1.415-1.614-2.538 0-1.548 1.255-2.802 2.803-2.802.645 0 1.239.218 1.712.585 1.275-.79 2.881-1.291 4.64-1.365v-.01c0-1.663 1.263-3.034 2.88-3.207.188-.911.993-1.595 1.959-1.595Zm-8.085 8.376c-.784 0-1.459.78-1.506 1.797-.047 1.016.64 1.429 1.426 1.429.786 0 1.371-.369 1.418-1.385.047-1.017-.553-1.841-1.338-1.841Zm7.406 0c-.786 0-1.385.824-1.338 1.841.047 1.017.634 1.385 1.418 1.385.785 0 1.473-.413 1.426-1.429-.046-1.017-.721-1.797-1.506-1.797Zm-3.703 4.013c-.974 0-1.907.048-2.77.135-.147.015-.241.168-.183.305.483 1.154 1.622 1.964 2.953 1.964 1.33 0 2.47-.81 2.953-1.964.057-.137-.037-.29-.184-.305-.863-.087-1.795-.135-2.769-.135Z",
+  },
+  {
+    label: "WhatsApp",
+    tint: "#25D366",
+    icon: "M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z",
+  },
 ] as const;
 
 type ShareTarget = (typeof shareTargets)[number]["label"];
@@ -453,6 +466,26 @@ function ShareModal() {
   const [resultLoading, setResultLoading] = useState(false);
   const [cardReady, setCardReady] = useState(false);
   const [saving, setSaving] = useState(false);
+  // Which run the card shows: null is the viewer's best. A newer pick wins over a slower older one.
+  const [picking, setPicking] = useState<string | null | undefined>(undefined);
+  const pickSeq = useRef(0);
+
+  const pickRun = (runId: string | null) => {
+    if (!modalGameId || runId === (result?.runId ?? null)) return;
+    const seq = ++pickSeq.current;
+    setPicking(runId);
+    createScoreShare(modalGameId, runId)
+      .then((r) => {
+        if (seq !== pickSeq.current) return;
+        if (r) {
+          setResult(r);
+          setCardReady(false);
+          setCopied(false);
+        } else showToast("That run is no longer available");
+      })
+      .catch(() => seq === pickSeq.current && showToast("Could not load that run"))
+      .finally(() => seq === pickSeq.current && setPicking(undefined));
+  };
 
   useEffect(() => {
     if (!isOpen) {
@@ -462,6 +495,8 @@ function ShareModal() {
     setMode(modal === "shareScore" ? "score" : "game");
     setResult(null);
     setCardReady(false);
+    setPicking(undefined);
+    pickSeq.current++;
     if (!modalGameId) return;
     let live = true;
     setResultLoading(true);
@@ -553,6 +588,40 @@ function ShareModal() {
             </div>
           ) : null}
 
+          {scoreMode && result && result.runs.length ? (
+            <div style={{ marginBottom: "10px" }}>
+              <div style={{ fontFamily: mono, fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-5)", margin: "0 0 7px 2px" }}>Pick a run</div>
+              <div className="hb-no-scrollbar" style={{ display: "flex", gap: "6px", overflowX: "auto", paddingBottom: "2px" }}>
+                {[{ id: null, label: result.best != null ? `Best · ${result.best.toLocaleString()}` : "Best" }, ...result.runs.map((r) => ({ id: r.id as string | null, label: `${r.score.toLocaleString()} · ${relativeTime(r.at)}` }))].map((c) => {
+                  const on = (result.runId ?? null) === c.id;
+                  const busy = picking !== undefined && picking === c.id;
+                  return (
+                    <button
+                      key={c.id ?? "best"}
+                      onClick={() => pickRun(c.id)}
+                      aria-pressed={on}
+                      style={{
+                        flex: "0 0 auto",
+                        height: "30px",
+                        padding: "0 12px",
+                        borderRadius: "999px",
+                        background: on ? "var(--ink)" : "var(--chip)",
+                        color: on ? "var(--ink-invert)" : "var(--ink-2)",
+                        fontFamily: mono,
+                        fontSize: "11.5px",
+                        whiteSpace: "nowrap",
+                        cursor: "pointer",
+                        opacity: busy ? 0.6 : 1,
+                      }}
+                    >
+                      {c.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
           {scoreMode ? (
             result ? (
               <div style={{ position: "relative", borderRadius: "14px", overflow: "hidden", aspectRatio: "1200 / 630", background: "var(--well)" }}>
@@ -604,12 +673,7 @@ function ShareModal() {
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px" }}>
-              {g.creatorAvatar ? (
-                // eslint-disable-next-line @next/next/no-img-element -- avatar URLs come from Supabase storage
-                <img src={g.creatorAvatar} alt="" width={34} height={34} style={{ width: "34px", height: "34px", borderRadius: "50%", objectFit: "cover", flex: "0 0 auto" }} />
-              ) : (
-                <Avatar seed={g.creator} size={34} />
-              )}
+              <UserAvatar url={g.creatorAvatar} seed={g.creator} size={34} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: "13px", fontWeight: 600 }}>@{g.creator}</div>
                 <div style={{ fontFamily: mono, fontSize: "10.5px", color: "var(--ink-5)" }}>
@@ -645,7 +709,11 @@ function ShareModal() {
                   cursor: "pointer",
                 }}
               >
-                <span style={{ width: "28px", height: "28px", borderRadius: "9px", background: t.tint }} />
+                <span aria-hidden="true" style={{ display: "grid", placeItems: "center", width: "34px", height: "34px", borderRadius: "10px", background: t.tint, boxShadow: t.label === "X" ? "inset 0 0 0 1px rgba(255,255,255,0.18)" : "none" }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="#fff">
+                    <path d={t.icon} />
+                  </svg>
+                </span>
                 {t.label}
               </button>
             ))}

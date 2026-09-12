@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "40-daily-doodle-duel.zip"
+  "upload_zip": "40-daily-doodle-duel.zip",
+  "folder": "40-daily-doodle-duel",
+  "design": {
+    "mode": "draw",
+    "scene": "paper",
+    "menu": "sketchbook",
+    "mission": "DRAW THE PROMPT"
+  }
 }

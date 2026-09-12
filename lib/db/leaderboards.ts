@@ -1,6 +1,6 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { createAnonClient } from "@/lib/supabase/anon";
-import { cdnUrl } from "@/lib/site";
+import { avatarUrlOf } from "@/lib/site";
 import { nullable } from "@/lib/supabase/helpers";
 
 export const leaderboardTag = (gameId: string) => `lb:${gameId}`;
@@ -69,7 +69,7 @@ export async function readLeaderboard(gameId: string, key = "main", period: Boar
         rank: i + 1,
         score: Number(e.score),
         playerId: e.player_id,
-        user: u ? { id: u.id, handle: u.handle, displayName: u.display_name ?? u.handle, avatarUrl: cdnUrl(u.avatar_path) } : null,
+        user: u ? { id: u.id, handle: u.handle, displayName: u.display_name ?? u.handle, avatarUrl: avatarUrlOf(u.avatar_path) } : null,
         isBot: e.is_bot,
         botLabel: e.bot_label,
         at: e.created_at,

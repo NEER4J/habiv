@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "41-tidepool-tactics.zip"
+  "upload_zip": "41-tidepool-tactics.zip",
+  "folder": "41-tidepool-tactics",
+  "design": {
+    "mode": "pond",
+    "scene": "water",
+    "menu": "fieldguide",
+    "mission": "OPEN THE TIDE GATE"
+  }
 }

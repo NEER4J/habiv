@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "35-paper-plane-panic.zip"
+  "upload_zip": "35-paper-plane-panic.zip",
+  "folder": "35-paper-plane-panic",
+  "design": {
+    "mode": "rail",
+    "scene": "office",
+    "menu": "paper",
+    "mission": "CATCH THE GUST"
+  }
 }

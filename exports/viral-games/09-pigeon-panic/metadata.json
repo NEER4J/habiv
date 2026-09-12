@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "09-pigeon-panic.zip"
+  "upload_zip": "09-pigeon-panic.zip",
+  "folder": "09-pigeon-panic",
+  "design": {
+    "mode": "catcher",
+    "scene": "street",
+    "menu": "street",
+    "mission": "CATCH THE CHIP"
+  }
 }

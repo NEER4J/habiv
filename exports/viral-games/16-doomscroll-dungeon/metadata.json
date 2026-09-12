@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "16-doomscroll-dungeon.zip"
+  "upload_zip": "16-doomscroll-dungeon.zip",
+  "folder": "16-doomscroll-dungeon",
+  "design": {
+    "mode": "feed",
+    "scene": "phone",
+    "menu": "feed",
+    "mission": "SWIPE THE MAP"
+  }
 }

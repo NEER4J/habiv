@@ -32,7 +32,8 @@ function HeroCell({ hero, onHover }: { hero: Game; onHover: (on: boolean) => voi
         style={{
           position: "absolute",
           inset: 0,
-          background: "linear-gradient(90deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.66) 48%, rgba(0,0,0,0.16) 100%)",
+          // Darkens only the bottom-left corner behind the text, leaving the rest of the art clear.
+          background: "radial-gradient(ellipse 70% 90% at 0% 100%, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 35%, rgba(0,0,0,0) 75%)",
         }}
       />
       <div
@@ -186,7 +187,7 @@ function FeaturedQueue({
             />
           ) : null}
           <ArtFrame
-            src={art(x, 400)}
+            src={art(x, 300)}
             fallback={thumbInputForGame(x)}
             fallbackSize={{ w: 1280, h: 720 }}
             style={{ width: cols === 2 ? "100%" : "46%", maxWidth: cols === 2 ? undefined : "186px", aspectRatio: "16 / 9", flex: "0 0 auto", borderRadius: "8px" }}

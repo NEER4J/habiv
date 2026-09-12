@@ -1720,6 +1720,16 @@ export type Database = {
       }
       period_start_for: { Args: { p_period: string }; Returns: string }
       pick_daily_challenge: { Args: never; Returns: undefined }
+      my_runs: {
+        Args: { p_game: string; p_limit?: number; p_pid: string; p_user: string }
+        Returns: {
+          duration_ms: number
+          id: string
+          outcome: string
+          score: number
+          started_at: string
+        }[]
+      }
       play_history: {
         Args: { p_limit?: number; p_pid: string; p_user: string }
         Returns: {

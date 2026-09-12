@@ -30,6 +30,6 @@
     "touch": "Hit the green bite"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Blink Buffet. The plate flashes a new order every round. Tap only the green bite before the kitchen timer snaps shut. The decoys get faster, the order gets stranger, and every clean streak makes the next serving smaller.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique hunt browser-game design: GREEN BITE SERVICE. Build Blink Buffet around Find the green bite before the decoys fool you.",
+  "changelog": "Unique gameplay and menu redesign"
 }

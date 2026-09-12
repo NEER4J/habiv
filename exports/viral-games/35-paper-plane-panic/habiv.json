@@ -30,6 +30,6 @@
     "touch": "Pitch the plane"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Paper Plane Panic. Pilot a paper plane through an office after everyone has gone home. Ride fan gusts, avoid the stapler, and collect sticky-note messages on the way to the open window.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique rail browser-game design: CATCH THE GUST. Build Paper Plane Panic around Switch to the open office lane before impact.",
+  "changelog": "Unique gameplay and menu redesign"
 }

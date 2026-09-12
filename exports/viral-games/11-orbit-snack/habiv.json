@@ -30,6 +30,6 @@
     "touch": "Launch a snack"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Orbit Snack. Launch snacks into a circular gravity well and time the release so each one lands on the tiny moon. Miss the window and the snack becomes a comet; hit the streak and the moon gets a ridiculous hat.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique orbit browser-game design: GRAVITY WINDOW. Build Orbit Snack around Tap the snack in the green orbit window.",
+  "changelog": "Unique gameplay and menu redesign"
 }

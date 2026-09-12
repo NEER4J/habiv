@@ -30,6 +30,6 @@
     "touch": "Pop a bubble"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Bubble Wrap Boss. A satisfying bubble-wrap grid hides a boss pattern. Pop only the bubbles in the active row, build a clean streak, and ignore the one extra bubble that looks too tempting.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique tap browser-game design: POP THE ROW. Build Bubble Wrap Boss around Tap the active bubble and avoid the decoy.",
+  "changelog": "Unique gameplay and menu redesign"
 }

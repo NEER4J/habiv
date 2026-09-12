@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "39-bubble-wrap-boss.zip"
+  "upload_zip": "39-bubble-wrap-boss.zip",
+  "folder": "39-bubble-wrap-boss",
+  "design": {
+    "mode": "tap",
+    "scene": "factory",
+    "menu": "punchcard",
+    "mission": "POP THE ROW"
+  }
 }

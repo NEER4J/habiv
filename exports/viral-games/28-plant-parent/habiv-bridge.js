@@ -127,6 +127,8 @@
     runEnd: function (o) {
       o = o || {};
       post("run_end", { outcome: o.outcome === "complete" || o.outcome === "fail" ? o.outcome : "quit", score: num(o.score), level: str(o.level), progress_pct: num(o.progress_pct) });
+      // The end screen usually appears now, often taller than the play area.
+      scheduleFit(700);
     },
     levelStart: function (o) { post("level_start", { level: str(o && o.level) }); },
     levelComplete: function (o) { post("level_complete", { level: str(o && o.level), score: num(o && o.score) }); },
@@ -169,8 +171,51 @@
     e.preventDefault();
   });
 
+  // ——— Fit ———
+  // A phone-sized frame can be shorter than a game's title card or menu, which then gets clipped.
+  // The bridge measures how far visible content reaches past the frame and reports the height it
+  // needs; the player grows to fit (never shrinks, capped at the screen). It measures after load,
+  // resizes, input and a run's end, since that is when screens change, and never per frame.
+  var lastFit = 0;
+  var fitTimer = null;
+  function measureFit() {
+    fitTimer = null;
+    var vh = window.innerHeight, vw = window.innerWidth;
+    if (!vh || !vw || !document.body) return;
+    var top = 0, bottom = vh;
+    var els = document.body.getElementsByTagName("*");
+    for (var i = 0, n = Math.min(els.length, 1500); i < n; i++) {
+      var el = els[i];
+      var r = el.getBoundingClientRect();
+      if (r.width < 1 || r.height < 1 || r.right <= 0 || r.left >= vw) continue;
+      if (r.top >= 0 && r.bottom <= vh) continue;
+      // Hidden screens (an end card at opacity 0) sit in the same place and must not count.
+      if (el.checkVisibility && !el.checkVisibility({ opacityProperty: true, visibilityProperty: true })) continue;
+      if (r.top < top) top = r.top;
+      if (r.bottom > bottom) bottom = r.bottom;
+    }
+    var need = Math.ceil(bottom - top);
+    if (need > vh + 8 && Math.abs(need - lastFit) > 4) {
+      lastFit = need;
+      post("size", { height: need });
+    }
+  }
+  function scheduleFit(ms) {
+    if (!enabled) return;
+    if (fitTimer) clearTimeout(fitTimer);
+    fitTimer = setTimeout(measureFit, ms);
+  }
+  window.addEventListener("resize", function () { scheduleFit(250); });
+  window.addEventListener("pointerup", function () { scheduleFit(400); }, true);
+  window.addEventListener("keyup", function () { scheduleFit(400); }, true);
+
   window.addEventListener("error", function (e) { if (e && e.message) post("error", { message: String(e.message).slice(0, 500) }); });
-  window.addEventListener("load", function () { setTimeout(function () { if (!readySent) Habiv.ready(); }, 100); });
+  window.addEventListener("load", function () {
+    setTimeout(function () { if (!readySent) Habiv.ready(); }, 100);
+    scheduleFit(300);
+    // Fonts and late layout can change the title screen after load.
+    setTimeout(function () { scheduleFit(0); }, 1500);
+  });
 
   Object.defineProperty(window, "Habiv", { value: Habiv, writable: false, configurable: false });
   window.habiv = Habiv;

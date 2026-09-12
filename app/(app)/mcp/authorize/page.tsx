@@ -36,5 +36,5 @@ async function Authorize({ searchParams }: { searchParams: SearchParams }) {
   const own = await getOwnProfile(await createClient());
   if (!own) redirect(`/?auth=signin&next=${encodeURIComponent(`/mcp/authorize?${new URLSearchParams(params)}`)}`);
 
-  return <McpConsentView clientName={check.client.name} redirectUri={check.redirectUri} handle={own.handle} displayName={own.displayName} params={params} />;
+  return <McpConsentView clientName={check.client.name} redirectUri={check.redirectUri} handle={own.handle} displayName={own.displayName} avatarUrl={own.avatarUrl} params={params} />;
 }

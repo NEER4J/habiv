@@ -6,6 +6,7 @@ import { resolveHandle } from "@/lib/db/profiles";
 import { getCreatorGames } from "@/lib/db/games";
 import { loadProfile, type ProfileData } from "@/lib/habiv/page-data";
 import { absoluteUrl, breadcrumbLd, clip, ogBase } from "@/lib/seo";
+import { isAvatarPhoto } from "@/lib/site";
 import { JsonLd } from "@/components/seo/json-ld";
 import { ProfileView } from "@/components/habiv/profile-view";
 import { ProfileSkeleton } from "@/components/habiv/skeletons";
@@ -20,6 +21,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   if (resolved.kind === "none") return { title: "Creator not found", robots: { index: false, follow: true } };
   if (resolved.kind !== "found") return {};
   const p = resolved.profile;
+  const photo = isAvatarPhoto(p.avatarUrl) ? p.avatarUrl : null;
   const count = (await getCreatorGames(p.id)).length;
   const games = count ? `${count} tiny game${count === 1 ? "" : "s"}` : "tiny games";
   const title = `${p.displayName} (@${p.handle})`;
@@ -37,9 +39,9 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
       title,
       description,
       url: p.url,
-      images: p.avatarUrl ? [{ url: p.avatarUrl, width: 256, height: 256, alt: title }] : ogBase.images,
+      images: photo ? [{ url: photo, width: 256, height: 256, alt: title }] : ogBase.images,
     },
-    twitter: p.avatarUrl ? { card: "summary", title, description, images: [p.avatarUrl] } : { card: "summary_large_image", title, description, images: ogBase.images },
+    twitter: photo ? { card: "summary", title, description, images: [photo] } : { card: "summary_large_image", title, description, images: ogBase.images },
   };
 }
 
@@ -81,7 +83,7 @@ function profileLd({ profile: p, games, totals }: ProfileData) {
         name: p.displayName,
         alternateName: `@${p.handle}`,
         description: p.bio ?? undefined,
-        image: p.avatarUrl ?? undefined,
+        image: isAvatarPhoto(p.avatarUrl) ? p.avatarUrl : undefined,
         url,
         sameAs: p.links.filter((l) => /^https?:\/\//.test(l)),
         interactionStatistic: [{ "@type": "InteractionCounter", interactionType: "https://schema.org/FollowAction", userInteractionCount: p.followersCount }],

@@ -52,16 +52,23 @@ function ChipBones({ n, inGrid = true }: { n: number; inGrid?: boolean }) {
   );
 }
 
+/** Matches HOME_PICK_SLOTS, the number of games in the home page's featured queue. */
+const QUEUE_SLOTS = 4;
+const CATEGORY_BONES = 6;
+
 export function HomeSkeleton() {
   const { cols } = useShell();
+  const narrow = cols === 2;
+  const perRow = spanFor(cols, [2, 3, 4, 6]);
+  const gap = narrow ? 10 : 12;
   return (
     <BentoStack>
       <BentoGrid>
         <div
           style={{
             ...cell,
-            gridColumn: "1 / -1",
-            gridRow: `span ${cols === 2 ? 7 : 9}`,
+            gridColumn: `span ${spanFor(cols, [2, 6, 6, 9])}`,
+            gridRow: `span ${narrow ? 7 : 9}`,
             borderRadius: "18px",
             padding: "clamp(18px, 4vw, 40px)",
             display: "flex",
@@ -77,6 +84,73 @@ export function HomeSkeleton() {
             <Bone w={110} h={42} r={21} />
             <Bone w={90} h={42} r={21} />
           </div>
+        </div>
+        {/* Featured queue: a label row, then one cell per queued game. */}
+        <div
+          style={{
+            ...cell,
+            gridColumn: `span ${spanFor(cols, [2, 6, 2, 3])}`,
+            gridRow: "span 1",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "0 14px",
+          }}
+        >
+          <Bone w={100} h={10} />
+          <Bone w={16} h={10} />
+        </div>
+        {Array.from({ length: QUEUE_SLOTS }, (_, i) => (
+          <div
+            key={i}
+            style={{
+              ...cell,
+              gridColumn: `span ${spanFor(cols, [1, 2, 2, 3])}`,
+              gridRow: `span ${narrow ? 3 : 2}`,
+              display: "flex",
+              flexDirection: narrow ? "column" : "row",
+              alignItems: narrow ? "stretch" : "center",
+              gap: "10px",
+              padding: "10px",
+              overflow: "hidden",
+            }}
+          >
+            <Bone w={narrow ? "100%" : "46%"} h="auto" r={8} style={{ aspectRatio: "16 / 9", maxWidth: narrow ? undefined : "186px" }} />
+            <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "7px" }}>
+              <Bone w="80%" h={13} />
+              <Bone w="55%" h={9} />
+            </div>
+          </div>
+        ))}
+        {/* Category tiles, laid out like CategoryCells: a swipe row on phones, a grid of 56px rows elsewhere. */}
+        <div
+          style={{
+            gridColumn: "1 / -1",
+            gridRow: `span ${narrow ? 1 : Math.ceil(CATEGORY_BONES / perRow)}`,
+            minWidth: 0,
+            gap: `${gap}px`,
+            overflow: "hidden",
+            ...(narrow ? { display: "flex" } : { display: "grid", gridTemplateColumns: `repeat(${perRow}, minmax(0, 1fr))`, gridAutoRows: "56px" }),
+          }}
+        >
+          {Array.from({ length: CATEGORY_BONES }, (_, i) => (
+            <div
+              key={i}
+              style={{
+                ...cell,
+                ...(narrow ? { flex: `0 0 calc((100% - ${gap}px) / 2)` } : null),
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "0 14px",
+              }}
+            >
+              <Bone w={30} h={30} r={9} />
+              <Bone w={`${[46, 38, 52, 42, 36, 48][i % 6]}%`} h={12} />
+              <div style={{ flex: 1 }} />
+              <Bone w={44} h={9} />
+            </div>
+          ))}
         </div>
         <ChipBones n={6} />
       </BentoGrid>

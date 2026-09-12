@@ -30,6 +30,6 @@
     "touch": "Choose a lane"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Two-Tap Tango. Follow a two-lane beat that starts friendly and ends in a syncopated trap. The pattern is short enough to learn by ear, but the last eight beats are built for a perfect-streak replay.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique rhythm browser-game design: BEAT WINDOW. Build Two-Tap Tango around Tap the lane that flashes on the beat.",
+  "changelog": "Unique gameplay and menu redesign"
 }

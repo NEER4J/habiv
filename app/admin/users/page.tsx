@@ -8,6 +8,7 @@ import { FilterChips, LoadMore, PageHeader, SearchForm, cellMuted, first, offset
 import { StatusPill } from "@/components/admin/status-pill";
 import { Table, Td, Th, Empty } from "@/components/admin/table";
 import { UserBadges, UserBan, UserFlags } from "@/components/admin/user-row-controls";
+import { UserAvatar } from "@/components/habiv/avatar";
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
@@ -17,10 +18,6 @@ export default function UsersPage({ searchParams }: { searchParams: SearchParams
       <Users searchParams={searchParams} />
     </Suspense>
   );
-}
-
-function initials(name: string) {
-  return name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join("") || "?";
 }
 
 async function Users({ searchParams }: { searchParams: SearchParams }) {
@@ -50,10 +47,7 @@ async function Users({ searchParams }: { searchParams: SearchParams }) {
             {items.map((u) => (
               <tr key={u.id} className="hb-row">
                 <Td style={{ width: "44px", paddingRight: 0 }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "36px", height: "36px", borderRadius: "50%", overflow: "hidden", background: "var(--chip-2)", fontSize: "12px", fontWeight: 600, color: "var(--ink)" }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element -- avatar URLs come from Supabase storage */}
-                    {u.avatarUrl ? <img src={u.avatarUrl} alt="" width={36} height={36} style={{ width: "36px", height: "36px", objectFit: "cover", display: "block" }} /> : initials(u.displayName)}
-                  </span>
+                  <UserAvatar url={u.avatarUrl} seed={u.handle} size={36} />
                 </Td>
                 <Td style={{ maxWidth: "200px" }}>
                   <div style={{ color: "var(--ink)", fontWeight: 500 }}>{u.displayName}</div>

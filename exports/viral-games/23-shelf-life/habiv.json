@@ -30,6 +30,6 @@
     "touch": "Place a product"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Shelf Life. Match products to shelves using shape, color, and one suspiciously specific expiry date. Every correct row reveals part of the shop’s story.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique sort browser-game design: STOCK THE SHELF. Build Shelf Life around Pick the product that belongs on the highlighted shelf.",
+  "changelog": "Unique gameplay and menu redesign"
 }

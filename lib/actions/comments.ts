@@ -87,6 +87,6 @@ export async function searchHandles(prefix: string): Promise<{ id: string; handl
   if (q.length < 1) return [];
   const { supabase } = await me();
   const { data } = await supabase.rpc("search_handles", { prefix: q, max_rows: 8 });
-  const { cdnUrl } = await import("@/lib/site");
-  return (data ?? []).map((r) => ({ id: r.id, handle: r.handle, displayName: r.display_name ?? r.handle, avatarUrl: cdnUrl(r.avatar_path) }));
+  const { avatarUrlOf } = await import("@/lib/site");
+  return (data ?? []).map((r) => ({ id: r.id, handle: r.handle, displayName: r.display_name ?? r.handle, avatarUrl: avatarUrlOf(r.avatar_path) }));
 }

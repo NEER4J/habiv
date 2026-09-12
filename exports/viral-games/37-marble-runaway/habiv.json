@@ -30,6 +30,6 @@
     "touch": "Tilt track"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Marble Runaway. A marble is already rolling. Rotate ramps, open shortcuts, and use bumpers to keep momentum through a toy-box course.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique runner browser-game design: OPEN THE RAMP. Build Marble Runaway around Choose the ramp that keeps the marble on track.",
+  "changelog": "Unique gameplay and menu redesign"
 }

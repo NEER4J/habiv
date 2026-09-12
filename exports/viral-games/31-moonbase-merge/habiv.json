@@ -30,6 +30,6 @@
     "touch": "Merge a machine"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Moonbase Merge. Slide solar panels, rovers, and coffee modules into a compact moonbase grid. Equal machines combine into smarter ones, but every merge uses floor space.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique merge browser-game design: BUILD BREAKFAST. Build Moonbase Merge around Pick the machine that completes the moonbase pair.",
+  "changelog": "Unique gameplay and menu redesign"
 }

@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Database, Tables } from "@/lib/supabase/database.types";
-import { cdnUrl, gameOrigin } from "@/lib/site";
+import { avatarUrlOf, cdnUrl, gameOrigin } from "@/lib/site";
 
 export type AdminContext = { supabase: SupabaseClient<Database>; admin: SupabaseClient<Database>; uid: string };
 
@@ -137,7 +137,7 @@ export async function listUsersAdmin(ctx: AdminContext, opts: { q?: string | nul
   const items = list.map((p) => {
     const e = emailMap.get(p.id);
     return {
-      id: p.id, handle: p.handle, displayName: p.display_name ?? p.handle, avatarUrl: cdnUrl(p.avatar_path), email: e?.email ?? null, provider: e?.provider ?? null,
+      id: p.id, handle: p.handle, displayName: p.display_name ?? p.handle, avatarUrl: avatarUrlOf(p.avatar_path), email: e?.email ?? null, provider: e?.provider ?? null,
       isAdmin: p.is_admin, isVerified: p.is_verified, isCreator: p.is_creator, bannedAt: p.banned_at, banReason: p.ban_reason,
       followersCount: p.followers_count, games: gameCount.get(p.id) ?? 0, createdAt: p.created_at, lastSignInAt: e?.last_sign_in_at ?? null, badges: badgeMap.get(p.id) ?? [],
     };

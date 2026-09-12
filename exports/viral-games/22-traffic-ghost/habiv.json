@@ -30,6 +30,6 @@
     "touch": "Change lanes"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Traffic Ghost. Drive a translucent car through a three-lane night route and try to outrun your own ghost. The traffic pattern stays readable for one run, then shuffles.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique runner browser-game design: OVERTAKE THE GHOST. Build Traffic Ghost around Pick the open lane before the ghost reaches it.",
+  "changelog": "Unique gameplay and menu redesign"
 }

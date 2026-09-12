@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "34-soundcheck-404.zip"
+  "upload_zip": "34-soundcheck-404.zip",
+  "folder": "34-soundcheck-404",
+  "design": {
+    "mode": "slider",
+    "scene": "broadcast",
+    "menu": "console",
+    "mission": "TUNE THE SIGNAL"
+  }
 }

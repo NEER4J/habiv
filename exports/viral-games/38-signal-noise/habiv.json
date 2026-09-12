@@ -30,6 +30,6 @@
     "touch": "Lock a signal"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Signal / Noise. A waveform hides a short message inside layers of noise. Tune the filters until the pattern stabilizes, then repeat the decoded phrase before the screen scrambles it.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique slider browser-game design: CLEAN THE WAVE. Build Signal / Noise around Choose the clean signal steps in order.",
+  "changelog": "Unique gameplay and menu redesign"
 }

@@ -7,12 +7,13 @@ import { publishVersion, unpublishGame } from "@/lib/actions/games";
 import { deleteUnpublishedGame, deleteVersion, retryProcessing, stopUpload } from "@/lib/actions/uploads";
 import type { CreatorGame } from "@/lib/db/types";
 import { spanFor } from "@/lib/habiv/bento";
-import { art, categoryName, fmt, relativeTime } from "@/lib/habiv/games";
+import { categoryName, fmt, relativeTime } from "@/lib/habiv/games";
 import type { MyGamesData } from "@/lib/habiv/page-data";
 import { localUploadFor, type LocalUpload } from "@/lib/habiv/publish-draft-progress";
 import { rejectLabel } from "@/lib/habiv/upload-status";
 import { bpanel, chipBtn, chipStyle, dangerBtn, mono, primaryBtn } from "@/lib/habiv/ui";
 import { BentoGrid, ChipCell, EmptyCell, PageHead } from "./game-card";
+import { GeneratedThumb } from "./generated-thumb";
 import { useShell } from "./shell-context";
 
 const tabs = ["Published", "Drafts", "In progress", "Failed", "Hidden"] as const;
@@ -89,10 +90,6 @@ function stageNote(g: CreatorGame, stage: Stage, local: LocalUpload | undefined,
 
 /** Never public, so it can go entirely; published games are hidden instead. */
 const deletable = (g: CreatorGame) => !g.publishedAt && (g.status === "draft" || g.status === "processing");
-
-function artOf(g: CreatorGame) {
-  return art({ coverUrl: g.coverUrl, cardUrl: g.cardUrl, hue: g.accentHue, title: g.title }, 320);
-}
 
 function initialTab(games: CreatorGame[], now: number): Tab {
   const count = (t: Tab) => games.filter((g) => inTab[t](g, stageOf(g, now))).length;
@@ -301,18 +298,14 @@ export function MyGamesView({ data }: { data: MyGamesData }) {
               transition: "opacity 120ms ease",
             }}
           >
-            <div
-              style={{
-                width: "88px",
-                height: "50px",
-                flex: "0 0 auto",
-                borderRadius: "8px",
-                backgroundImage: `url("${artOf(g)}")`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundColor: "var(--chip)",
-              }}
-            />
+            <div style={{ position: "relative", width: "88px", height: "50px", flex: "0 0 auto", borderRadius: "8px", overflow: "hidden", backgroundColor: "var(--chip)" }}>
+              {g.coverUrl || g.cardUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- art URLs come from the storage CDN
+                <img src={g.coverUrl ?? g.cardUrl ?? ""} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              ) : (
+                <GeneratedThumb input={{ seed: g.id, title: g.title, tagline: g.tagline, category: categoryName(g.category), hue: g.accentHue }} size={{ w: 1280, h: 720 }} />
+              )}
+            </div>
             <div style={{ flex: "1 1 240px", minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
                 <span style={{ fontSize: "15px", fontWeight: 600 }}>{g.title}</span>

@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
-import { cdnUrl } from "@/lib/site";
+import { avatarUrlOf } from "@/lib/site";
 
 export type CommentAuthor = { id: string; handle: string; displayName: string; avatarUrl: string | null; isVerified: boolean; isGameCreator: boolean };
 
@@ -70,7 +70,7 @@ export async function listComments(
         id: c.author_id,
         handle: a?.handle ?? "unknown",
         displayName: a?.display_name ?? a?.handle ?? "unknown",
-        avatarUrl: cdnUrl(a?.avatar_path),
+        avatarUrl: avatarUrlOf(a?.avatar_path),
         isVerified: !!a?.is_verified,
         isGameCreator: c.author_id === creatorId,
       },
@@ -107,7 +107,7 @@ export async function listReplies(supabase: SupabaseClient<Database>, commentId:
     const a = authors.get(c.author_id);
     return {
       id: c.id, body: c.body, likesCount: c.likes_count, replyCount: c.reply_count, pinned: c.pinned, createdAt: c.created_at, editedAt: c.edited_at, deleted: false,
-      author: { id: c.author_id, handle: a?.handle ?? "unknown", displayName: a?.display_name ?? a?.handle ?? "unknown", avatarUrl: cdnUrl(a?.avatar_path), isVerified: !!a?.is_verified, isGameCreator: c.author_id === game?.creator_id },
+      author: { id: c.author_id, handle: a?.handle ?? "unknown", displayName: a?.display_name ?? a?.handle ?? "unknown", avatarUrl: avatarUrlOf(a?.avatar_path), isVerified: !!a?.is_verified, isGameCreator: c.author_id === game?.creator_id },
       liked: liked.has(c.id), mine: c.author_id === uid, replies: [],
     };
   });

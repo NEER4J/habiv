@@ -30,6 +30,6 @@
     "touch": "Change a tide tile"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Tidepool Tactics. Shift tide tiles to guide water into dry pools without washing away shells. Three small creatures each need a different depth, making every solution a gentle rescue mission.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique pond browser-game design: OPEN THE TIDE GATE. Build Tidepool Tactics around Pick the tide tile that completes the rescue.",
+  "changelog": "Unique gameplay and menu redesign"
 }

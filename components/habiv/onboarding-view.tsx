@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { checkHandle, setHandle as setHandleAction } from "@/lib/actions/handles";
 import { handleReasonMessage, normalizeHandle, validateHandle, HANDLE_MAX } from "@/lib/handles";
 import { bpanel, chipBtn, handleInputStyle, mono, primaryBtn, stepStyle } from "@/lib/habiv/ui";
+import { avatarSeedOf, isAvatarPhoto } from "@/lib/site";
 import { Avatar } from "./avatar";
 import { BentoAutoGrid, EmptyCell, PageHead } from "./game-card";
 import { useShell } from "./shell-context";
@@ -76,14 +77,15 @@ export function OnboardingView({ initialStep, next, suggested }: { initialStep?:
   const [handle, setHandle] = useState(() => (avatarOnly ? profile.handle : normalizeHandle(suggested)));
   const [handleState, setHandleState] = useState<HandleState>({ ok: false, label: "Pick a handle" });
   const [saving, setSaving] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(profile.avatarUrl);
+  // Only an uploaded photo lives here; a picked generated face is avatarSeed.
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(isAvatarPhoto(profile.avatarUrl) ? profile.avatarUrl : null);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   // The shell session can land after first render; pick up the real handle and avatar then.
   useEffect(() => {
     if (avatarOnly && !handle && profile.handle) setHandle(profile.handle);
-    if (profile.avatarUrl && !avatarUrl) setAvatarUrl(profile.avatarUrl);
+    if (isAvatarPhoto(profile.avatarUrl) && !avatarUrl) setAvatarUrl(profile.avatarUrl);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only sync when the session profile changes
   }, [profile.handle, profile.avatarUrl]);
 
@@ -157,7 +159,7 @@ export function OnboardingView({ initialStep, next, suggested }: { initialStep?:
     }
     setHandle(res.handle);
     setProfile({ ...profile, handle: res.handle, handleSet: true });
-    setAvatarSeed(res.handle);
+    setAvatarSeed(avatarSeedOf(profile.avatarUrl) ?? res.handle);
     setStep(1);
   };
 
@@ -189,7 +191,23 @@ export function OnboardingView({ initialStep, next, suggested }: { initialStep?:
     showToast("Using a generated avatar");
   };
 
-  const finish = () => {
+  const finish = async () => {
+    // A generated face is saved as the profile's avatar so it shows everywhere, not just here.
+    if (!avatarUrl) {
+      setUploading(true);
+      const res = await fetch("/api/avatar", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ seed: avatarSeed }),
+      }).catch(() => null);
+      const json = (await res?.json().catch(() => null)) as { ok?: boolean; avatarUrl?: string; error?: string } | null;
+      setUploading(false);
+      if (!res?.ok || !json?.ok || !json.avatarUrl) {
+        showToast(json?.error ?? "Could not save your avatar.");
+        return;
+      }
+      setProfile({ ...profile, avatarUrl: json.avatarUrl });
+    }
     setStep(2);
     showToast(avatarOnly ? "Avatar updated" : "Profile created");
     router.refresh();
@@ -363,7 +381,7 @@ export function OnboardingView({ initialStep, next, suggested }: { initialStep?:
               })}
             </div>
             <div style={{ display: "flex", gap: "8px", marginTop: "22px", flexWrap: "wrap" }}>
-              <button onClick={finish} disabled={uploading} style={uploading ? { ...primaryBtn, opacity: 0.45 } : primaryBtn}>
+              <button onClick={() => void finish()} disabled={uploading} style={uploading ? { ...primaryBtn, opacity: 0.45 } : primaryBtn}>
                 {avatarUrl ? "Use this photo" : "Use this avatar"}
               </button>
               {!avatarOnly ? (

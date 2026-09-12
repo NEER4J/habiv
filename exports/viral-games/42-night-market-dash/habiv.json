@@ -30,6 +30,6 @@
     "touch": "Steer scooter"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Night Market Dash. Race through a closing night market to deliver the last order. Brake for vendors, duck under signs, and choose between the crowded shortcut and quiet long lane.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique runner browser-game design: FIND THE OPEN LANE. Build Night Market Dash around Choose the open market lane before the turn.",
+  "changelog": "Unique gameplay and menu redesign"
 }

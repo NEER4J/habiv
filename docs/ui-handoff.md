@@ -86,7 +86,7 @@ Rules that keep `cacheComponents: true` happy:
 | After any sign-in | call `linkPlayer()` from `lib/analytics/link-player.ts` once (attaches anonymous plays). |
 | Handle onboarding | `/onboarding` (bento `OnboardingView`). Proxy redirects creators there until `handle_set`. |
 | Settings → handle | `checkHandle(input)` (debounce 300 ms) and `setHandle(input)` from `lib/actions/handles.ts`. `lib/handles.ts` has `normalizeHandle`, `validateHandle`, `HANDLE_MAX`. `takenHandles` mock is gone. |
-| Settings → profile | `updateProfile({ displayName, bio, pronouns, links })` from `lib/actions/profile.ts`; avatar: `POST /api/avatar` multipart `file` (resize to 256 px client-side first), `DELETE /api/avatar` to clear. |
+| Settings → profile | `updateProfile({ displayName, bio, pronouns, links })` from `lib/actions/profile.ts`; avatar: `POST /api/avatar` multipart `file` (resize to 256 px client-side first), `PUT /api/avatar` JSON `{ seed }` to pick a generated face, `DELETE /api/avatar` to clear. `avatarUrl` is a CDN URL or a `seed:<seed>` token, so always render it with `<UserAvatar url seed>` from `components/habiv/avatar.tsx`, never a raw `<img>`. |
 | Header profile / avatar | `getOwnProfile(await createClient())` → `OwnProfile` (`lib/db/profiles.ts`), inside Suspense. |
 | `/@handle` page | `app/(app)/[handle]/page.tsx` already resolves the handle (with rename redirects) and renders a placeholder body. Replace the JSX inside `ProfileContent` with `ProfileView` fed `PublicProfile` + `FeedGame[]` (`getCreatorGames(profile.id)`). Followers: `getFollowers(userId)`. |
 | `app/layout.tsx` metadataBase | `siteUrl` from `lib/site.ts`. |

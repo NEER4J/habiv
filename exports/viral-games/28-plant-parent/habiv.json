@@ -30,6 +30,6 @@
     "touch": "Choose plant care"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Plant Parent. Three plants send dramatic messages about light, water, and the neighbor’s cat. Match their mood to the right care action and watch the windowsill change.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique serve browser-game design: READ THE PLANT. Build Plant Parent around Tap the plant asking for today’s care action.",
+  "changelog": "Unique gameplay and menu redesign"
 }

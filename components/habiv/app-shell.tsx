@@ -7,6 +7,7 @@ import { art } from "@/lib/habiv/games";
 import { bpanel, mono, navStyleFor } from "@/lib/habiv/ui";
 import { legalPages } from "@/lib/legal";
 import { createClient } from "@/lib/supabase/client";
+import { UserAvatar } from "./avatar";
 import { Overlays } from "./overlays";
 import { isWatchPath, useShell } from "./shell-context";
 
@@ -207,13 +208,6 @@ function AccountMenu() {
     for (const href of [profileHref, "/my-games", "/settings"]) router.prefetch(href);
   }, [signedIn, profileHref, router]);
 
-  const initials = profile.name
-    .split(/\s+/)
-    .map((p) => p[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
   const circle: CSSProperties = {
     display: "flex",
     alignItems: "center",
@@ -283,12 +277,7 @@ function AccountMenu() {
         aria-expanded={open}
         style={circle}
       >
-        {profile.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element -- avatar URLs come from Supabase storage
-          <img src={profile.avatarUrl} alt="" width={36} height={36} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-        ) : (
-          initials || "?"
-        )}
+        <UserAvatar url={profile.avatarUrl} seed={profile.handle} size={36} />
       </button>
       {open ? (
         <div

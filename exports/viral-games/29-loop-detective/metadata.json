@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "29-loop-detective.zip"
+  "upload_zip": "29-loop-detective.zip",
+  "folder": "29-loop-detective",
+  "design": {
+    "mode": "anomaly",
+    "scene": "noir",
+    "menu": "evidence",
+    "mission": "FIND THE FRAME"
+  }
 }

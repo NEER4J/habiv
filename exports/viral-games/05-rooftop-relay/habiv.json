@@ -30,6 +30,6 @@
     "touch": "Change lanes"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Rooftop Relay. Sprint across a city of laundry lines, AC units, and neon signs. Pick the safest lane at the last second and hold the streak through three weather patterns.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique runner browser-game design: ROOFTOP SPLIT. Build Rooftop Relay around Choose the correct rooftop lane before the runner arrives.",
+  "changelog": "Unique gameplay and menu redesign"
 }

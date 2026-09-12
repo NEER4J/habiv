@@ -30,6 +30,6 @@
     "touch": "Catch weather"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Cloud Save. Guide a paper boat beneath drifting clouds and catch rain, sunbeams, and the occasional thunder pearl. Discover which weather combinations make a new little sky.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique route browser-game design: WEATHER RECIPE. Build Cloud Save around Catch the glowing weather and avoid the static.",
+  "changelog": "Unique gameplay and menu redesign"
 }

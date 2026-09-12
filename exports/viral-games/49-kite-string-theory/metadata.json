@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "49-kite-string-theory.zip"
+  "upload_zip": "49-kite-string-theory.zip",
+  "folder": "49-kite-string-theory",
+  "design": {
+    "mode": "tether",
+    "scene": "sky",
+    "menu": "windmap",
+    "mission": "CATCH THE CURRENT"
+  }
 }

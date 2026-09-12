@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { createAnonClient } from "@/lib/supabase/anon";
 import type { Database, Tables } from "@/lib/supabase/database.types";
 import type { Views } from "@/lib/supabase/helpers";
-import { cdnUrl } from "@/lib/site";
+import { avatarUrlOf, cdnUrl } from "@/lib/site";
 import { modelNamesForLab } from "@/lib/ai/catalog";
 import type { CreatorGame, FeedGame, FeedSort, GameCategory, GameDetail, GameStatsSummary, GameVersionSummary, Orientation, RemixLicence, VersionStatus } from "@/lib/db/types";
 
@@ -43,7 +43,7 @@ export function toFeedGame(r: FeedRow): FeedGame {
       id: r.creator_id,
       handle: r.creator_handle,
       displayName: r.creator_name ?? r.creator_handle,
-      avatarUrl: cdnUrl(r.creator_avatar),
+      avatarUrl: avatarUrlOf(r.creator_avatar),
       isVerified: r.creator_verified,
       followersCount: r.followers_count,
     },
@@ -77,7 +77,7 @@ function toVersionSummary(v: Pick<Tables<"game_versions">, "id" | "version" | "s
 
 /** Public feed. Cached for about a minute; invalidated with FEED_TAG on publish. */
 export async function getFeed(
-  opts: { limit?: number; offset?: number; category?: GameCategory | null; sort?: FeedSort; model?: string | null; agent?: string | null } = {},
+  opts: { limit?: number; offset?: number; category?: GameCategory | null; sort?: FeedSort; model?: string | null; agent?: string | null; creator?: string | null } = {},
 ): Promise<{ items: FeedGame[]; nextOffset: number | null }> {
   "use cache";
   cacheTag(FEED_TAG);
@@ -93,6 +93,7 @@ export async function getFeed(
   if (opts.model?.startsWith("lab:")) q = q.in("model", modelNamesForLab(opts.model.slice(4)));
   else if (opts.model) q = q.eq("model", opts.model);
   if (opts.agent) q = q.eq("agent", opts.agent);
+  if (opts.creator) q = q.eq("creator_handle", opts.creator.toLowerCase());
   if (sort === "trending") q = q.order("trending_score", { ascending: false }).order("published_at", { ascending: false });
   else if (sort === "hot") q = q.order("hot_score", { ascending: false }).order("published_at", { ascending: false });
   else if (sort === "plays") q = q.order("plays", { ascending: false }).order("published_at", { ascending: false });

@@ -30,6 +30,6 @@
     "touch": "Grab a snack"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Snack Attack. Move a lunchbox beneath falling snacks while the conveyor belt changes speed every five seconds. Golden snacks add a multiplier; broccoli subtracts it.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique catcher browser-game design: CATCH THE ORDER. Build Snack Attack around Tap the falling snack before it hits the floor.",
+  "changelog": "Unique gameplay and menu redesign"
 }

@@ -30,6 +30,6 @@
     "touch": "Pick the false clue"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Emoji Alibi. Four emojis describe a tiny scene, but one clue is lying. Cross-reference the order, the weather, and the suspiciously specific snack to find the impossible alibi.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique feed browser-game design: CONTRADICTION FOUND. Build Emoji Alibi around Tap the emoji that breaks the story.",
+  "changelog": "Unique gameplay and menu redesign"
 }

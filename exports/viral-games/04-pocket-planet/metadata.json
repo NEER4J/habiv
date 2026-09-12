@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "04-pocket-planet.zip"
+  "upload_zip": "04-pocket-planet.zip",
+  "folder": "04-pocket-planet",
+  "design": {
+    "mode": "orbit",
+    "scene": "stars",
+    "menu": "planetarium",
+    "mission": "CLIMATE ORBIT"
+  }
 }

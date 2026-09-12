@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "25-hot-potato-protocol.zip"
+  "upload_zip": "25-hot-potato-protocol.zip",
+  "folder": "25-hot-potato-protocol",
+  "design": {
+    "mode": "tap",
+    "scene": "party",
+    "menu": "radial",
+    "mission": "PASS THE HEAT"
+  }
 }

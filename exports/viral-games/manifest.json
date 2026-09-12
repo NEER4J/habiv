@@ -31,7 +31,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "01-blink-buffet.zip",
-    "folder": "01-blink-buffet"
+    "folder": "01-blink-buffet",
+    "design": {
+      "mode": "hunt",
+      "scene": "kitchen",
+      "menu": "kiosk",
+      "mission": "GREEN BITE SERVICE"
+    }
   },
   {
     "title": "Jelly Stack",
@@ -65,7 +71,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "02-jelly-stack.zip",
-    "folder": "02-jelly-stack"
+    "folder": "02-jelly-stack",
+    "design": {
+      "mode": "stack",
+      "scene": "candy",
+      "menu": "recipe",
+      "mission": "STACK HEIGHT"
+    }
   },
   {
     "title": "Midnight Checkout",
@@ -99,7 +111,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "03-midnight-checkout.zip",
-    "folder": "03-midnight-checkout"
+    "folder": "03-midnight-checkout",
+    "design": {
+      "mode": "anomaly",
+      "scene": "noir",
+      "menu": "terminal",
+      "mission": "REFLECTION CHECK"
+    }
   },
   {
     "title": "Pocket Planet",
@@ -133,7 +151,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "04-pocket-planet.zip",
-    "folder": "04-pocket-planet"
+    "folder": "04-pocket-planet",
+    "design": {
+      "mode": "orbit",
+      "scene": "stars",
+      "menu": "planetarium",
+      "mission": "CLIMATE ORBIT"
+    }
   },
   {
     "title": "Rooftop Relay",
@@ -167,7 +191,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "05-rooftop-relay.zip",
-    "folder": "05-rooftop-relay"
+    "folder": "05-rooftop-relay",
+    "design": {
+      "mode": "runner",
+      "scene": "city",
+      "menu": "race",
+      "mission": "ROOFTOP SPLIT"
+    }
   },
   {
     "title": "Two-Tap Tango",
@@ -201,7 +231,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "06-two-tap-tango.zip",
-    "folder": "06-two-tap-tango"
+    "folder": "06-two-tap-tango",
+    "design": {
+      "mode": "rhythm",
+      "scene": "dance",
+      "menu": "dance",
+      "mission": "BEAT WINDOW"
+    }
   },
   {
     "title": "Moss & Mugs",
@@ -235,7 +271,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "07-moss-and-mugs.zip",
-    "folder": "07-moss-and-mugs"
+    "folder": "07-moss-and-mugs",
+    "design": {
+      "mode": "serve",
+      "scene": "cafe",
+      "menu": "cafe",
+      "mission": "ORDER RAIL"
+    }
   },
   {
     "title": "Emoji Alibi",
@@ -269,7 +311,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "08-emoji-alibi.zip",
-    "folder": "08-emoji-alibi"
+    "folder": "08-emoji-alibi",
+    "design": {
+      "mode": "feed",
+      "scene": "chat",
+      "menu": "chat",
+      "mission": "CONTRADICTION FOUND"
+    }
   },
   {
     "title": "Pigeon Panic",
@@ -303,7 +351,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "09-pigeon-panic.zip",
-    "folder": "09-pigeon-panic"
+    "folder": "09-pigeon-panic",
+    "design": {
+      "mode": "catcher",
+      "scene": "street",
+      "menu": "street",
+      "mission": "CATCH THE CHIP"
+    }
   },
   {
     "title": "Cloud Save",
@@ -337,7 +391,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "10-cloud-save.zip",
-    "folder": "10-cloud-save"
+    "folder": "10-cloud-save",
+    "design": {
+      "mode": "route",
+      "scene": "sky",
+      "menu": "postcard",
+      "mission": "WEATHER RECIPE"
+    }
   },
   {
     "title": "Orbit Snack",
@@ -371,7 +431,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "11-orbit-snack.zip",
-    "folder": "11-orbit-snack"
+    "folder": "11-orbit-snack",
+    "design": {
+      "mode": "orbit",
+      "scene": "stars",
+      "menu": "launch",
+      "mission": "GRAVITY WINDOW"
+    }
   },
   {
     "title": "Color Debt",
@@ -405,7 +471,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "12-color-debt.zip",
-    "folder": "12-color-debt"
+    "folder": "12-color-debt",
+    "design": {
+      "mode": "sort",
+      "scene": "tiles",
+      "menu": "ledger",
+      "mission": "PAY THE DEBT"
+    }
   },
   {
     "title": "One More Tile",
@@ -439,7 +511,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "13-one-more-tile.zip",
-    "folder": "13-one-more-tile"
+    "folder": "13-one-more-tile",
+    "design": {
+      "mode": "route",
+      "scene": "blueprint",
+      "menu": "blueprint",
+      "mission": "CONNECT THE PATH"
+    }
   },
   {
     "title": "Cat Nap Courier",
@@ -473,7 +551,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "14-cat-nap-courier.zip",
-    "folder": "14-cat-nap-courier"
+    "folder": "14-cat-nap-courier",
+    "design": {
+      "mode": "route",
+      "scene": "apartment",
+      "menu": "notice",
+      "mission": "QUIET DELIVERY"
+    }
   },
   {
     "title": "Beat the Buzzer",
@@ -507,7 +591,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "15-beat-the-buzzer.zip",
-    "folder": "15-beat-the-buzzer"
+    "folder": "15-beat-the-buzzer",
+    "design": {
+      "mode": "rhythm",
+      "scene": "show",
+      "menu": "show",
+      "mission": "SAFE BUZZER"
+    }
   },
   {
     "title": "Doomscroll Dungeon",
@@ -541,7 +631,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "16-doomscroll-dungeon.zip",
-    "folder": "16-doomscroll-dungeon"
+    "folder": "16-doomscroll-dungeon",
+    "design": {
+      "mode": "feed",
+      "scene": "phone",
+      "menu": "feed",
+      "mission": "SWIPE THE MAP"
+    }
   },
   {
     "title": "Tiny Train Jam",
@@ -575,7 +671,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "17-tiny-train-jam.zip",
-    "folder": "17-tiny-train-jam"
+    "folder": "17-tiny-train-jam",
+    "design": {
+      "mode": "rail",
+      "scene": "valley",
+      "menu": "ticket",
+      "mission": "SWITCH THE TRACK"
+    }
   },
   {
     "title": "Scream Test 1999",
@@ -609,7 +711,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "18-scream-test-1999.zip",
-    "folder": "18-scream-test-1999"
+    "folder": "18-scream-test-1999",
+    "design": {
+      "mode": "memory",
+      "scene": "crt",
+      "menu": "crt",
+      "mission": "DIAGNOSTIC TAPE"
+    }
   },
   {
     "title": "Pondbound",
@@ -643,7 +751,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "19-pondbound.zip",
-    "folder": "19-pondbound"
+    "folder": "19-pondbound",
+    "design": {
+      "mode": "pond",
+      "scene": "water",
+      "menu": "journal",
+      "mission": "SAFE LILY PAD"
+    }
   },
   {
     "title": "Lucky Lanterns",
@@ -677,7 +791,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "20-lucky-lanterns.zip",
-    "folder": "20-lucky-lanterns"
+    "folder": "20-lucky-lanterns",
+    "design": {
+      "mode": "sort",
+      "scene": "river",
+      "menu": "folded",
+      "mission": "RIVER ORDER"
+    }
   },
   {
     "title": "Beat Bloom",
@@ -711,7 +831,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "21-beat-bloom.zip",
-    "folder": "21-beat-bloom"
+    "folder": "21-beat-bloom",
+    "design": {
+      "mode": "rhythm",
+      "scene": "garden",
+      "menu": "album",
+      "mission": "GROW THE BEAT"
+    }
   },
   {
     "title": "Traffic Ghost",
@@ -745,7 +871,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "22-traffic-ghost.zip",
-    "folder": "22-traffic-ghost"
+    "folder": "22-traffic-ghost",
+    "design": {
+      "mode": "runner",
+      "scene": "freeway",
+      "menu": "dashboard",
+      "mission": "OVERTAKE THE GHOST"
+    }
   },
   {
     "title": "Shelf Life",
@@ -779,7 +911,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "23-shelf-life.zip",
-    "folder": "23-shelf-life"
+    "folder": "23-shelf-life",
+    "design": {
+      "mode": "sort",
+      "scene": "shop",
+      "menu": "inventory",
+      "mission": "STOCK THE SHELF"
+    }
   },
   {
     "title": "Don’t Look Back",
@@ -813,7 +951,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "24-dont-look-back.zip",
-    "folder": "24-dont-look-back"
+    "folder": "24-dont-look-back",
+    "design": {
+      "mode": "memory",
+      "scene": "hallway",
+      "menu": "narrow",
+      "mission": "SAFE FOOTSTEPS"
+    }
   },
   {
     "title": "Hot Potato Protocol",
@@ -847,7 +991,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "25-hot-potato-protocol.zip",
-    "folder": "25-hot-potato-protocol"
+    "folder": "25-hot-potato-protocol",
+    "design": {
+      "mode": "tap",
+      "scene": "party",
+      "menu": "radial",
+      "mission": "PASS THE HEAT"
+    }
   },
   {
     "title": "Snack Attack",
@@ -881,7 +1031,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "26-snack-attack.zip",
-    "folder": "26-snack-attack"
+    "folder": "26-snack-attack",
+    "design": {
+      "mode": "catcher",
+      "scene": "kitchen",
+      "menu": "lunch",
+      "mission": "CATCH THE ORDER"
+    }
   },
   {
     "title": "Orbiting Room",
@@ -915,7 +1071,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "27-orbiting-room.zip",
-    "folder": "27-orbiting-room"
+    "folder": "27-orbiting-room",
+    "design": {
+      "mode": "drag",
+      "scene": "stars",
+      "menu": "interior",
+      "mission": "LIGHT THE ROOM"
+    }
   },
   {
     "title": "Plant Parent",
@@ -949,7 +1111,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "28-plant-parent.zip",
-    "folder": "28-plant-parent"
+    "folder": "28-plant-parent",
+    "design": {
+      "mode": "serve",
+      "scene": "garden",
+      "menu": "sms",
+      "mission": "READ THE PLANT"
+    }
   },
   {
     "title": "Loop Detective",
@@ -983,7 +1151,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "29-loop-detective.zip",
-    "folder": "29-loop-detective"
+    "folder": "29-loop-detective",
+    "design": {
+      "mode": "anomaly",
+      "scene": "noir",
+      "menu": "evidence",
+      "mission": "FIND THE FRAME"
+    }
   },
   {
     "title": "Quickdraw Postcard",
@@ -1017,7 +1191,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "30-quickdraw-postcard.zip",
-    "folder": "30-quickdraw-postcard"
+    "folder": "30-quickdraw-postcard",
+    "design": {
+      "mode": "draw",
+      "scene": "paper",
+      "menu": "postcard",
+      "mission": "TRACE THE STAMP"
+    }
   },
   {
     "title": "Moonbase Merge",
@@ -1051,7 +1231,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "31-moonbase-merge.zip",
-    "folder": "31-moonbase-merge"
+    "folder": "31-moonbase-merge",
+    "design": {
+      "mode": "merge",
+      "scene": "moonbase",
+      "menu": "mission",
+      "mission": "BUILD BREAKFAST"
+    }
   },
   {
     "title": "Late Night Laundromat",
@@ -1085,7 +1271,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "32-late-night-laundromat.zip",
-    "folder": "32-late-night-laundromat"
+    "folder": "32-late-night-laundromat",
+    "design": {
+      "mode": "sort",
+      "scene": "laundromat",
+      "menu": "ticket",
+      "mission": "SORT THE LOAD"
+    }
   },
   {
     "title": "Neon Noodle",
@@ -1119,7 +1311,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "33-neon-noodle.zip",
-    "folder": "33-neon-noodle"
+    "folder": "33-neon-noodle",
+    "design": {
+      "mode": "tether",
+      "scene": "kitchen",
+      "menu": "takeout",
+      "mission": "STEER THE NOODLE"
+    }
   },
   {
     "title": "Soundcheck 404",
@@ -1153,7 +1351,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "34-soundcheck-404.zip",
-    "folder": "34-soundcheck-404"
+    "folder": "34-soundcheck-404",
+    "design": {
+      "mode": "slider",
+      "scene": "broadcast",
+      "menu": "console",
+      "mission": "TUNE THE SIGNAL"
+    }
   },
   {
     "title": "Paper Plane Panic",
@@ -1187,7 +1391,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "35-paper-plane-panic.zip",
-    "folder": "35-paper-plane-panic"
+    "folder": "35-paper-plane-panic",
+    "design": {
+      "mode": "rail",
+      "scene": "office",
+      "menu": "paper",
+      "mission": "CATCH THE GUST"
+    }
   },
   {
     "title": "Graveyard Shift",
@@ -1221,7 +1431,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "36-graveyard-shift.zip",
-    "folder": "36-graveyard-shift"
+    "folder": "36-graveyard-shift",
+    "design": {
+      "mode": "serve",
+      "scene": "cemetery",
+      "menu": "ledger",
+      "mission": "SERVE THE NIGHT"
+    }
   },
   {
     "title": "Marble Runaway",
@@ -1255,7 +1471,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "37-marble-runaway.zip",
-    "folder": "37-marble-runaway"
+    "folder": "37-marble-runaway",
+    "design": {
+      "mode": "runner",
+      "scene": "toybox",
+      "menu": "toybox",
+      "mission": "OPEN THE RAMP"
+    }
   },
   {
     "title": "Signal / Noise",
@@ -1289,7 +1511,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "38-signal-noise.zip",
-    "folder": "38-signal-noise"
+    "folder": "38-signal-noise",
+    "design": {
+      "mode": "slider",
+      "scene": "oscilloscope",
+      "menu": "lab",
+      "mission": "CLEAN THE WAVE"
+    }
   },
   {
     "title": "Bubble Wrap Boss",
@@ -1323,7 +1551,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "39-bubble-wrap-boss.zip",
-    "folder": "39-bubble-wrap-boss"
+    "folder": "39-bubble-wrap-boss",
+    "design": {
+      "mode": "tap",
+      "scene": "factory",
+      "menu": "punchcard",
+      "mission": "POP THE ROW"
+    }
   },
   {
     "title": "Daily Doodle Duel",
@@ -1357,7 +1591,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "40-daily-doodle-duel.zip",
-    "folder": "40-daily-doodle-duel"
+    "folder": "40-daily-doodle-duel",
+    "design": {
+      "mode": "draw",
+      "scene": "paper",
+      "menu": "sketchbook",
+      "mission": "DRAW THE PROMPT"
+    }
   },
   {
     "title": "Tidepool Tactics",
@@ -1391,7 +1631,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "41-tidepool-tactics.zip",
-    "folder": "41-tidepool-tactics"
+    "folder": "41-tidepool-tactics",
+    "design": {
+      "mode": "pond",
+      "scene": "water",
+      "menu": "fieldguide",
+      "mission": "OPEN THE TIDE GATE"
+    }
   },
   {
     "title": "Night Market Dash",
@@ -1425,7 +1671,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "42-night-market-dash.zip",
-    "folder": "42-night-market-dash"
+    "folder": "42-night-market-dash",
+    "design": {
+      "mode": "runner",
+      "scene": "market",
+      "menu": "vendor",
+      "mission": "FIND THE OPEN LANE"
+    }
   },
   {
     "title": "Soft Reset",
@@ -1459,7 +1711,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "43-soft-reset.zip",
-    "folder": "43-soft-reset"
+    "folder": "43-soft-reset",
+    "design": {
+      "mode": "sort",
+      "scene": "desktop",
+      "menu": "boot",
+      "mission": "CLEAR THE NOISE"
+    }
   },
   {
     "title": "Mango Meteor",
@@ -1493,7 +1751,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "44-mango-meteor.zip",
-    "folder": "44-mango-meteor"
+    "folder": "44-mango-meteor",
+    "design": {
+      "mode": "tap",
+      "scene": "kitchen",
+      "menu": "recipe",
+      "mission": "SLICE THE FRUIT"
+    }
   },
   {
     "title": "Houseplant Hotline",
@@ -1527,7 +1791,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "45-houseplant-hotline.zip",
-    "folder": "45-houseplant-hotline"
+    "folder": "45-houseplant-hotline",
+    "design": {
+      "mode": "serve",
+      "scene": "garden",
+      "menu": "switchboard",
+      "mission": "ANSWER THE CALL"
+    }
   },
   {
     "title": "Four Beat Forecast",
@@ -1561,7 +1831,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "46-four-beat-forecast.zip",
-    "folder": "46-four-beat-forecast"
+    "folder": "46-four-beat-forecast",
+    "design": {
+      "mode": "rhythm",
+      "scene": "weather",
+      "menu": "broadcast",
+      "mission": "PLAY THE FORECAST"
+    }
   },
   {
     "title": "Ghost in the Queue",
@@ -1595,7 +1871,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "47-ghost-in-the-queue.zip",
-    "folder": "47-ghost-in-the-queue"
+    "folder": "47-ghost-in-the-queue",
+    "design": {
+      "mode": "feed",
+      "scene": "station",
+      "menu": "ticket",
+      "mission": "CALL THE QUEUE"
+    }
   },
   {
     "title": "Mirror Match",
@@ -1629,7 +1911,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "48-mirror-match.zip",
-    "folder": "48-mirror-match"
+    "folder": "48-mirror-match",
+    "design": {
+      "mode": "anomaly",
+      "scene": "mirror",
+      "menu": "museum",
+      "mission": "RESTORE SYMMETRY"
+    }
   },
   {
     "title": "Kite String Theory",
@@ -1663,7 +1951,13 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "49-kite-string-theory.zip",
-    "folder": "49-kite-string-theory"
+    "folder": "49-kite-string-theory",
+    "design": {
+      "mode": "tether",
+      "scene": "sky",
+      "menu": "windmap",
+      "mission": "CATCH THE CURRENT"
+    }
   },
   {
     "title": "Lucky Number 13",
@@ -1697,6 +1991,12 @@
     "entry": "index.html",
     "thumbnail": "thumbnail.png",
     "upload_zip": "50-lucky-number-13.zip",
-    "folder": "50-lucky-number-13"
+    "folder": "50-lucky-number-13",
+    "design": {
+      "mode": "card",
+      "scene": "velvet",
+      "menu": "velvet",
+      "mission": "DRAW YOUR LUCK"
+    }
   }
 ]

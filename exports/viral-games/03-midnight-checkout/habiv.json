@@ -30,6 +30,6 @@
     "touch": "Choose an item"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Midnight Checkout. You are alone at a convenience store after midnight. Scan ordinary objects, watch the freezer reflection, and follow the correct closing sequence before the last customer stops being ordinary.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique anomaly browser-game design: REFLECTION CHECK. Build Midnight Checkout around Repeat the closing sequence without looking away.",
+  "changelog": "Unique gameplay and menu redesign"
 }

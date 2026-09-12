@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "46-four-beat-forecast.zip"
+  "upload_zip": "46-four-beat-forecast.zip",
+  "folder": "46-four-beat-forecast",
+  "design": {
+    "mode": "rhythm",
+    "scene": "weather",
+    "menu": "broadcast",
+    "mission": "PLAY THE FORECAST"
+  }
 }

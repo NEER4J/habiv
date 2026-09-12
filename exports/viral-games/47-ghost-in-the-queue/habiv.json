@@ -30,6 +30,6 @@
     "touch": "Inspect a ticket"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Ghost in the Queue. Manage a tiny ticket queue while an invisible guest moves between positions. Watch timestamps, ask one careful question, and decide when to serve the impossible ticket.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique feed browser-game design: CALL THE QUEUE. Build Ghost in the Queue around Call the tickets in the only safe order.",
+  "changelog": "Unique gameplay and menu redesign"
 }

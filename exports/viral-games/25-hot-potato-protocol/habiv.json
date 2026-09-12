@@ -30,6 +30,6 @@
     "touch": "Pass the potato"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Hot Potato Protocol. The potato gives off a different safe color every round. Tap to pass it to the matching bot, but ignore the fake instruction stamped in the corner.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique tap browser-game design: PASS THE HEAT. Build Hot Potato Protocol around Tap the bot with the current safe color.",
+  "changelog": "Unique gameplay and menu redesign"
 }

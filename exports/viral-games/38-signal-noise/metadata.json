@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "38-signal-noise.zip"
+  "upload_zip": "38-signal-noise.zip",
+  "folder": "38-signal-noise",
+  "design": {
+    "mode": "slider",
+    "scene": "oscilloscope",
+    "menu": "lab",
+    "mission": "CLEAN THE WAVE"
+  }
 }

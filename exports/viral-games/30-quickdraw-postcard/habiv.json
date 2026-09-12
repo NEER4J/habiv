@@ -30,6 +30,6 @@
     "touch": "Stamp the postcard"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Quickdraw Postcard. A postcard flashes a tiny icon and gives you one breath to trace it with the pointer. Accuracy beats speed until the last round reverses the prompt.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique draw browser-game design: TRACE THE STAMP. Build Quickdraw Postcard around Tap the postcard stamp when the signal is green.",
+  "changelog": "Unique gameplay and menu redesign"
 }

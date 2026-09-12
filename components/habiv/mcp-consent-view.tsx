@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { CSSProperties } from "react";
 import { decideAuthorization } from "@/lib/actions/oauth";
 import { bpanel, chipBtn, mono, monoLabel, primaryBtn } from "@/lib/habiv/ui";
-import { Avatar } from "./avatar";
+import { UserAvatar } from "./avatar";
 
 const wrap: CSSProperties = { display: "flex", justifyContent: "center", padding: "48px 0" };
 const card: CSSProperties = { ...bpanel, width: "min(460px, 100%)", padding: "28px", borderRadius: "20px" };
@@ -38,12 +38,14 @@ export function McpConsentView({
   redirectUri,
   handle,
   displayName,
+  avatarUrl,
   params,
 }: {
   clientName: string;
   redirectUri: string;
   handle: string;
   displayName: string;
+  avatarUrl: string | null;
   params: Record<string, string>;
 }) {
   return (
@@ -53,7 +55,7 @@ export function McpConsentView({
         <h1 style={title}>{clientName} wants to publish to your Habiv account</h1>
 
         <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "18px", padding: "12px", borderRadius: "12px", background: "var(--chip)" }}>
-          <Avatar seed={handle} size={36} />
+          <UserAvatar url={avatarUrl} seed={handle} size={36} />
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: "14px", fontWeight: 600 }}>{displayName}</div>
             <div style={{ fontSize: "13px", color: "var(--ink-4)" }}>@{handle}</div>

@@ -30,6 +30,6 @@
     "touch": "Mark a frame"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Loop Detective. A hallway security feed repeats every ten seconds. Compare each loop, mark the single frame that should not exist, and decide whether to break the loop.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique anomaly browser-game design: FIND THE FRAME. Build Loop Detective around Choose the changed frame in the correct order.",
+  "changelog": "Unique gameplay and menu redesign"
 }

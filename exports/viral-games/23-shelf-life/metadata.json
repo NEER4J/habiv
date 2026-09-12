@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "23-shelf-life.zip"
+  "upload_zip": "23-shelf-life.zip",
+  "folder": "23-shelf-life",
+  "design": {
+    "mode": "sort",
+    "scene": "shop",
+    "menu": "inventory",
+    "mission": "STOCK THE SHELF"
+  }
 }

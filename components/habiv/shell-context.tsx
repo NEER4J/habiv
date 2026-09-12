@@ -14,6 +14,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { bentoCols } from "@/lib/habiv/bento";
 import { applyTheme, LIGHT_CLASS, type Theme } from "@/lib/habiv/theme";
 import { toggleSave } from "@/lib/actions/social";
+import { avatarSeedOf } from "@/lib/site";
 import type { Game } from "@/lib/habiv/games";
 
 /** "shareScore" is the share modal opened on the viewer's own result instead of the game. */
@@ -249,7 +250,7 @@ export function ShellProvider({ children }: { children: ReactNode }) {
     setPinned(s.pinned);
     setBuiltThisWeek(s.builtThisWeek);
     setTotalPlays(s.totalPlays);
-    if (s.profile?.handle) setAvatarSeed(s.profile.handle);
+    if (s.profile?.handle) setAvatarSeed(avatarSeedOf(s.profile.avatarUrl) ?? s.profile.handle);
     setSessionReady(true);
   }, []);
 

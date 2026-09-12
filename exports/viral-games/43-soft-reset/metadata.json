@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "43-soft-reset.zip"
+  "upload_zip": "43-soft-reset.zip",
+  "folder": "43-soft-reset",
+  "design": {
+    "mode": "sort",
+    "scene": "desktop",
+    "menu": "boot",
+    "mission": "CLEAR THE NOISE"
+  }
 }

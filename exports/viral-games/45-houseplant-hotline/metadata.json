@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "45-houseplant-hotline.zip"
+  "upload_zip": "45-houseplant-hotline.zip",
+  "folder": "45-houseplant-hotline",
+  "design": {
+    "mode": "serve",
+    "scene": "garden",
+    "menu": "switchboard",
+    "mission": "ANSWER THE CALL"
+  }
 }

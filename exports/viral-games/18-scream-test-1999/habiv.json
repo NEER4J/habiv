@@ -30,6 +30,6 @@
     "touch": "Run a diagnostic"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Scream Test 1999. Run diagnostics on a beige computer, watch the waveform, and keep the volume low enough that the thing behind the monitor does not notice you listening.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique memory browser-game design: DIAGNOSTIC TAPE. Build Scream Test 1999 around Repeat the diagnostic sequence before the signal changes.",
+  "changelog": "Unique gameplay and menu redesign"
 }

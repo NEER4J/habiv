@@ -12,6 +12,8 @@ export async function loadFeedPage(input: {
   category?: string | null;
   model?: string | null;
   agent?: string | null;
+  /** creator handle */
+  creator?: string | null;
   offset?: number;
   limit?: number;
 }): Promise<{ items: Game[]; nextOffset: number | null }> {
@@ -21,6 +23,7 @@ export async function loadFeedPage(input: {
     category,
     model: filterValue(input.model),
     agent: filterValue(input.agent),
+    creator: filterValue(input.creator),
     offset: input.offset ?? 0,
     limit: Math.min(input.limit ?? 12, 48),
   });

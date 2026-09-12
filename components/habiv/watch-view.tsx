@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { preconnect } from "react-dom";
-import { art, best, controlsFor, fmt, initialsOf, relativeTime, touchHintFor } from "@/lib/habiv/games";
+import { art, best, controlsFor, fmt, relativeTime, touchHintFor, type Game } from "@/lib/habiv/games";
+import { loadFeedPage } from "@/lib/actions/feed";
 import type { WatchData } from "@/lib/habiv/page-data";
 import { gameFrameSrc } from "@/lib/bridge/parent";
 import { mountBridgeHost, type BridgeHost, type HostEvent } from "@/lib/player/bridge-host";
@@ -17,8 +18,15 @@ import { gameOrigin, siteUrl } from "@/lib/site";
 import { createPortal } from "react-dom";
 import { bpanel, chipBtn, chipStyle, ctrlBtn, modalScrimStyle, modalSmStyleFor, mono, monoLabel, pill } from "@/lib/habiv/ui";
 import { Maximize, RectangleHorizontal, RotateCcw, Volume2, VolumeX } from "lucide-react";
-import { CreatorAvatar, RailRow } from "./game-card";
+import { UserAvatar } from "./avatar";
+import { CreatorAvatar, RailRow, shimmer } from "./game-card";
 import { useShell } from "./shell-context";
+
+type RailKey = "all" | "model" | "creator" | "type";
+type RailList = { items: Game[]; next: number | null; loading: boolean };
+const RAIL_PAGE = 12;
+/** One RailRow: a 58px thumb plus 6px padding above and below. */
+const RAIL_ROW_H = 70;
 
 type PlayerState = "cover" | "loading" | "playing" | "paused";
 
@@ -102,33 +110,6 @@ const smallActionBtn: CSSProperties = {
   cursor: "pointer",
 };
 
-function Avatar({ name, url, size }: { name: string; url: string | null; size: number }) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: `${size}px`,
-        height: `${size}px`,
-        flex: "0 0 auto",
-        borderRadius: "50%",
-        overflow: "hidden",
-        background: "var(--chip-2)",
-        color: "var(--ink)",
-        fontSize: size > 30 ? "12px" : "10.5px",
-        fontWeight: 600,
-      }}
-    >
-      {url ? (
-        // eslint-disable-next-line @next/next/no-img-element -- tiny avatar from the CDN
-        <img src={url} alt="" width={size} height={size} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-      ) : (
-        initialsOf(name)
-      )}
-    </div>
-  );
-}
 
 export function WatchView({ data }: { data: WatchData }) {
   const { game, viewer, runsToday } = data;
@@ -213,8 +194,17 @@ export function WatchView({ data }: { data: WatchData }) {
   const [copied, setCopied] = useState(false);
 
   // Rail
-  const [railFilter, setRailFilter] = useState("All");
+  const [railFilter, setRailFilter] = useState<RailKey>("all");
   const [queueSeed, setQueueSeed] = useState(0);
+  const [railLists, setRailLists] = useState<Partial<Record<RailKey, RailList>>>({ all: { items: data.queue, next: data.queueNext, loading: false } });
+  // Rows that fit beside the player; null when the rail sits under it (tablets, phones, theatre) and just shows a page.
+  const [railFit, setRailFit] = useState<number | null>(null);
+  const sectionRef = useRef<HTMLElement>(null);
+  const railRef = useRef<HTMLElement>(null);
+  const railListRef = useRef<HTMLDivElement>(null);
+  const railFootRef = useRef<HTMLDivElement>(null);
+  // Bumped when the page switches games, so a rail page still loading for the old game is dropped.
+  const railGen = useRef(0);
 
   // Comments
   const [comments, setComments] = useState<CommentItem[]>(data.comments.items);
@@ -270,8 +260,10 @@ export function WatchView({ data }: { data: WatchData }) {
     setLikes(game.likes);
     setFollowing(viewer.following);
     setFollowers(game.followers);
-    setRailFilter("All");
+    setRailFilter("all");
     setQueueSeed(0);
+    railGen.current += 1;
+    setRailLists({ all: { items: data.queue, next: data.queueNext, loading: false } });
     setComments(data.comments.items);
     setCommentCount(game.comments);
     setCommentSort("Top");
@@ -279,7 +271,7 @@ export function WatchView({ data }: { data: WatchData }) {
     setReplyTo(null);
     setReplyDraft("");
     setRepliesOpen(null);
-  }, [game.id, game.likes, game.followers, game.comments, viewer.liked, viewer.following, viewer.rank, data.comments.items, data.leaderboard, data.nowPlaying]);
+  }, [game.id, game.likes, game.followers, game.comments, viewer.liked, viewer.following, viewer.rank, data.comments.items, data.leaderboard, data.nowPlaying, data.queue, data.queueNext]);
 
   useEffect(
     () => () => {
@@ -635,16 +627,76 @@ export function WatchView({ data }: { data: WatchData }) {
   const soundLabel = muted ? "Sound off" : "Sound on";
   const stateLabel = { cover: "READY", loading: "LOADING", playing: "PLAYING", paused: "PAUSED" }[state];
 
-  // Up-next queue, filtered client-side.
-  let recPool = data.queue;
-  if (railFilter === "Same model") recPool = data.queue.filter((x) => x.model === game.model);
-  else if (railFilter === `@${game.creator}`) recPool = data.queue.filter((x) => x.creator === game.creator);
-  else if (railFilter === game.type) recPool = data.queue.filter((x) => x.type === game.type);
-  if (!recPool.length) recPool = data.queue;
-  const queue =
-    queueSeed && recPool.length
-      ? recPool.slice(queueSeed % recPool.length).concat(recPool.slice(0, queueSeed % recPool.length))
-      : recPool;
+  // Up-next queue. Each filter pages in from the server; beside the player it keeps loading until
+  // the rail is as tall as the player column, then ends on a link to see more.
+  const railFilters: { key: RailKey; label: string }[] = [
+    { key: "all", label: "All" },
+    ...(game.model ? [{ key: "model" as const, label: "Same model" }] : []),
+    { key: "creator", label: `@${game.creator}` },
+    { key: "type", label: game.type },
+  ];
+  const rail = railLists[railFilter] ?? { items: [], next: 0, loading: false };
+  const railWant = railFit ?? RAIL_PAGE;
+
+  const loadRail = useCallback(
+    (key: RailKey, offset: number) => {
+      const gen = railGen.current;
+      setRailLists((ls) => ({ ...ls, [key]: { items: ls[key]?.items ?? [], next: offset, loading: true } }));
+      const filter = key === "model" ? { model: game.model } : key === "creator" ? { creator: game.creator } : key === "type" ? { category: game.category } : {};
+      loadFeedPage({ sort: "hot", ...filter, offset, limit: RAIL_PAGE })
+        .then((page) => {
+          if (gen !== railGen.current) return;
+          setRailLists((ls) => {
+            const prev = ls[key]?.items ?? [];
+            const fresh = page.items.filter((g) => g.id !== game.id && !prev.some((p) => p.id === g.id));
+            return { ...ls, [key]: { items: prev.concat(fresh), next: page.nextOffset, loading: false } };
+          });
+        })
+        .catch(() => {
+          if (gen === railGen.current) setRailLists((ls) => ({ ...ls, [key]: { items: ls[key]?.items ?? [], next: null, loading: false } }));
+        });
+    },
+    [game.id, game.model, game.creator, game.category],
+  );
+
+  useEffect(() => {
+    if (!rail.loading && rail.next != null && rail.items.length < railWant) loadRail(railFilter, rail.next);
+  }, [railFilter, railWant, rail.loading, rail.next, rail.items.length, loadRail]);
+
+  // How many rows fit beside the player, re-measured whenever the player column changes size.
+  useEffect(() => {
+    const section = sectionRef.current;
+    const aside = railRef.current;
+    if (!section || !aside) return;
+    const measure = () => {
+      const list = railListRef.current;
+      // Under the player the rail is as tall as its content, so there is no gap to fill.
+      if (theatre || !list || aside.getBoundingClientRect().top >= section.getBoundingClientRect().bottom) return setRailFit(null);
+      const above = list.getBoundingClientRect().top - aside.getBoundingClientRect().top;
+      const room = section.offsetHeight - above - (railFootRef.current?.offsetHeight ?? 0) - 12;
+      setRailFit(Math.max(1, Math.floor(room / RAIL_ROW_H)));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(section);
+    return () => ro.disconnect();
+  }, [theatre]);
+
+  const rotated =
+    queueSeed && rail.items.length
+      ? rail.items.slice(queueSeed % rail.items.length).concat(rail.items.slice(0, queueSeed % rail.items.length))
+      : rail.items;
+  const queue = railFit == null ? rotated : rotated.slice(0, railFit);
+  const railPending = rail.loading || (rail.next != null && rail.items.length < railWant);
+  const railBones = railPending ? Math.max(0, Math.min(railWant - queue.length, 4)) : 0;
+  const railMore =
+    railFilter === "creator"
+      ? { href: `/@${game.creator}`, label: `More from @${game.creator}` }
+      : railFilter === "model"
+        ? { href: `/explore?model=${encodeURIComponent(game.model)}`, label: "Explore more games" }
+        : railFilter === "type"
+          ? { href: `/explore?category=${encodeURIComponent(game.category)}`, label: `Explore more ${game.type} games` }
+          : { href: "/explore", label: "Explore more games" };
 
   // Comments
   const sortedComments = comments.slice().sort((a, b) => {
@@ -901,7 +953,7 @@ export function WatchView({ data }: { data: WatchData }) {
   return (
     <>
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", gap: theatre ? "0px" : "12px" }}>
-        <section style={{ flex: "1 1 600px", minWidth: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
+        <section ref={sectionRef} style={{ flex: "1 1 600px", minWidth: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
           {game.playing && !theatre ? (
             <div
               style={{
@@ -1607,6 +1659,7 @@ export function WatchView({ data }: { data: WatchData }) {
         {/* Up next rail: beside the player, or a full-width row under it once the row wraps (tablets)
             and in theatre mode, where the queue goes two columns (.hb-queue in globals.css). */}
         <aside
+          ref={railRef}
           className="hb-watch-side"
           style={{
             ...bpanel,
@@ -1616,6 +1669,8 @@ export function WatchView({ data }: { data: WatchData }) {
             marginTop: theatre ? "12px" : undefined,
             padding: "12px",
             alignSelf: "stretch",
+            display: "flex",
+            flexDirection: "column",
           }}
         >
           <div
@@ -1630,7 +1685,10 @@ export function WatchView({ data }: { data: WatchData }) {
           >
             <div style={{ display: "flex", alignItems: "baseline", gap: "9px" }}>
               <span style={{ fontSize: "15px", fontWeight: 600 }}>Up next</span>
-              <span style={{ fontFamily: mono, fontSize: "10.5px", color: "var(--ink-6)" }}>{recPool.length} in queue</span>
+              <span style={{ fontFamily: mono, fontSize: "10.5px", color: "var(--ink-6)" }}>
+                {rail.items.length}
+                {rail.next != null ? "+" : ""} in queue
+              </span>
             </div>
             <button
               onClick={() => setQueueSeed((q) => q + 1)}
@@ -1651,10 +1709,13 @@ export function WatchView({ data }: { data: WatchData }) {
             </button>
           </div>
           <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "6px", padding: "10px 0 8px" }}>
-            {["All", "Same model", `@${game.creator}`, game.type].map((l) => (
+            {railFilters.map(({ key, label }) => (
               <button
-                key={l}
-                onClick={() => setRailFilter(l)}
+                key={key}
+                onClick={() => {
+                  setRailFilter(key);
+                  setQueueSeed(0);
+                }}
                 style={{
                   flex: "0 0 auto",
                   height: "28px",
@@ -1664,20 +1725,49 @@ export function WatchView({ data }: { data: WatchData }) {
                   fontWeight: 500,
                   cursor: "pointer",
                   whiteSpace: "nowrap",
-                  background: railFilter === l ? "var(--ink)" : "var(--chip)",
-                  color: railFilter === l ? "var(--ink-invert)" : "var(--ink-4)",
+                  background: railFilter === key ? "var(--ink)" : "var(--chip)",
+                  color: railFilter === key ? "var(--ink-invert)" : "var(--ink-4)",
                 }}
               >
-                {l}
+                {label}
               </button>
             ))}
           </div>
-          <div className="hb-queue">
-            {queue.length ? (
-              queue.map((x, i) => <RailRow key={x.id} game={x} queueNo={String(i + 1).padStart(2, "0")} />)
-            ) : (
-              <div style={{ gridColumn: "1 / -1", padding: "14px 8px", fontSize: "13px", color: "var(--ink-5)" }}>Nothing else in the queue yet.</div>
-            )}
+          <div ref={railListRef} className="hb-queue">
+            {queue.map((x, i) => (
+              <RailRow key={x.id} game={x} queueNo={String(i + 1).padStart(2, "0")} />
+            ))}
+            {Array.from({ length: railBones }, (_, i) => (
+              <div key={`bone-${i}`} aria-hidden="true" style={{ display: "flex", alignItems: "center", gap: "10px", padding: "6px" }}>
+                <div style={{ width: "100px", height: "58px", flex: "0 0 100px", borderRadius: "8px", ...shimmer }} />
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div style={{ width: "70%", height: "12px", borderRadius: "6px", ...shimmer }} />
+                  <div style={{ width: "45%", height: "9px", borderRadius: "6px", ...shimmer }} />
+                </div>
+              </div>
+            ))}
+            {!queue.length && !railBones ? (
+              <div style={{ gridColumn: "1 / -1", padding: "14px 8px", fontSize: "13px", color: "var(--ink-5)" }}>Nothing else here yet.</div>
+            ) : null}
+          </div>
+          <div ref={railFootRef} style={{ marginTop: "auto", paddingTop: "10px" }}>
+            <Link
+              href={railMore.href}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "36px",
+                borderRadius: "8px",
+                background: "var(--chip)",
+                color: "var(--ink-2)",
+                fontSize: "13px",
+                fontWeight: 500,
+                textDecoration: "none",
+              }}
+            >
+              {railMore.label}
+            </Link>
           </div>
         </aside>
       </div>
@@ -1699,7 +1789,7 @@ export function WatchView({ data }: { data: WatchData }) {
           </div>
 
           <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", marginTop: "18px" }}>
-            <Avatar name={signedIn ? profile.name : "?"} url={signedIn ? profile.avatarUrl : null} size={36} />
+            <UserAvatar url={signedIn ? profile.avatarUrl : null} seed={signedIn ? profile.handle : ""} size={36} />
             <div style={{ flex: 1, minWidth: 0 }}>
               <input
                 className="hb-input"
@@ -1753,7 +1843,7 @@ export function WatchView({ data }: { data: WatchData }) {
             ) : null}
             {sortedComments.map((c) => (
               <div key={c.id} style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
-                <Avatar name={c.author.displayName || c.author.handle} url={c.author.avatarUrl} size={36} />
+                <UserAvatar url={c.author.avatarUrl} seed={c.author.handle} size={36} />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
                     {c.pinned ? <span style={{ ...monoLabel, fontSize: "10px", letterSpacing: "0.1em" }}>Pinned</span> : null}
@@ -1871,7 +1961,7 @@ export function WatchView({ data }: { data: WatchData }) {
                     <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "14px" }}>
                       {c.replies.map((r) => (
                         <div key={r.id} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
-                          <Avatar name={r.author.displayName || r.author.handle} url={r.author.avatarUrl} size={28} />
+                          <UserAvatar url={r.author.avatarUrl} seed={r.author.handle} size={28} />
                           <div style={{ minWidth: 0, flex: 1 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
                               <Link href={`/@${r.author.handle}`} style={{ fontSize: "12.5px", fontWeight: 600, color: "var(--ink)" }}>

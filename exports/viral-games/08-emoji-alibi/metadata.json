@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "08-emoji-alibi.zip"
+  "upload_zip": "08-emoji-alibi.zip",
+  "folder": "08-emoji-alibi",
+  "design": {
+    "mode": "feed",
+    "scene": "chat",
+    "menu": "chat",
+    "mission": "CONTRADICTION FOUND"
+  }
 }

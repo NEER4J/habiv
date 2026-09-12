@@ -20,6 +20,20 @@ export type PlayHistoryEntry = {
   boardTotal: number | null;
 };
 
+export type MyRun = { id: string; at: string; durationMs: number | null; score: number };
+
+/** The viewer's recent scored runs on one game, newest first. Same trust rules as getPlayHistory. */
+export async function getMyRuns(userId: string | null, playerId: string | null, gameId: string, limit = 20): Promise<MyRun[]> {
+  const pid = playerId && UUID_RE.test(playerId) ? playerId.toLowerCase() : null;
+  if ((!userId && !pid) || !UUID_RE.test(gameId)) return [];
+  const { data, error } = await createAdminClient().rpc("my_runs", { p_user: nullable(userId), p_pid: nullable(pid), p_game: gameId, p_limit: limit });
+  if (error) {
+    console.error("my_runs", error.message);
+    return [];
+  }
+  return (data ?? []).map((r) => ({ id: r.id, at: r.started_at, durationMs: r.duration_ms == null ? null : Number(r.duration_ms), score: Number(r.score) }));
+}
+
 /**
  * Games the viewer played (by account and by this browser's hv_pid), last played first. Runs live in
  * the unexposed analytics schema, so this reads through a service-role RPC: pass only ids the server

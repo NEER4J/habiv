@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "48-mirror-match.zip"
+  "upload_zip": "48-mirror-match.zip",
+  "folder": "48-mirror-match",
+  "design": {
+    "mode": "anomaly",
+    "scene": "mirror",
+    "menu": "museum",
+    "mission": "RESTORE SYMMETRY"
+  }
 }

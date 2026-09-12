@@ -4,11 +4,9 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { spanFor } from "@/lib/habiv/bento";
 import {
-  accentOf,
   art,
   best,
   fmt,
-  initialsOf,
   isPortrait,
   poster,
   shortModel,
@@ -17,6 +15,7 @@ import {
 } from "@/lib/habiv/games";
 import { bpanel, mono } from "@/lib/habiv/ui";
 import { useShell } from "./shell-context";
+import { UserAvatar } from "./avatar";
 import { GeneratedThumb, thumbInputForGame } from "./generated-thumb";
 import { CARD, COVER } from "@/lib/thumbs/styles";
 import type { ThumbInput, ThumbSize } from "@/lib/thumbs/styles";
@@ -539,33 +538,5 @@ export function RailRow({ game, queueNo, active }: { game: Game; queueNo?: strin
 }
 
 export function CreatorAvatar({ game, size = 40 }: { game: Game; size?: number }) {
-  const box: CSSProperties = {
-    width: `${size}px`,
-    height: `${size}px`,
-    flex: "0 0 auto",
-    borderRadius: "50%",
-    overflow: "hidden",
-  };
-  if (game.creatorAvatar) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element -- avatar URLs come from Supabase storage
-      <img src={game.creatorAvatar} alt="" style={{ ...box, objectFit: "cover", background: "var(--chip)" }} />
-    );
-  }
-  return (
-    <div
-      style={{
-        ...box,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: `linear-gradient(150deg, ${accentOf(game)}, #2a2a2a)`,
-        color: "#0f0f0f",
-        fontSize: size > 36 ? "13px" : "12px",
-        fontWeight: 700,
-      }}
-    >
-      {initialsOf(game.creator)}
-    </div>
-  );
+  return <UserAvatar url={game.creatorAvatar} seed={game.creator} size={size} />;
 }

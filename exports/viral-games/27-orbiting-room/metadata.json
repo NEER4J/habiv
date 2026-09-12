@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "27-orbiting-room.zip"
+  "upload_zip": "27-orbiting-room.zip",
+  "folder": "27-orbiting-room",
+  "design": {
+    "mode": "drag",
+    "scene": "stars",
+    "menu": "interior",
+    "mission": "LIGHT THE ROOM"
+  }
 }

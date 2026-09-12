@@ -142,6 +142,8 @@ export type WatchData = {
   comments: { items: CommentItem[]; nextOffset: number | null };
   viewer: WatchViewer;
   queue: Game[];
+  /** Offset of the next page of the "hot" feed the queue came from, or null when that was all of it. */
+  queueNext: number | null;
   runsToday: number;
   nowPlaying: number;
 };
@@ -189,6 +191,7 @@ export async function loadWatch(handle: string, slug: string, versionNo?: number
       rank,
     },
     queue: queue.items.filter((g) => g.id !== detail.id).slice(0, 12).map(fromFeedGame),
+    queueNext: queue.nextOffset,
     runsToday,
     nowPlaying,
   };

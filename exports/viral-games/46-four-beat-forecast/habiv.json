@@ -30,6 +30,6 @@
     "touch": "Play weather beat"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Four Beat Forecast. Clouds, wind, rain, and sun each have a four-beat pattern. Tap the correct lane to move the forecast from stormy to golden hour.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique rhythm browser-game design: PLAY THE FORECAST. Build Four Beat Forecast around Play the weather lane on the downbeat.",
+  "changelog": "Unique gameplay and menu redesign"
 }

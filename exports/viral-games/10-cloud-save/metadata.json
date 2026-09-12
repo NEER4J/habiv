@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "10-cloud-save.zip"
+  "upload_zip": "10-cloud-save.zip",
+  "folder": "10-cloud-save",
+  "design": {
+    "mode": "route",
+    "scene": "sky",
+    "menu": "postcard",
+    "mission": "WEATHER RECIPE"
+  }
 }

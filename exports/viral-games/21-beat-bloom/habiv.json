@@ -30,6 +30,6 @@
     "touch": "Hit the bloom ring"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Beat Bloom. Each accurate beat grows a stem, opens a flower, and adds a new layer to the loop. Miss too many and the garden folds itself closed.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique rhythm browser-game design: GROW THE BEAT. Build Beat Bloom around Tap the glowing garden lane on each beat.",
+  "changelog": "Unique gameplay and menu redesign"
 }

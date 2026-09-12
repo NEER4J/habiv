@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "05-rooftop-relay.zip"
+  "upload_zip": "05-rooftop-relay.zip",
+  "folder": "05-rooftop-relay",
+  "design": {
+    "mode": "runner",
+    "scene": "city",
+    "menu": "race",
+    "mission": "ROOFTOP SPLIT"
+  }
 }

@@ -30,6 +30,6 @@
     "touch": "Serve a customer"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Graveyard Shift. Work the night desk at a cemetery gift shop. Stock candles, answer the bell, and never sell the same souvenir twice. Something is shopping after closing.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique serve browser-game design: SERVE THE NIGHT. Build Graveyard Shift around Serve the correct customer sequence before the bell rings.",
+  "changelog": "Unique gameplay and menu redesign"
 }

@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "17-tiny-train-jam.zip"
+  "upload_zip": "17-tiny-train-jam.zip",
+  "folder": "17-tiny-train-jam",
+  "design": {
+    "mode": "rail",
+    "scene": "valley",
+    "menu": "ticket",
+    "mission": "SWITCH THE TRACK"
+  }
 }

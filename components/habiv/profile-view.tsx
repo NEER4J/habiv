@@ -8,8 +8,8 @@ import { spanFor } from "@/lib/habiv/bento";
 import { art, fmt, poster, type Game } from "@/lib/habiv/games";
 import type { ProfileData } from "@/lib/habiv/page-data";
 import { bpanel, chipStyle, mono, monoLabel, pill } from "@/lib/habiv/ui";
-import { cdnUrl } from "@/lib/site";
-import { Avatar } from "./avatar";
+import { avatarUrlOf } from "@/lib/site";
+import { UserAvatar } from "./avatar";
 import { BentoAutoGrid, BentoGrid, ChipCell, EmptyCell, GameCard, GameCards } from "./game-card";
 import { useShell } from "./shell-context";
 
@@ -63,12 +63,7 @@ function ProfileAvatar({ url, seed, size }: { url: string | null; seed: string; 
   const radius = Math.round(size * 0.3);
   return (
     <div style={{ padding: "5px", borderRadius: `${radius + 5}px`, background: "var(--panel)", flex: "0 0 auto" }}>
-      {url ? (
-        // eslint-disable-next-line @next/next/no-img-element -- avatar URLs come from Supabase storage
-        <img src={url} alt="" style={{ display: "block", width: `${size}px`, height: `${size}px`, borderRadius: `${radius}px`, objectFit: "cover", background: "var(--chip)" }} />
-      ) : (
-        <Avatar seed={seed} size={size} />
-      )}
+      <UserAvatar url={url} seed={seed} size={size} radius={`${radius}px`} />
     </div>
   );
 }
@@ -282,7 +277,6 @@ export function ProfileView({ data }: { data: ProfileData }) {
             {shownFollowers.length ? (
               <div style={{ display: "flex", alignItems: "center", paddingLeft: "8px" }}>
                 {shownFollowers.map((f) => {
-                  const url = cdnUrl(f.avatar_path);
                   return (
                     <Link
                       key={f.id}
@@ -291,12 +285,7 @@ export function ProfileView({ data }: { data: ProfileData }) {
                       className="hb-lift-sm"
                       style={{ width: "32px", height: "32px", marginLeft: "-8px", borderRadius: "50%", overflow: "hidden", border: "2px solid var(--panel)", background: "var(--chip)", flex: "0 0 auto" }}
                     >
-                      {url ? (
-                        // eslint-disable-next-line @next/next/no-img-element -- avatar URLs come from Supabase storage
-                        <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      ) : (
-                        <Avatar seed={f.handle} size={28} />
-                      )}
+                      <UserAvatar url={avatarUrlOf(f.avatar_path)} seed={f.handle} size={28} />
                     </Link>
                   );
                 })}

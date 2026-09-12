@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "33-neon-noodle.zip"
+  "upload_zip": "33-neon-noodle.zip",
+  "folder": "33-neon-noodle",
+  "design": {
+    "mode": "tether",
+    "scene": "kitchen",
+    "menu": "takeout",
+    "mission": "STEER THE NOODLE"
+  }
 }

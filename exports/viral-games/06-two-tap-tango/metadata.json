@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "06-two-tap-tango.zip"
+  "upload_zip": "06-two-tap-tango.zip",
+  "folder": "06-two-tap-tango",
+  "design": {
+    "mode": "rhythm",
+    "scene": "dance",
+    "menu": "dance",
+    "mission": "BEAT WINDOW"
+  }
 }

@@ -30,6 +30,6 @@
     "touch": "Draw next card"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Lucky Number 13. A thirteen-card deck reveals one number at a time. Tap when the running total reaches the lucky range, but beware the card that reverses the count.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique card browser-game design: DRAW YOUR LUCK. Build Lucky Number 13 around Tap the lucky card and ignore the reversal.",
+  "changelog": "Unique gameplay and menu redesign"
 }

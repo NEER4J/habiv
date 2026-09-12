@@ -30,6 +30,6 @@
     "touch": "Open a post"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Doomscroll Dungeon. A tiny dungeon crawler disguised as a feed. Swipe past traps, save the weirdest creature, and decide which rumor is actually a map.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique feed browser-game design: SWIPE THE MAP. Build Doomscroll Dungeon around Follow the safe sequence through the cursed feed.",
+  "changelog": "Unique gameplay and menu redesign"
 }

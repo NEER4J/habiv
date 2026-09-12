@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "44-mango-meteor.zip"
+  "upload_zip": "44-mango-meteor.zip",
+  "folder": "44-mango-meteor",
+  "design": {
+    "mode": "tap",
+    "scene": "kitchen",
+    "menu": "recipe",
+    "mission": "SLICE THE FRUIT"
+  }
 }

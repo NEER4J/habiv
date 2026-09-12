@@ -30,6 +30,6 @@
     "touch": "Light a lantern"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Lucky Lanterns. Arrange lanterns by color and send them downstream in the order the village requests. The river changes one rule each evening while paper notes become more personal.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique sort browser-game design: RIVER ORDER. Build Lucky Lanterns around Collect the lanterns that match tonight’s wish.",
+  "changelog": "Unique gameplay and menu redesign"
 }

@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "01-blink-buffet.zip"
+  "upload_zip": "01-blink-buffet.zip",
+  "folder": "01-blink-buffet",
+  "design": {
+    "mode": "hunt",
+    "scene": "kitchen",
+    "menu": "kiosk",
+    "mission": "GREEN BITE SERVICE"
+  }
 }

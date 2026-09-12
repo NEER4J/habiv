@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "50-lucky-number-13.zip"
+  "upload_zip": "50-lucky-number-13.zip",
+  "folder": "50-lucky-number-13",
+  "design": {
+    "mode": "card",
+    "scene": "velvet",
+    "menu": "velvet",
+    "mission": "DRAW YOUR LUCK"
+  }
 }

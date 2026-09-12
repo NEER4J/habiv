@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "47-ghost-in-the-queue.zip"
+  "upload_zip": "47-ghost-in-the-queue.zip",
+  "folder": "47-ghost-in-the-queue",
+  "design": {
+    "mode": "feed",
+    "scene": "station",
+    "menu": "ticket",
+    "mission": "CALL THE QUEUE"
+  }
 }

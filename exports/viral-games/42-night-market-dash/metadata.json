@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "42-night-market-dash.zip"
+  "upload_zip": "42-night-market-dash.zip",
+  "folder": "42-night-market-dash",
+  "design": {
+    "mode": "runner",
+    "scene": "market",
+    "menu": "vendor",
+    "mission": "FIND THE OPEN LANE"
+  }
 }

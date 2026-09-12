@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "18-scream-test-1999.zip"
+  "upload_zip": "18-scream-test-1999.zip",
+  "folder": "18-scream-test-1999",
+  "design": {
+    "mode": "memory",
+    "scene": "crt",
+    "menu": "crt",
+    "mission": "DIAGNOSTIC TAPE"
+  }
 }

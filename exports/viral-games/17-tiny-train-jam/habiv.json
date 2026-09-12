@@ -30,6 +30,6 @@
     "touch": "Switch tracks"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Tiny Train Jam. A tiny train loops through a hand-drawn valley. Flip switches at the last second to collect every snack crate without clipping the slow freight.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique rail browser-game design: SWITCH THE TRACK. Build Tiny Train Jam around Switch to the safe track before each crossing.",
+  "changelog": "Unique gameplay and menu redesign"
 }

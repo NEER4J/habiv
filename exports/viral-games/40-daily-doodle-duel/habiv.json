@@ -30,6 +30,6 @@
     "touch": "Submit doodle"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Daily Doodle Duel. A prompt arrives, the clock starts, and a simple shape waits for your best interpretation. Accuracy, speed, and personality all matter.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique draw browser-game design: DRAW THE PROMPT. Build Daily Doodle Duel around Tap the prompt that matches the daily doodle.",
+  "changelog": "Unique gameplay and menu redesign"
 }

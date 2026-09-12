@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "14-cat-nap-courier.zip"
+  "upload_zip": "14-cat-nap-courier.zip",
+  "folder": "14-cat-nap-courier",
+  "design": {
+    "mode": "route",
+    "scene": "apartment",
+    "menu": "notice",
+    "mission": "QUIET DELIVERY"
+  }
 }

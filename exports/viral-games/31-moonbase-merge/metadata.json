@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "31-moonbase-merge.zip"
+  "upload_zip": "31-moonbase-merge.zip",
+  "folder": "31-moonbase-merge",
+  "design": {
+    "mode": "merge",
+    "scene": "moonbase",
+    "menu": "mission",
+    "mission": "BUILD BREAKFAST"
+  }
 }

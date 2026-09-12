@@ -24,7 +24,7 @@ import {
 } from "@/lib/habiv/ui";
 import { connectPrompt, connectSteps, manualSetup, mcpUrl } from "@/lib/connect-ai";
 import { createClient } from "@/lib/supabase/client";
-import { Avatar } from "./avatar";
+import { UserAvatar } from "./avatar";
 import { BentoAutoGrid, PageHead } from "./game-card";
 import { useShell } from "./shell-context";
 
@@ -237,12 +237,7 @@ function AccountPanel({ data }: { data: SettingsData }) {
   return (
     <div style={panel}>
       <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
-        {avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element -- avatar URLs come from Supabase storage
-          <img src={avatarUrl} alt="" style={{ width: "64px", height: "64px", borderRadius: "19px", objectFit: "cover", background: "var(--chip)", flex: "0 0 auto" }} />
-        ) : (
-          <Avatar seed={saved.handle || "hv-start"} size={64} />
-        )}
+        <UserAvatar url={avatarUrl} seed={saved.handle} size={64} radius="19px" />
         <div style={{ flex: "1 1 200px", minWidth: 0 }}>
           <div style={{ fontSize: "16px", fontWeight: 600 }}>{saved.name}</div>
           <div style={{ marginTop: "4px", fontFamily: mono, fontSize: "11.5px", color: "var(--ink-5)" }}>
@@ -265,8 +260,11 @@ function AccountPanel({ data }: { data: SettingsData }) {
             e.target.value = "";
           }}
         />
+        <Link href="/onboarding?step=avatar&next=/settings" style={chipBtn}>
+          Choose avatar
+        </Link>
         <button onClick={() => fileRef.current?.click()} disabled={uploading} style={uploading ? { ...chipBtn, opacity: 0.6, cursor: "wait" } : chipBtn}>
-          {uploading ? "Uploading…" : "Change avatar"}
+          {uploading ? "Uploading…" : "Upload photo"}
         </button>
       </div>
 

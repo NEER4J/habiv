@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "07-moss-and-mugs.zip"
+  "upload_zip": "07-moss-and-mugs.zip",
+  "folder": "07-moss-and-mugs",
+  "design": {
+    "mode": "serve",
+    "scene": "cafe",
+    "menu": "cafe",
+    "mission": "ORDER RAIL"
+  }
 }

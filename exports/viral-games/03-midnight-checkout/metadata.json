@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "03-midnight-checkout.zip"
+  "upload_zip": "03-midnight-checkout.zip",
+  "folder": "03-midnight-checkout",
+  "design": {
+    "mode": "anomaly",
+    "scene": "noir",
+    "menu": "terminal",
+    "mission": "REFLECTION CHECK"
+  }
 }

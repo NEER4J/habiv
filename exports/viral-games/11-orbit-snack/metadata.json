@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "11-orbit-snack.zip"
+  "upload_zip": "11-orbit-snack.zip",
+  "folder": "11-orbit-snack",
+  "design": {
+    "mode": "orbit",
+    "scene": "stars",
+    "menu": "launch",
+    "mission": "GRAVITY WINDOW"
+  }
 }

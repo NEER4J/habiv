@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "22-traffic-ghost.zip"
+  "upload_zip": "22-traffic-ghost.zip",
+  "folder": "22-traffic-ghost",
+  "design": {
+    "mode": "runner",
+    "scene": "freeway",
+    "menu": "dashboard",
+    "mission": "OVERTAKE THE GHOST"
+  }
 }

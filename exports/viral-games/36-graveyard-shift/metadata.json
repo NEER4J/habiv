@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "36-graveyard-shift.zip"
+  "upload_zip": "36-graveyard-shift.zip",
+  "folder": "36-graveyard-shift",
+  "design": {
+    "mode": "serve",
+    "scene": "cemetery",
+    "menu": "ledger",
+    "mission": "SERVE THE NIGHT"
+  }
 }

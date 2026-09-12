@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, Tables } from "@/lib/supabase/database.types";
-import { cdnUrl } from "@/lib/site";
+import { avatarUrlOf } from "@/lib/site";
 
 export type NotificationKind = Tables<"notifications">["kind"];
 
@@ -48,7 +48,7 @@ export async function listNotifications(supabase: SupabaseClient<Database>, opts
       kind: r.kind,
       createdAt: r.created_at,
       read: !!r.read_at,
-      actor: a ? { id: a.id, handle: a.handle, displayName: a.display_name ?? a.handle, avatarUrl: cdnUrl(a.avatar_path) } : null,
+      actor: a ? { id: a.id, handle: a.handle, displayName: a.display_name ?? a.handle, avatarUrl: avatarUrlOf(a.avatar_path) } : null,
       game: g ? { id: g.id, title: g.title, url: `/@${creatorHandle.get(g.creator_id) ?? ""}/${g.slug}` } : null,
       comment: c ? { id: c.id, snippet: c.body.slice(0, 80) } : null,
     };

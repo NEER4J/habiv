@@ -30,6 +30,6 @@
     "touch": "Answer the cue"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Beat the Buzzer. Watch the buzzer, read the color cue, and tap on the exact safe beat. Fake-outs arrive after the third round, so stop trusting your first instinct.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique rhythm browser-game design: SAFE BUZZER. Build Beat the Buzzer around Hit the safe buzzer and ignore the fake cue.",
+  "changelog": "Unique gameplay and menu redesign"
 }

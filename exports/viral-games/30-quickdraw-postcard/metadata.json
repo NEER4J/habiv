@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "30-quickdraw-postcard.zip"
+  "upload_zip": "30-quickdraw-postcard.zip",
+  "folder": "30-quickdraw-postcard",
+  "design": {
+    "mode": "draw",
+    "scene": "paper",
+    "menu": "postcard",
+    "mission": "TRACE THE STAMP"
+  }
 }

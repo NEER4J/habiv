@@ -30,6 +30,6 @@
     "touch": "Choose a step"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Don’t Look Back. Cross a hallway where every sound arrives one beat late. Keep moving, listen for the false footsteps, and resist the sequence that turns the camera around.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique memory browser-game design: SAFE FOOTSTEPS. Build Don’t Look Back around Choose the safe footsteps without looking behind you.",
+  "changelog": "Unique gameplay and menu redesign"
 }

@@ -77,10 +77,13 @@ export function scoreCard(g: Game | null, s: ScoreShare): Promise<Response> {
   const who = s.name ? `@${s.name}` : "A player";
   const lead = hasScore ? `${who} scored` : `${who} played`;
   const unit = hasScore ? null : s.rounds === 1 ? "round" : "rounds";
+  // A specific run (not the best) is dated instead of called a high score, unless it made the board.
+  const runDate = s.runAt ? new Date(s.runAt * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).toUpperCase() : null;
+  const chip = !hasScore ? "PLAY STATS" : runDate && s.rank == null ? `RUN · ${runDate}` : "HIGH SCORE";
   const badge =
     hasScore && s.rank != null
       ? `#${s.rank.toLocaleString("en-US")}${s.total ? ` of ${s.total.toLocaleString("en-US")}` : ""} all time`
-      : s.playedMs > 0
+      : !hasScore && s.playedMs > 0
         ? `${playedLabel(s.playedMs)} played`
         : null;
 
@@ -98,7 +101,7 @@ export function scoreCard(g: Game | null, s: ScoreShare): Promise<Response> {
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
           <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: 3 }}>HABIV</div>
           <div style={{ display: "flex", padding: "6px 14px", borderRadius: 999, border: `2px solid ${accent}`, color: accent, fontSize: 20, fontWeight: 700, letterSpacing: 2 }}>
-            {hasScore ? "HIGH SCORE" : "PLAY STATS"}
+            {chip}
           </div>
         </div>
 

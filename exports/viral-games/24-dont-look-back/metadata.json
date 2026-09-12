@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "24-dont-look-back.zip"
+  "upload_zip": "24-dont-look-back.zip",
+  "folder": "24-dont-look-back",
+  "design": {
+    "mode": "memory",
+    "scene": "hallway",
+    "menu": "narrow",
+    "mission": "SAFE FOOTSTEPS"
+  }
 }

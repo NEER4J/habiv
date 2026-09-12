@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "19-pondbound.zip"
+  "upload_zip": "19-pondbound.zip",
+  "folder": "19-pondbound",
+  "design": {
+    "mode": "pond",
+    "scene": "water",
+    "menu": "journal",
+    "mission": "SAFE LILY PAD"
+  }
 }

@@ -46,9 +46,9 @@ async function main() {
     const html = readFileSync(join(dir, "index.html"));
     const bridge = readFileSync(join(dir, "habiv-bridge.js"));
     const habiv = readFileSync(join(dir, "habiv.json"));
-    if (current?.smoke?.source === "score-lifecycle-fix") continue;
+    if (current?.smoke?.source === "unique-gameplay-v2") continue;
     const versionNo = (current?.version ?? 0) + 1;
-    const { data: version, error: insertError } = await admin.from("game_versions").insert({ game_id: game.id, version: versionNo, status: "uploaded", source: "mcp", agent: "Codex", model: "GPT-5.5", prompt: `Score lifecycle fix for ${item.title}: submit score before ending the run.`, engine: "generic", entry_path: "index.html", bundle_prefix: `${game.id}/pending`, size_bytes: html.length + bridge.length + habiv.length, file_count: 3, sha256: createHash("sha256").update(Buffer.concat([html, bridge, habiv])).digest("hex"), needs_isolation: false, uses_network: false }).select("id").single();
+    const { data: version, error: insertError } = await admin.from("game_versions").insert({ game_id: game.id, version: versionNo, status: "uploaded", source: "mcp", agent: "Codex", model: "GPT-5.5", prompt: `Unique gameplay redesign for ${item.title}: rebuild its core interaction and menu around its own concept.`, engine: "generic", entry_path: "index.html", bundle_prefix: `${game.id}/pending`, size_bytes: html.length + bridge.length + habiv.length, file_count: 3, sha256: createHash("sha256").update(Buffer.concat([html, bridge, habiv])).digest("hex"), needs_isolation: false, uses_network: false, changelog: "Unique gameplay and menu redesign" }).select("id").single();
     if (insertError || !version) throw insertError ?? new Error(`Could not create version for ${item.slug}`);
     const prefix = `${game.id}/${version.id}`;
     await upload(item.slug, `${prefix}/index.html`, html, "text/html; charset=utf-8");
@@ -56,7 +56,7 @@ async function main() {
     await upload(item.slug, `${prefix}/habiv.json`, habiv, "application/json; charset=utf-8");
     const size = { index: html.length, bridge: bridge.length, habiv: habiv.length };
     const manifestOut = { entry: "index.html", files: [{ p: "index.html", b: size.index, t: "text/html; charset=utf-8" }, { p: "habiv-bridge.js", b: size.bridge, t: "text/javascript; charset=utf-8" }, { p: "habiv.json", b: size.habiv, t: "application/json; charset=utf-8" }], warnings: [], engine: "generic", sdk: { features: requiredSdk, via: ["habiv"], seen: ["ready", "run_start", "gameplay_start", "level_start", "level_complete", "level_fail", "happytime", "save", "score_submit", "run_end", "beat_game", "gameplay_stop"] }, meta: { sources: ["habiv.json"], ...JSON.parse(habiv.toString("utf8")) } };
-    const { error: readyError } = await admin.from("game_versions").update({ bundle_prefix: prefix, status: "ready", manifest: manifestOut, smoke: { ok: true, source: "score-lifecycle-fix" } }).eq("id", version.id);
+    const { error: readyError } = await admin.from("game_versions").update({ bundle_prefix: prefix, status: "ready", manifest: manifestOut, smoke: { ok: true, source: "unique-gameplay-v2" } }).eq("id", version.id);
     if (readyError) throw readyError;
     const { error: currentError } = await admin.from("games").update({ current_version_id: version.id, leaderboard_enabled: true }).eq("id", game.id);
     if (currentError) throw currentError;

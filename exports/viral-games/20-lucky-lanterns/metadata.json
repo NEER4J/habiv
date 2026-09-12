@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "20-lucky-lanterns.zip"
+  "upload_zip": "20-lucky-lanterns.zip",
+  "folder": "20-lucky-lanterns",
+  "design": {
+    "mode": "sort",
+    "scene": "river",
+    "menu": "folded",
+    "mission": "RIVER ORDER"
+  }
 }

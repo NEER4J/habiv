@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "21-beat-bloom.zip"
+  "upload_zip": "21-beat-bloom.zip",
+  "folder": "21-beat-bloom",
+  "design": {
+    "mode": "rhythm",
+    "scene": "garden",
+    "menu": "album",
+    "mission": "GROW THE BEAT"
+  }
 }

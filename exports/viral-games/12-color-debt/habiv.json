@@ -30,6 +30,6 @@
     "touch": "Swap two tiles"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Color Debt. Every move borrows one color from the future. Match tiles to pay the debt, but matching too quickly leaves a bigger balance for the final row.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique sort browser-game design: PAY THE DEBT. Build Color Debt around Match the debt color before the board locks.",
+  "changelog": "Unique gameplay and menu redesign"
 }

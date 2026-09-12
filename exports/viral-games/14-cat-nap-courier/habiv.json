@@ -30,6 +30,6 @@
     "touch": "Deliver a parcel"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Cat Nap Courier. Carry parcels across a quiet apartment block while every cat sleeps in a slightly different way. Choose routes, place treats, and learn who snores.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique route browser-game design: QUIET DELIVERY. Build Cat Nap Courier around Collect parcels and deliver them to the sleepy cats.",
+  "changelog": "Unique gameplay and menu redesign"
 }

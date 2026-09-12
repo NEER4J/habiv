@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "12-color-debt.zip"
+  "upload_zip": "12-color-debt.zip",
+  "folder": "12-color-debt",
+  "design": {
+    "mode": "sort",
+    "scene": "tiles",
+    "menu": "ledger",
+    "mission": "PAY THE DEBT"
+  }
 }

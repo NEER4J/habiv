@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "37-marble-runaway.zip"
+  "upload_zip": "37-marble-runaway.zip",
+  "folder": "37-marble-runaway",
+  "design": {
+    "mode": "runner",
+    "scene": "toybox",
+    "menu": "toybox",
+    "mission": "OPEN THE RAMP"
+  }
 }

@@ -30,6 +30,6 @@
     "touch": "Slice mango"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Mango Meteor. Mangoes fall from an optimistic sky while a meteor crosses the kitchen window. Slice the fruit in matching arcs and collect juice multipliers.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique tap browser-game design: SLICE THE FRUIT. Build Mango Meteor around Tap the ripe mango and avoid the meteor.",
+  "changelog": "Unique gameplay and menu redesign"
 }

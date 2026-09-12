@@ -30,6 +30,6 @@
     "touch": "Sort a laundry pile"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called Late Night Laundromat. Sort lost socks, set friendly wash cycles, and learn which regulars leave notes inside their pockets. The machines keep turning while you decorate the corner plant.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique sort browser-game design: SORT THE LOAD. Build Late Night Laundromat around Collect the right laundry tokens before the cycle ends.",
+  "changelog": "Unique gameplay and menu redesign"
 }

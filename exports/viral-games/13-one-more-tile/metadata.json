@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "13-one-more-tile.zip"
+  "upload_zip": "13-one-more-tile.zip",
+  "folder": "13-one-more-tile",
+  "design": {
+    "mode": "route",
+    "scene": "blueprint",
+    "menu": "blueprint",
+    "mission": "CONNECT THE PATH"
+  }
 }

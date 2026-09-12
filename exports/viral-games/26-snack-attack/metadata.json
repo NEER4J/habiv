@@ -29,5 +29,12 @@
   "network": false,
   "entry": "index.html",
   "thumbnail": "thumbnail.png",
-  "upload_zip": "26-snack-attack.zip"
+  "upload_zip": "26-snack-attack.zip",
+  "folder": "26-snack-attack",
+  "design": {
+    "mode": "catcher",
+    "scene": "kitchen",
+    "menu": "lunch",
+    "mission": "CATCH THE ORDER"
+  }
 }

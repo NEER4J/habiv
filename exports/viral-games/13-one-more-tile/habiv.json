@@ -30,6 +30,6 @@
     "touch": "Rotate a tile"
   },
   "agent": "Codex",
-  "prompt": "Build a self-contained browser game called One More Tile. Rotate a six-tile path to connect a spark to its exit. The last tile slides clockwise after every move, turning a gentle pipe puzzle into a miniature panic.",
-  "changelog": "Initial browser-game build"
+  "prompt": "Unique route browser-game design: CONNECT THE PATH. Build One More Tile around Choose the tile that completes the moving path.",
+  "changelog": "Unique gameplay and menu redesign"
 }
