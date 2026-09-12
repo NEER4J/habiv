@@ -1,0 +1,35 @@
+{
+  "title": "Tiny Train Jam",
+  "tagline": "Switch tracks, deliver snacks, and beat the sunset.",
+  "description": "A tiny train loops through a hand-drawn valley. Flip switches at the last second to collect every snack crate without clipping the slow freight.",
+  "categories": [
+    "racing"
+  ],
+  "tags": [
+    "racing",
+    "train",
+    "timing"
+  ],
+  "orientation": "any",
+  "durationSec": 55,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Switch tracks"
+      },
+      {
+        "key": "← →",
+        "action": "Choose a track"
+      },
+      {
+        "key": "R",
+        "action": "Run the line"
+      }
+    ],
+    "touch": "Switch tracks"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Tiny Train Jam. A tiny train loops through a hand-drawn valley. Flip switches at the last second to collect every snack crate without clipping the slow freight.",
+  "changelog": "Initial browser-game build"
+}

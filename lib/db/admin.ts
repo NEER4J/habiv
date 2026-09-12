@@ -193,6 +193,16 @@ export async function listCategoriesAdmin(ctx: AdminContext) {
   return (cats ?? []).map((c) => ({ slug: c.slug, name: c.name, icon: c.icon, sortOrder: c.sort_order, active: c.active, games: countMap.get(c.slug) ?? 0 }));
 }
 
+export type PickableGame = { id: string; title: string; creator: string; coverUrl: string | null; durationSec: number | null; plays: number };
+
+/** Live games an admin can pin on the home page, most played first. */
+export async function listPickableGames(ctx: AdminContext): Promise<PickableGame[]> {
+  const { data } = await ctx.admin.from("game_feed_v").select("id, title, creator_handle, cover_path, card_path, duration_sec, plays").order("plays", { ascending: false }).limit(1000);
+  return (data ?? []).filter((g) => g.id).map((g) => ({
+    id: g.id!, title: g.title ?? "(untitled)", creator: g.creator_handle ?? "", coverUrl: cdnUrl(g.cover_path ?? g.card_path), durationSec: g.duration_sec, plays: g.plays ?? 0,
+  }));
+}
+
 export async function getSiteSettings(ctx: AdminContext): Promise<Record<string, unknown>> {
   const { data } = await ctx.admin.from("site_settings").select("key, value");
   return Object.fromEntries((data ?? []).map((r) => [r.key, r.value]));

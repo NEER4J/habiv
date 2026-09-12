@@ -1,0 +1,35 @@
+{
+  "title": "Orbiting Room",
+  "tagline": "Rearrange one room as the window drifts around the planet.",
+  "description": "A quiet room floats in a slow orbit. Move furniture into the light, collect postcards from passing satellites, and let the day cycle do the rest.",
+  "categories": [
+    "ambient"
+  ],
+  "tags": [
+    "ambient",
+    "interior",
+    "slow"
+  ],
+  "orientation": "any",
+  "durationSec": 150,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Open a postcard"
+      },
+      {
+        "key": "Drag",
+        "action": "Move an object"
+      },
+      {
+        "key": "R",
+        "action": "Rewind"
+      }
+    ],
+    "touch": "Open a postcard"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Orbiting Room. A quiet room floats in a slow orbit. Move furniture into the light, collect postcards from passing satellites, and let the day cycle do the rest.",
+  "changelog": "Initial browser-game build"
+}

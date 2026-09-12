@@ -1,0 +1,35 @@
+{
+  "title": "Mirror Match",
+  "tagline": "Make the reflection match before it decides to improvise.",
+  "description": "Rotate symbols until the left side and its mirror agree. Every fourth move, the reflection quietly changes one tile, so watch for the drift.",
+  "categories": [
+    "puzzle"
+  ],
+  "tags": [
+    "puzzle",
+    "mirror",
+    "pattern"
+  ],
+  "orientation": "any",
+  "durationSec": 70,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Rotate a symbol"
+      },
+      {
+        "key": "Z",
+        "action": "Undo turn"
+      },
+      {
+        "key": "R",
+        "action": "New reflection"
+      }
+    ],
+    "touch": "Rotate a symbol"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Mirror Match. Rotate symbols until the left side and its mirror agree. Every fourth move, the reflection quietly changes one tile, so watch for the drift.",
+  "changelog": "Initial browser-game build"
+}

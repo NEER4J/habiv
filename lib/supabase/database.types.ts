@@ -1628,6 +1628,7 @@ export type Database = {
       }
     }
     Functions: {
+      active_game_players: { Args: { p_game_id: string }; Returns: number }
       admin_stats: { Args: never; Returns: Json }
       admin_user_emails: {
         Args: { p_ids: string[] }
@@ -1666,6 +1667,7 @@ export type Database = {
       }
       game_origin_hook: { Args: { p_body: Json }; Returns: undefined }
       gen_short_id: { Args: { len?: number }; Returns: string }
+      heartbeat_run: { Args: { p_id: string }; Returns: boolean }
       get_run: {
         Args: { p_id: string }
         Returns: {
@@ -1718,6 +1720,20 @@ export type Database = {
       }
       period_start_for: { Args: { p_period: string }; Returns: string }
       pick_daily_challenge: { Args: never; Returns: undefined }
+      play_history: {
+        Args: { p_limit?: number; p_pid: string; p_user: string }
+        Returns: {
+          best_score: number
+          board_rank: number
+          board_total: number
+          first_played_at: string
+          game_id: string
+          last_played_at: string
+          last_score: number
+          played_ms: number
+          rounds: number
+        }[]
+      }
       publish_game_version: {
         Args: { p_game_id: string; p_version_id: string }
         Returns: {

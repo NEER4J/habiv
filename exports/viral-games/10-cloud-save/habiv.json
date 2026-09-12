@@ -1,0 +1,35 @@
+{
+  "title": "Cloud Save",
+  "tagline": "Catch small weather, stack it gently, and never let the sky empty.",
+  "description": "Guide a paper boat beneath drifting clouds and catch rain, sunbeams, and the occasional thunder pearl. Discover which weather combinations make a new little sky.",
+  "categories": [
+    "ambient"
+  ],
+  "tags": [
+    "ambient",
+    "rain",
+    "relaxing"
+  ],
+  "orientation": "any",
+  "durationSec": 120,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Catch weather"
+      },
+      {
+        "key": "Drag",
+        "action": "Steer the boat"
+      },
+      {
+        "key": "M",
+        "action": "Mute"
+      }
+    ],
+    "touch": "Catch weather"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Cloud Save. Guide a paper boat beneath drifting clouds and catch rain, sunbeams, and the occasional thunder pearl. Discover which weather combinations make a new little sky.",
+  "changelog": "Initial browser-game build"
+}

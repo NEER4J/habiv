@@ -1,0 +1,35 @@
+{
+  "title": "Rooftop Relay",
+  "tagline": "Two taps, one skyline, zero room for a missed gap.",
+  "description": "Sprint across a city of laundry lines, AC units, and neon signs. Pick the safest lane at the last second and hold the streak through three weather patterns.",
+  "categories": [
+    "racing"
+  ],
+  "tags": [
+    "speedrun",
+    "one button",
+    "city"
+  ],
+  "orientation": "any",
+  "durationSec": 45,
+  "controls": {
+    "keys": [
+      {
+        "key": "← →",
+        "action": "Change lanes"
+      },
+      {
+        "key": "Tap",
+        "action": "Pick a lane"
+      },
+      {
+        "key": "R",
+        "action": "Run again"
+      }
+    ],
+    "touch": "Change lanes"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Rooftop Relay. Sprint across a city of laundry lines, AC units, and neon signs. Pick the safest lane at the last second and hold the streak through three weather patterns.",
+  "changelog": "Initial browser-game build"
+}

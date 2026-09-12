@@ -13,8 +13,9 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - images - .svg, .png, .jpg, .jpeg, .gif, .webp
+     * - social cards (/og/...): the player cookie set here would stop the CDN caching them
      * Feel free to modify this pattern to include more paths.
      */
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|og/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

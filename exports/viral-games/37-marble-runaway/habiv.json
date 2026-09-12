@@ -1,0 +1,35 @@
+{
+  "title": "Marble Runaway",
+  "tagline": "Tilt the track and get one marble home in record time.",
+  "description": "A marble is already rolling. Rotate ramps, open shortcuts, and use bumpers to keep momentum through a toy-box course.",
+  "categories": [
+    "racing"
+  ],
+  "tags": [
+    "racing",
+    "marble",
+    "physics"
+  ],
+  "orientation": "any",
+  "durationSec": 45,
+  "controls": {
+    "keys": [
+      {
+        "key": "← →",
+        "action": "Tilt track"
+      },
+      {
+        "key": "Tap",
+        "action": "Flip bumper"
+      },
+      {
+        "key": "R",
+        "action": "Reset course"
+      }
+    ],
+    "touch": "Tilt track"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Marble Runaway. A marble is already rolling. Rotate ramps, open shortcuts, and use bumpers to keep momentum through a toy-box course.",
+  "changelog": "Initial browser-game build"
+}

@@ -10,6 +10,7 @@ The view model components render is `Game` / `GameFull` in `lib/habiv/games.ts`,
 | `/` | `loadHome()` | `HomeView({ data: HomeData })` |
 | `/explore?sort=&category=&model=&tool=` | `loadExplore(sort, category, model, tool)` | `ExploreView({ data, initialSort, initialCategory, initialModel, initialTool })` |
 | `/saved` | `loadSaved(supabase)` + `getDaily()` | `SavedView({ games, daily })` |
+| `/history` | `loadHistory(supabase)` (account + `hv_pid` cookie → service-role RPC `play_history`, runs kept 90 days) | `HistoryView({ data: HistoryData })` |
 | `/@handle` | `resolveHandle` + `loadProfile(profile)` | `ProfileView({ data: ProfileData })` |
 | `/@handle/slug` | `loadWatch(handle, slug)` | `WatchView({ data: WatchData })` (iframe + bridge host) |
 | `/g/shortId` | route handler | 308 → `/@handle/slug` |

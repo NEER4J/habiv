@@ -1,0 +1,35 @@
+{
+  "title": "Tidepool Tactics",
+  "tagline": "Move the tide, save the tiny creatures, leave the shells.",
+  "description": "Shift tide tiles to guide water into dry pools without washing away shells. Three small creatures each need a different depth, making every solution a gentle rescue mission.",
+  "categories": [
+    "puzzle"
+  ],
+  "tags": [
+    "puzzle",
+    "ocean",
+    "rescue"
+  ],
+  "orientation": "any",
+  "durationSec": 105,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Change a tide tile"
+      },
+      {
+        "key": "Z",
+        "action": "Undo tide"
+      },
+      {
+        "key": "R",
+        "action": "Reset pool"
+      }
+    ],
+    "touch": "Change a tide tile"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Tidepool Tactics. Shift tide tiles to guide water into dry pools without washing away shells. Three small creatures each need a different depth, making every solution a gentle rescue mission.",
+  "changelog": "Initial browser-game build"
+}

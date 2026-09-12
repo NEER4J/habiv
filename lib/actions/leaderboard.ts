@@ -16,7 +16,7 @@ export async function refreshLeaderboard(gameId: string): Promise<LiveBoard | nu
   const [{ data }, cookieStore] = await Promise.all([supabase.auth.getClaims(), cookies()]);
   const playerId = cookieStore.get(PLAYER_COOKIE)?.value ?? null;
   const [leaderboard, rank] = await Promise.all([
-    readLeaderboard(gameId, "main", "daily", 10),
+    readLeaderboard(gameId, "main", "daily", 50),
     getViewerRank(gameId, playerId, data?.claims?.sub ?? null, "main", "daily"),
   ]);
   return { leaderboard, rank };

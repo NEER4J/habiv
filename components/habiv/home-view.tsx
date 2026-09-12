@@ -8,6 +8,7 @@ import { accentOf, art, best, chipsFor, fmt, matchesChip, shortModel, type Game 
 import type { HomeData } from "@/lib/habiv/page-data";
 import { bpanel, chipStyle, mono, monoLabel, onArtBtn, pill, primaryBtn } from "@/lib/habiv/ui";
 import { ArtFrame, BentoGrid, BentoStack, CategoryCells, GameCard, GameCards, SkeletonCard } from "./game-card";
+import { thumbInputForGame } from "./generated-thumb";
 import { useShell } from "./shell-context";
 
 function HeroCell({ hero, onHover }: { hero: Game; onHover: (on: boolean) => void }) {
@@ -26,7 +27,7 @@ function HeroCell({ hero, onHover }: { hero: Game; onHover: (on: boolean) => voi
         color: "#f5f5f7",
       }}
     >
-      <ArtFrame src={art(hero, 1440)} style={{ position: "absolute", inset: 0 }} />
+      <ArtFrame src={art(hero, 1440)} fallback={thumbInputForGame(hero)} fallbackSize={{ w: 1280, h: 720 }} style={{ position: "absolute", inset: 0 }} />
       <div
         style={{
           position: "absolute",
@@ -153,13 +154,14 @@ function FeaturedQueue({
             // Keeps the progress fill (z-index -1) above the card background but under its content.
             isolation: "isolate",
             gridColumn: `span ${spanFor(cols, [1, 2, 2, 3])}`,
-            gridRow: "span 2",
+            // Phones stack the 16:9 art over the title, which needs the extra row.
+            gridRow: `span ${cols === 2 ? 3 : 2}`,
             alignSelf: "stretch",
             display: "flex",
-            alignItems: "center",
+            flexDirection: cols === 2 ? "column" : "row",
+            alignItems: cols === 2 ? "stretch" : "center",
             gap: "10px",
             padding: "10px",
-            border: x.id === heroId ? "1px solid var(--chip-2)" : "1px solid transparent",
             color: "var(--ink)",
             textDecoration: "none",
             textAlign: "left",
@@ -183,7 +185,12 @@ function FeaturedQueue({
               }}
             />
           ) : null}
-          <ArtFrame src={art(x, 300)} style={{ height: "100%", aspectRatio: "1 / 1", flex: "0 0 auto", borderRadius: "8px" }}>
+          <ArtFrame
+            src={art(x, 400)}
+            fallback={thumbInputForGame(x)}
+            fallbackSize={{ w: 1280, h: 720 }}
+            style={{ width: cols === 2 ? "100%" : "46%", maxWidth: cols === 2 ? undefined : "186px", aspectRatio: "16 / 9", flex: "0 0 auto", borderRadius: "8px" }}
+          >
             <span
               style={{
                 position: "absolute",
@@ -610,7 +617,7 @@ export function HomeView({ data }: { data: HomeData }) {
           </div>
         )}
         <FeaturedQueue featured={data.featured} heroId={hero?.id ?? null} setHeroId={setHeroId} paused={paused} setPaused={setPaused} />
-        <CategoryCells categories={data.categories} onPick={pick} />
+        <CategoryCells categories={data.categories} />
         {SHOW_DAILY ? <DailyCells daily={data.daily} /> : null}
         <ChipsCell chips={chipsFor(data.categories)} chip={chip} setChip={pick} />
       </BentoGrid>

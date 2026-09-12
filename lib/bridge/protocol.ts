@@ -17,7 +17,9 @@ export type GameToParent =
   | { v: 1; type: "save"; key: string; value: unknown }
   | { v: 1; type: "load"; key: string; req_id: string }
   | { v: 1; type: "design"; key?: string; value?: unknown }
-  | { v: 1; type: "error"; message: string };
+  | { v: 1; type: "error"; message: string }
+  /** Height in CSS px the game's visible content needs; sent by the bridge when it overflows the frame. */
+  | { v: 1; type: "size"; height: number };
 
 export type ParentToGame =
   | { v: 1; type: "init"; player_id: string | null; handle: string | null; run_token: string | null; muted: boolean; locale: string }
@@ -28,7 +30,7 @@ export type ParentToGame =
 
 export const GAME_MESSAGE_TYPES: ReadonlySet<string> = new Set([
   "ready", "run_start", "run_end", "level_start", "level_complete", "level_fail", "beat_game",
-  "score_submit", "gameplay_start", "gameplay_stop", "happytime", "save", "load", "design", "error",
+  "score_submit", "gameplay_start", "gameplay_stop", "happytime", "save", "load", "design", "error", "size",
 ]);
 
 export function isGameMessage(data: unknown): data is GameToParent & { t?: number } {

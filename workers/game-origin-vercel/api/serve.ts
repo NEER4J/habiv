@@ -11,7 +11,7 @@ const SUPABASE_URL = (process.env.SUPABASE_URL ?? "").replace(/\/$/, "");
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
 const BUCKET = process.env.GAMES_BUCKET || "habiv-games";
 const FRAME_ANCESTORS =
-  process.env.FRAME_ANCESTORS || "https://habiv.com https://*.habiv.com https://*.vercel.app http://localhost:3000";
+  process.env.FRAME_ANCESTORS || "https://habiv.com https://*.habiv.com https://*.vercel.app https://*.chatgpt.site http://localhost:3000";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const META_TTL_MS = 60_000;

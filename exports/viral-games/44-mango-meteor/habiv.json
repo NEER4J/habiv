@@ -1,0 +1,35 @@
+{
+  "title": "Mango Meteor",
+  "tagline": "Slice the fruit, dodge the meteor, keep the juice contained.",
+  "description": "Mangoes fall from an optimistic sky while a meteor crosses the kitchen window. Slice the fruit in matching arcs and collect juice multipliers.",
+  "categories": [
+    "arcade"
+  ],
+  "tags": [
+    "arcade",
+    "fruit",
+    "fast"
+  ],
+  "orientation": "any",
+  "durationSec": 33,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Slice mango"
+      },
+      {
+        "key": "Drag",
+        "action": "Catch bonus"
+      },
+      {
+        "key": "R",
+        "action": "Restart sky"
+      }
+    ],
+    "touch": "Slice mango"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Mango Meteor. Mangoes fall from an optimistic sky while a meteor crosses the kitchen window. Slice the fruit in matching arcs and collect juice multipliers.",
+  "changelog": "Initial browser-game build"
+}

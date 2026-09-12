@@ -1,0 +1,35 @@
+{
+  "title": "Two-Tap Tango",
+  "tagline": "A tiny dance floor with only left, right, and one dangerous chorus.",
+  "description": "Follow a two-lane beat that starts friendly and ends in a syncopated trap. The pattern is short enough to learn by ear, but the last eight beats are built for a perfect-streak replay.",
+  "categories": [
+    "rhythm"
+  ],
+  "tags": [
+    "rhythm",
+    "music",
+    "perfect streak"
+  ],
+  "orientation": "any",
+  "durationSec": 60,
+  "controls": {
+    "keys": [
+      {
+        "key": "← →",
+        "action": "Choose a lane"
+      },
+      {
+        "key": "Space",
+        "action": "Hit the beat"
+      },
+      {
+        "key": "M",
+        "action": "Mute"
+      }
+    ],
+    "touch": "Choose a lane"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Two-Tap Tango. Follow a two-lane beat that starts friendly and ends in a syncopated trap. The pattern is short enough to learn by ear, but the last eight beats are built for a perfect-streak replay.",
+  "changelog": "Initial browser-game build"
+}

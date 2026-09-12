@@ -1,0 +1,35 @@
+{
+  "title": "Kite String Theory",
+  "tagline": "Guide a kite through the afternoon without tangling the thought.",
+  "description": "Pull a kite across a wide sky, catch warm currents, and keep the string away from trees. The longer you stay aloft, the more postcards drift by.",
+  "categories": [
+    "ambient"
+  ],
+  "tags": [
+    "ambient",
+    "physics",
+    "sky"
+  ],
+  "orientation": "any",
+  "durationSec": 115,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Catch a current"
+      },
+      {
+        "key": "Drag",
+        "action": "Steer kite"
+      },
+      {
+        "key": "R",
+        "action": "Reset afternoon"
+      }
+    ],
+    "touch": "Catch a current"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Kite String Theory. Pull a kite across a wide sky, catch warm currents, and keep the string away from trees. The longer you stay aloft, the more postcards drift by.",
+  "changelog": "Initial browser-game build"
+}

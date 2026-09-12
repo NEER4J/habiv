@@ -4,6 +4,7 @@ import type { CSSProperties } from "react";
 import { spanFor } from "@/lib/habiv/bento";
 import { bpanel } from "@/lib/habiv/ui";
 import { BentoAutoGrid, BentoGrid, BentoStack, GameCards, PageHead, SkeletonCard, shimmer } from "./game-card";
+import { historyRowStyle } from "./history-view";
 import { useShell } from "./shell-context";
 
 /**
@@ -108,6 +109,40 @@ export function GridPageSkeleton({ title, sub, n = 8 }: { title: string; sub?: s
   );
 }
 
+/** Play history: the same panel of rows as the real list (thumb, title, four stats, Share). */
+export function HistorySkeleton({ sub, n = 5 }: { sub?: string; n?: number }) {
+  return (
+    <BentoStack>
+      <BentoGrid>
+        <PageHead title="Play history" sub={sub} />
+      </BentoGrid>
+      <div style={{ ...cell, padding: "16px 18px" }}>
+        <Bone w="min(260px, 60%)" h={10} style={{ margin: "4px 0 6px" }} />
+        {Array.from({ length: n }, (_, i) => (
+          <div key={i} style={{ ...historyRowStyle(i === 0), opacity: 1 - i * 0.14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px", flex: "1 1 280px", minWidth: 0 }}>
+              <Bone w={112} h={63} r={8} />
+              <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: "8px" }}>
+                <Bone w={`${[62, 48, 70, 55, 44][i % 5]}%`} h={15} />
+                <Bone w={`${[40, 34, 46, 38, 30][i % 5]}%`} h={10} />
+              </div>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "12px 22px" }}>
+              {[48, 40, 30, 38].map((w, j) => (
+                <div key={j} style={{ minWidth: "64px", display: "flex", flexDirection: "column", gap: "7px" }}>
+                  <Bone w={34} h={8} />
+                  <Bone w={w} h={14} />
+                </div>
+              ))}
+              <Bone w={64} h={34} r={17} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </BentoStack>
+  );
+}
+
 export function ProfileSkeleton() {
   const { cols } = useShell();
   const narrow = cols === 2;
@@ -192,9 +227,8 @@ export function FormSkeleton({ title, sub, chips = 0, fields = 4 }: { title?: st
 }
 
 export function WatchSkeleton() {
-  const { mobile } = useShell();
   return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: "12px", flexWrap: mobile ? "wrap" : "nowrap" }}>
+    <div className="hb-watch-row" style={{ display: "flex", alignItems: "flex-start", gap: "12px", flexWrap: "nowrap" }}>
       <div style={{ flex: "1 1 640px", minWidth: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
         <div style={{ ...cell, aspectRatio: "16 / 9", borderRadius: "18px", overflow: "hidden" }}>
           <div style={{ width: "100%", height: "100%", ...shimmer }} />
@@ -208,7 +242,7 @@ export function WatchSkeleton() {
           <Bone w={96} h={36} r={18} />
         </div>
       </div>
-      <aside style={{ ...cell, flex: "1 1 320px", maxWidth: mobile ? "none" : "360px", padding: "12px", display: "flex", flexDirection: "column", gap: "12px" }}>
+      <aside className="hb-watch-side" style={{ ...cell, flex: "1 1 320px", maxWidth: "360px", padding: "12px", display: "flex", flexDirection: "column", gap: "12px" }}>
         {Array.from({ length: 6 }, (_, i) => (
           <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <Bone w={96} h={56} r={10} />

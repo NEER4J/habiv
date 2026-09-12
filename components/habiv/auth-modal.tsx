@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useShell, type AuthMode } from "@/components/habiv/shell-context";
 import { createClient } from "@/lib/supabase/client";
 import { signInWithProvider, type OAuthProvider } from "@/lib/auth/oauth";
@@ -21,7 +21,30 @@ const bigBtn: CSSProperties = {
   border: 0,
   width: "100%",
 };
-const quietBtn: CSSProperties = { ...bigBtn, height: "40px", background: "var(--chip)", color: "var(--ink-2)", fontWeight: 500 };
+const oauthBtn: CSSProperties = { ...bigBtn, gap: "10px", minWidth: 0 };
+
+/** Google's four-colour "G". */
+function GoogleLogo() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true" style={{ flex: "none" }}>
+      <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+      <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+      <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+      <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+    </svg>
+  );
+}
+
+/** GitHub's mark, in the button's text colour so it reads in both themes. */
+function GitHubLogo() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" style={{ flex: "none" }}>
+      <path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.83 1.24 1.83 1.24 1.07 1.83 2.81 1.3 3.49 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.2.69.82.57A12 12 0 0 0 12 .3" />
+    </svg>
+  );
+}
+
+const quietBtn: CSSProperties ={ ...bigBtn, height: "40px", background: "var(--chip)", color: "var(--ink-2)", fontWeight: 500 };
 const linkBtn: CSSProperties = { background: "none", border: 0, padding: 0, color: "var(--ink-3)", cursor: "pointer", fontSize: "13px", textDecoration: "underline", textUnderlineOffset: "3px" };
 
 const TITLES: Record<AuthMode, string> = {
@@ -36,8 +59,7 @@ const TITLES: Record<AuthMode, string> = {
  * Opened with useShell().openAuth(mode, next) or by visiting any page with ?auth=signin|signup|reset.
  */
 export function AuthModal() {
-  const { modal, closeModal, light, authIntent, openAuth, showToast } = useShell();
-  const router = useRouter();
+  const { modal, closeModal, light, authIntent, openAuth } = useShell();
   const pathname = usePathname();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -75,6 +97,11 @@ export function AuthModal() {
     }
   };
 
+  // A full page load, not router.push + refresh: pages the router cached or prefetched while signed
+  // out (for up to 5 minutes under cacheComponents) would otherwise still show you as a guest.
+  // Other open tabs catch up through auth-sync.tsx.
+  const finishSignIn = () => window.location.assign(`/auth/post-login?next=${encodeURIComponent(next)}`);
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
     if (busy) return;
@@ -85,10 +112,7 @@ export function AuthModal() {
       if (mode === "signin") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        closeModal();
-        showToast("Signed in");
-        router.push(`/auth/post-login?next=${encodeURIComponent(next)}`);
-        router.refresh();
+        finishSignIn();
       } else if (mode === "signup") {
         if (password.length < 8) throw new Error("Use at least 8 characters.");
         if (password !== password2) throw new Error("Passwords do not match.");
@@ -99,9 +123,7 @@ export function AuthModal() {
         });
         if (error) throw error;
         if (data.session) {
-          closeModal();
-          router.push(`/auth/post-login?next=${encodeURIComponent(next)}`);
-          router.refresh();
+          finishSignIn();
         } else {
           setSent("confirm");
         }
@@ -114,10 +136,7 @@ export function AuthModal() {
         if (password !== password2) throw new Error("Passwords do not match.");
         const { error } = await supabase.auth.updateUser({ password });
         if (error) throw error;
-        closeModal();
-        showToast("Password updated");
-        router.push(`/auth/post-login?next=${encodeURIComponent(next)}`);
-        router.refresh();
+        finishSignIn();
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong.");
@@ -159,12 +178,28 @@ export function AuthModal() {
           <>
             {(mode === "signin" || mode === "signup") && (
               <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "20px" }}>
-                <button type="button" onClick={() => oauth("google")} disabled={!!busy} style={{ ...bigBtn, opacity: busy && busy !== "google" ? 0.6 : 1 }}>
-                  {busy === "google" ? "Opening Google…" : "Continue with Google"}
-                </button>
-                <button type="button" onClick={() => oauth("github")} disabled={!!busy} style={{ ...bigBtn, opacity: busy && busy !== "github" ? 0.6 : 1 }}>
-                  {busy === "github" ? "Opening GitHub…" : "Continue with GitHub"}
-                </button>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                  <button
+                    type="button"
+                    aria-label="Continue with Google"
+                    onClick={() => oauth("google")}
+                    disabled={!!busy}
+                    style={{ ...oauthBtn, opacity: busy && busy !== "google" ? 0.6 : 1 }}
+                  >
+                    <GoogleLogo />
+                    {busy === "google" ? "Opening…" : "Google"}
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Continue with GitHub"
+                    onClick={() => oauth("github")}
+                    disabled={!!busy}
+                    style={{ ...oauthBtn, opacity: busy && busy !== "github" ? 0.6 : 1 }}
+                  >
+                    <GitHubLogo />
+                    {busy === "github" ? "Opening…" : "GitHub"}
+                  </button>
+                </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "6px 0 2px", color: "var(--ink-6)", fontFamily: mono, fontSize: "10.5px", letterSpacing: "0.08em" }}>
                   <span style={{ flex: 1, height: 1, background: "var(--divider)" }} />
                   OR WITH EMAIL

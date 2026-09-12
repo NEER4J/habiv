@@ -1,0 +1,35 @@
+{
+  "title": "Late Night Laundromat",
+  "tagline": "Fold the quiet hours into something warm and useful.",
+  "description": "Sort lost socks, set friendly wash cycles, and learn which regulars leave notes inside their pockets. The machines keep turning while you decorate the corner plant.",
+  "categories": [
+    "cozy"
+  ],
+  "tags": [
+    "cozy",
+    "sim",
+    "laundry"
+  ],
+  "orientation": "any",
+  "durationSec": 160,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Sort a laundry pile"
+      },
+      {
+        "key": "Drag",
+        "action": "Arrange machines"
+      },
+      {
+        "key": "R",
+        "action": "Start the night"
+      }
+    ],
+    "touch": "Sort a laundry pile"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Late Night Laundromat. Sort lost socks, set friendly wash cycles, and learn which regulars leave notes inside their pockets. The machines keep turning while you decorate the corner plant.",
+  "changelog": "Initial browser-game build"
+}

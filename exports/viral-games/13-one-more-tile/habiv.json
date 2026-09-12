@@ -1,0 +1,35 @@
+{
+  "title": "One More Tile",
+  "tagline": "The path is almost complete. One tile keeps moving.",
+  "description": "Rotate a six-tile path to connect a spark to its exit. The last tile slides clockwise after every move, turning a gentle pipe puzzle into a miniature panic.",
+  "categories": [
+    "puzzle"
+  ],
+  "tags": [
+    "logic",
+    "rotate",
+    "minimal"
+  ],
+  "orientation": "any",
+  "durationSec": 80,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Rotate a tile"
+      },
+      {
+        "key": "Z",
+        "action": "Undo"
+      },
+      {
+        "key": "R",
+        "action": "New layout"
+      }
+    ],
+    "touch": "Rotate a tile"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called One More Tile. Rotate a six-tile path to connect a spark to its exit. The last tile slides clockwise after every move, turning a gentle pipe puzzle into a miniature panic.",
+  "changelog": "Initial browser-game build"
+}

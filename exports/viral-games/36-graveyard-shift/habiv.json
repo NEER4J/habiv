@@ -1,0 +1,35 @@
+{
+  "title": "Graveyard Shift",
+  "tagline": "Ring up the dead politely. They hate waiting.",
+  "description": "Work the night desk at a cemetery gift shop. Stock candles, answer the bell, and never sell the same souvenir twice. Something is shopping after closing.",
+  "categories": [
+    "horror"
+  ],
+  "tags": [
+    "horror",
+    "shop",
+    "night"
+  ],
+  "orientation": "any",
+  "durationSec": 90,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Serve a customer"
+      },
+      {
+        "key": "1–4",
+        "action": "Choose a counter"
+      },
+      {
+        "key": "Space",
+        "action": "Check bell"
+      }
+    ],
+    "touch": "Serve a customer"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Graveyard Shift. Work the night desk at a cemetery gift shop. Stock candles, answer the bell, and never sell the same souvenir twice. Something is shopping after closing.",
+  "changelog": "Initial browser-game build"
+}

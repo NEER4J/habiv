@@ -1,0 +1,35 @@
+{
+  "title": "Traffic Ghost",
+  "tagline": "Race your last run through a city that keeps changing lanes.",
+  "description": "Drive a translucent car through a three-lane night route and try to outrun your own ghost. The traffic pattern stays readable for one run, then shuffles.",
+  "categories": [
+    "racing"
+  ],
+  "tags": [
+    "racing",
+    "ghost",
+    "time trial"
+  ],
+  "orientation": "any",
+  "durationSec": 40,
+  "controls": {
+    "keys": [
+      {
+        "key": "← →",
+        "action": "Change lanes"
+      },
+      {
+        "key": "Tap",
+        "action": "Steer"
+      },
+      {
+        "key": "R",
+        "action": "Race again"
+      }
+    ],
+    "touch": "Change lanes"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Traffic Ghost. Drive a translucent car through a three-lane night route and try to outrun your own ghost. The traffic pattern stays readable for one run, then shuffles.",
+  "changelog": "Initial browser-game build"
+}

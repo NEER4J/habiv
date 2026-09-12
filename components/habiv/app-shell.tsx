@@ -8,7 +8,7 @@ import { bpanel, mono, navStyleFor } from "@/lib/habiv/ui";
 import { legalPages } from "@/lib/legal";
 import { createClient } from "@/lib/supabase/client";
 import { Overlays } from "./overlays";
-import { useShell } from "./shell-context";
+import { isWatchPath, useShell } from "./shell-context";
 
 const HabivMark = ({ size = 22 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 773 764" fill="currentColor" style={{ display: "block" }}>
@@ -55,6 +55,16 @@ const navItems = [
     ),
   },
   { href: "/saved", label: "Saved", icon: <path d="M5 3h8v12l-4-3.2L5 15z" /> },
+  {
+    href: "/history",
+    label: "History",
+    icon: (
+      <>
+        <circle cx="9" cy="9" r="6" />
+        <path d="M9 5.8V9l2.3 1.5" />
+      </>
+    ),
+  },
   {
     href: "/my-games",
     label: "My Games",
@@ -150,8 +160,8 @@ function isNavActive(href: string, pathname: string, tab: string | null, ownHand
   return pathname === path || pathname.startsWith(`${path}/`);
 }
 
-const NavIcon = ({ children }: { children: ReactNode }) => (
-  <svg width="19" height="19" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ flex: "0 0 auto" }}>
+const NavIcon = ({ children, size = 19 }: { children: ReactNode; size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ flex: "0 0 auto" }}>
     {children}
   </svg>
 );
@@ -251,9 +261,8 @@ function AccountMenu() {
     setSigningOut(true);
     try {
       await createClient().auth.signOut();
-      setOpen(false);
-      router.push("/");
-      router.refresh();
+      // Full page load so no page cached while signed in survives; other tabs follow via auth-sync.tsx.
+      window.location.assign("/");
     } catch {
       showToast("Could not sign out. Try again.");
       setSigningOut(false);
@@ -328,11 +337,45 @@ function AccountMenu() {
   );
 }
 
+const bellIcon = (
+  <>
+    <path d="M4.5 7.5a4.5 4.5 0 0 1 9 0c0 3 1 4.5 1 4.5h-11s1-1.5 1-4.5z" />
+    <path d="M7.5 14.5a1.6 1.6 0 0 0 3 0" />
+  </>
+);
+const moonIcon = <path d="M14.5 11.2A6 6 0 0 1 6.8 3.5a6 6 0 1 0 7.7 7.7z" />;
+const sunIcon = (
+  <>
+    <circle cx="9" cy="9" r="3.2" />
+    <path d="M9 2v1.6M9 14.4V16M16 9h-1.6M3.6 9H2M13.9 4.1l-1.1 1.1M5.2 12.8l-1.1 1.1M13.9 13.9l-1.1-1.1M5.2 5.2 4.1 4.1" />
+  </>
+);
+
+const unreadBadge: CSSProperties = {
+  minWidth: "16px",
+  height: "16px",
+  padding: "0 4px",
+  borderRadius: "8px",
+  background: "var(--pos)",
+  color: "#fff",
+  fontFamily: mono,
+  fontSize: "9.5px",
+  fontWeight: 600,
+  lineHeight: "16px",
+  textAlign: "center",
+};
+
+/**
+ * Responsive bits are classes (hb-hdr, hb-search, hb-desk-only in globals.css), not `mobile` branches,
+ * so phones get the compact header straight from the server HTML. On phones the theme toggle and
+ * notifications move into the drawer.
+ */
 function Header() {
-  const { mobile, toggleSidebar, openSearch, openModal, light, toggleTheme, unread } = useShell();
+  const { toggleSidebar, openSearch, openModal, light, toggleTheme, unread } = useShell();
 
   return (
     <header
+      className="hb-hdr"
       style={{
         ...bpanel,
         position: "sticky",
@@ -340,15 +383,19 @@ function Header() {
         zIndex: 40,
         display: "flex",
         alignItems: "center",
-        gap: mobile ? "8px" : "14px",
-        height: mobile ? "56px" : "60px",
         margin: "12px 12px 0",
-        padding: mobile ? "0 10px" : "0 14px",
         color: "var(--ink)",
       }}
     >
-      <button onClick={toggleSidebar} aria-label="Toggle sidebar" style={iconBtn}>
+      <button onClick={toggleSidebar} aria-label="Toggle sidebar" style={{ ...iconBtn, position: "relative" }}>
         <MenuIcon />
+        {unread > 0 ? (
+          <span
+            className="hb-mobile-only"
+            aria-hidden="true"
+            style={{ position: "absolute", right: "7px", top: "7px", width: "8px", height: "8px", borderRadius: "50%", background: "var(--pos)" }}
+          />
+        ) : null}
       </button>
       <Link href="/" style={{ display: "flex", alignItems: "center", gap: "9px", color: "var(--ink)" }}>
         <HabivMark />
@@ -367,109 +414,55 @@ function Header() {
         </span>
       </Link>
       <div style={{ flex: 1, display: "flex", justifyContent: "flex-end", minWidth: 0 }}>
-        <button
-          onClick={openSearch}
-          aria-label="Search"
-          style={
-            mobile
-              ? { ...iconBtn, background: "var(--chip)", color: "var(--ink-3)" }
-              : {
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  width: "100%",
-                  maxWidth: "560px",
-                  height: "40px",
-                  padding: "0 18px",
-                  borderRadius: "20px",
-                  background: "var(--chip)",
-                  color: "var(--ink-5)",
-                  fontSize: "14px",
-                  textAlign: "left",
-                  cursor: "pointer",
-                }
-          }
-        >
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6">
+        <button onClick={openSearch} aria-label="Search" className="hb-search">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" style={{ flex: "0 0 auto" }}>
             <circle cx="7" cy="7" r="4.5" />
             <line x1="10.5" y1="10.5" x2="14" y2="14" />
           </svg>
-          {!mobile ? (
-            <span style={{ flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-              Search games, creators, models
-            </span>
-          ) : null}
+          <span className="hb-desk-only" style={{ flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            Search games, creators, models
+          </span>
         </button>
       </div>
-      {!mobile ? (
-        <Link
-          href="/publish"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            height: "38px",
-            padding: "0 16px",
-            borderRadius: "19px",
-            background: "var(--chip)",
-            color: "var(--ink)",
-            fontSize: "14px",
-            fontWeight: 500,
-          }}
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" stroke="currentColor" strokeWidth="1.8">
-            <line x1="7" y1="2" x2="7" y2="12" />
-            <line x1="2" y1="7" x2="12" y2="7" />
-          </svg>
-          Create
-        </Link>
-      ) : null}
+      <Link
+        href="/publish"
+        className="hb-desk-only"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          height: "38px",
+          padding: "0 16px",
+          borderRadius: "19px",
+          background: "var(--chip)",
+          color: "var(--ink)",
+          fontSize: "14px",
+          fontWeight: 500,
+        }}
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" stroke="currentColor" strokeWidth="1.8">
+          <line x1="7" y1="2" x2="7" y2="12" />
+          <line x1="2" y1="7" x2="12" y2="7" />
+        </svg>
+        Create
+      </Link>
       <button
         onClick={toggleTheme}
         aria-label={light ? "Switch to dark theme" : "Switch to light theme"}
+        className="hb-desk-only"
         style={{ ...iconBtn, width: "38px", height: "38px" }}
       >
-        {light ? (
-          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <path d="M14.5 11.2A6 6 0 0 1 6.8 3.5a6 6 0 1 0 7.7 7.7z" />
-          </svg>
-        ) : (
-          <svg width="17" height="17" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
-            <circle cx="9" cy="9" r="3.2" />
-            <path d="M9 2v1.6M9 14.4V16M16 9h-1.6M3.6 9H2M13.9 4.1l-1.1 1.1M5.2 12.8l-1.1 1.1M13.9 13.9l-1.1-1.1M5.2 5.2 4.1 4.1" />
-          </svg>
-        )}
+        <NavIcon size={17}>{light ? moonIcon : sunIcon}</NavIcon>
       </button>
       <button
         onClick={() => openModal("notif")}
         aria-label={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"}
+        className="hb-desk-only"
         style={{ ...iconBtn, position: "relative", width: "38px", height: "38px" }}
       >
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <path d="M4.5 7.5a4.5 4.5 0 0 1 9 0c0 3 1 4.5 1 4.5h-11s1-1.5 1-4.5z" />
-          <path d="M7.5 14.5a1.6 1.6 0 0 0 3 0" />
-        </svg>
+        <NavIcon size={18}>{bellIcon}</NavIcon>
         {unread > 0 ? (
-          <span
-            style={{
-              position: "absolute",
-              right: "4px",
-              top: "4px",
-              minWidth: "16px",
-              height: "16px",
-              padding: "0 4px",
-              borderRadius: "8px",
-              background: "var(--pos)",
-              color: "#fff",
-              fontFamily: mono,
-              fontSize: "9.5px",
-              fontWeight: 600,
-              lineHeight: "16px",
-              textAlign: "center",
-            }}
-          >
-            {unread > 99 ? "99+" : unread}
-          </span>
+          <span style={{ ...unreadBadge, position: "absolute", right: "4px", top: "4px" }}>{unread > 99 ? "99+" : unread}</span>
         ) : null}
       </button>
       <AccountMenu />
@@ -478,7 +471,8 @@ function Header() {
 }
 
 function Sidebar() {
-  const { drawerMode, collapsed, sidebarOpen, toggleSidebar, closeSidebar, theatre, mobile, light, pinned, builtThisWeek, totalPlays, profile } = useShell();
+  const { drawerMode, collapsed, sidebarOpen, toggleSidebar, closeSidebar, theatre, mobile, light, toggleTheme, openModal, unread, pinned, builtThisWeek, totalPlays, profile } =
+    useShell();
   const pathname = usePathname() ?? "";
   const tab = useSearchParams().get("tab");
   const active = (href: string) => isNavActive(href, pathname, tab, profile.handleSet ? profile.handle : null);
@@ -491,6 +485,8 @@ function Sidebar() {
         left: "12px",
         bottom: "12px",
         zIndex: 70,
+        display: "flex",
+        flexDirection: "column",
         width: mobile ? "82vw" : "250px",
         maxWidth: "300px",
         overflowY: "auto",
@@ -508,9 +504,11 @@ function Sidebar() {
         ...bpanel,
         position: "sticky",
         top: "84px",
+        display: "flex",
+        flexDirection: "column",
         width: theatre ? "0px" : collapsed ? "72px" : "228px",
         flex: "0 0 auto",
-        maxHeight: "calc(100vh - 96px)",
+        height: "calc(100vh - 96px)",
         overflowY: "auto",
         overflowX: "hidden",
         opacity: theatre ? 0 : 1,
@@ -529,7 +527,8 @@ function Sidebar() {
       {drawerMode && sidebarOpen ? (
         <div onClick={toggleSidebar} style={{ position: "fixed", inset: 0, zIndex: 65, background: "var(--scrim)" }} />
       ) : null}
-      <aside style={sidebarStyle}>
+      {/* The rail is hidden on phones by CSS too, since the server renders it before `mobile` is known. */}
+      <aside className={drawerMode ? undefined : "hb-desk-only"} style={sidebarStyle}>
         {drawerMode ? (
           <div style={{ display: "flex", alignItems: "center", gap: "12px", height: "60px", marginBottom: "6px" }}>
             <button onClick={toggleSidebar} aria-label="Close sidebar" style={iconBtn}>
@@ -556,10 +555,24 @@ function Sidebar() {
               {showLabels ? <span>{item.label}</span> : null}
             </Link>
           ))}
+          {/* Phones drop the header bell, so notifications live here. */}
+          {mobile ? (
+            <button
+              onClick={() => {
+                closeSidebar();
+                openModal("notif");
+              }}
+              style={navStyleFor(false, false)}
+            >
+              <NavIcon>{bellIcon}</NavIcon>
+              <span style={{ flex: 1 }}>Notifications</span>
+              {unread > 0 ? <span style={unreadBadge}>{unread > 99 ? "99+" : unread}</span> : null}
+            </button>
+          ) : null}
         </nav>
 
         {showLabels ? (
-          <div>
+          <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
             <div style={{ height: "1px", margin: "14px 8px", background: "var(--chip)" }} />
             {pinned.length ? (
               <>
@@ -615,61 +628,64 @@ function Sidebar() {
                 <span>{item.label}</span>
               </Link>
             ))}
-            <div style={{ margin: "14px 2px 2px", padding: "14px", borderRadius: "12px", background: "var(--chip)" }}>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "6px" }}>
-                <span style={{ fontSize: "19px", fontWeight: 600, letterSpacing: "-0.02em", color: "var(--ink)" }}>
-                  {builtThisWeek.toLocaleString()}
-                </span>
-                <span style={{ fontFamily: mono, fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--ink-5)" }}>
-                  built this week
-                </span>
-              </div>
-              <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginTop: "6px" }}>
-                <span style={{ fontSize: "19px", fontWeight: 600, letterSpacing: "-0.02em", color: "var(--ink)" }}>
-                  {totalPlays.toLocaleString()}
-                </span>
-                <span style={{ fontFamily: mono, fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--ink-5)" }}>
-                  total runs
-                </span>
-              </div>
-              <div style={{ marginTop: "8px", fontFamily: mono, fontSize: "10px", lineHeight: 1.7, color: "var(--ink-6)" }}>
-                Made with any model
-              </div>
-            </div>
-            {/* Native <details>: no state, and the links stay in the HTML for crawlers while collapsed. */}
-            <style>{`.hb-legal-menu>summary{list-style:none}.hb-legal-menu>summary::-webkit-details-marker{display:none}.hb-legal-menu[open] .hb-legal-chev{transform:rotate(180deg)}`}</style>
-            <details className="hb-legal-menu" style={{ margin: "8px 2px 0" }}>
-              <summary
-                className="hb-row"
-                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "36px", padding: "0 12px", borderRadius: "9px", cursor: "pointer", fontSize: "13px", color: "var(--ink-4)" }}
-              >
-                About &amp; legal
-                <svg className="hb-legal-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ transition: "transform 160ms ease" }}>
-                  <polyline points="3,4.5 6,7.5 9,4.5" />
-                </svg>
-              </summary>
-              <div style={{ display: "flex", flexDirection: "column", padding: "2px 0 4px" }}>
-                {legalPages.map((p) => (
-                  <Link
-                    key={p.href}
-                    href={p.href}
-                    onClick={onNavigate}
-                    className="hb-row"
-                    style={{ display: "block", padding: "7px 12px", borderRadius: "8px", fontSize: "13px", color: pathname === p.href ? "var(--ink)" : "var(--ink-5)" }}
-                  >
-                    {p.label}
-                  </Link>
+            {mobile ? (
+              <button onClick={toggleTheme} style={navStyleFor(false, false)}>
+                <NavIcon>{light ? moonIcon : sunIcon}</NavIcon>
+                <span>{light ? "Dark theme" : "Light theme"}</span>
+              </button>
+            ) : null}
+            {/* Pinned to the bottom of the full-height sidebar; flows after the links when they overflow. */}
+            <div style={{ marginTop: "auto" }}>
+              <div style={{ display: "flex", margin: "14px 2px 2px", padding: "10px 0", borderRadius: "12px", background: "var(--chip)" }}>
+                {[
+                  { value: builtThisWeek, label: "Games" },
+                  { value: totalPlays, label: "Total runs" },
+                ].map((s, i) => (
+                  <div key={s.label} style={{ flex: 1, minWidth: 0, padding: "0 12px", borderLeft: i ? "1px solid var(--chip-2)" : "none" }}>
+                    <div style={{ fontSize: "16px", fontWeight: 600, lineHeight: 1.2, letterSpacing: "-0.02em", color: "var(--ink)" }}>
+                      {s.value.toLocaleString()}
+                    </div>
+                    <div style={{ marginTop: "2px", fontFamily: mono, fontSize: "9.5px", letterSpacing: "0.08em", textTransform: "uppercase", whiteSpace: "nowrap", color: "var(--ink-5)" }}>
+                      {s.label}
+                    </div>
+                  </div>
                 ))}
               </div>
-            </details>
-            <div style={{ height: "1px", margin: "10px 8px", background: "var(--chip)" }} />
-            <div style={{ padding: "2px 12px 6px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12.5px", fontWeight: 600, letterSpacing: "-0.02em", color: "var(--ink-4)" }}>
-                <HabivMark size={12} />
-                habiv
-                <span style={{ fontFamily: mono, fontSize: "9px", fontWeight: 400, letterSpacing: "0.1em", color: "var(--ink-6)" }}>BETA</span>
+              {/* Native <details>: no state, and the links stay in the HTML for crawlers while collapsed. */}
+              <style>{`.hb-legal-menu>summary{list-style:none}.hb-legal-menu>summary::-webkit-details-marker{display:none}.hb-legal-menu[open] .hb-legal-chev{transform:rotate(180deg)}`}</style>
+              <details className="hb-legal-menu" style={{ margin: "8px 2px 0" }}>
+                <summary
+                  className="hb-row"
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "36px", padding: "0 12px", borderRadius: "9px", cursor: "pointer", fontSize: "13px", color: "var(--ink-4)" }}
+                >
+                  About &amp; legal
+                  <svg className="hb-legal-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ transition: "transform 160ms ease" }}>
+                    <polyline points="3,4.5 6,7.5 9,4.5" />
+                  </svg>
+                </summary>
+                <div style={{ display: "flex", flexDirection: "column", padding: "2px 0 4px" }}>
+                  {legalPages.map((p) => (
+                    <Link
+                      key={p.href}
+                      href={p.href}
+                      onClick={onNavigate}
+                      className="hb-row"
+                      style={{ display: "block", padding: "7px 12px", borderRadius: "8px", fontSize: "13px", color: pathname === p.href ? "var(--ink)" : "var(--ink-5)" }}
+                    >
+                      {p.label}
+                    </Link>
+                  ))}
+                </div>
+              </details>
+              <div style={{ height: "1px", margin: "10px 8px", background: "var(--chip)" }} />
+              <div style={{ padding: "2px 12px 6px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12.5px", fontWeight: 600, letterSpacing: "-0.02em", color: "var(--ink-4)" }}>
+                  <HabivMark size={12} />
+                  habiv
+                  <span style={{ fontFamily: mono, fontSize: "9px", fontWeight: 400, letterSpacing: "0.1em", color: "var(--ink-6)" }}>BETA</span>
+                </div>
+                <div style={{ marginTop: "6px", fontSize: "11.5px", color: "var(--ink-6)" }}>© 2026 Habiv</div>
               </div>
-              <div style={{ marginTop: "6px", fontSize: "11.5px", color: "var(--ink-6)" }}>© 2026 Habiv</div>
             </div>
           </div>
         ) : null}
@@ -678,82 +694,11 @@ function Sidebar() {
   );
 }
 
-const bottomNavItems = [
-  { href: "/", label: "Home" },
-  { href: "/explore", label: "Explore" },
-  { href: "/publish", label: "Create" },
-  { href: "/saved", label: "Saved" },
-  { href: "/profile", label: "Profile" },
-];
-
-function BottomNav() {
-  const { mobile, profile } = useShell();
-  const pathname = usePathname() ?? "";
-  const tab = useSearchParams().get("tab");
-  if (!mobile) return null;
-  return (
-    <div
-      style={{
-        position: "fixed",
-        left: "12px",
-        right: "12px",
-        bottom: "12px",
-        zIndex: 75,
-        display: "flex",
-        alignItems: "stretch",
-        gap: "2px",
-        padding: "6px",
-        borderRadius: "18px",
-        background: "var(--bar-2)",
-        backdropFilter: "blur(30px) saturate(165%)",
-        WebkitBackdropFilter: "blur(30px) saturate(165%)",
-        boxShadow: "0 14px 40px rgba(0,0,0,0.28)",
-      }}
-    >
-      {bottomNavItems.map((b) => {
-        const active = isNavActive(b.href, pathname, tab, profile.handleSet ? profile.handle : null);
-        return (
-          <Link
-            key={b.href}
-            href={b.href}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "4px",
-              flex: 1,
-              minWidth: "44px",
-              minHeight: "52px",
-              padding: "6px 4px",
-              color: active ? "var(--ink)" : "var(--ink-5)",
-              fontSize: "10.5px",
-              fontWeight: 500,
-            }}
-          >
-            <span
-              style={{
-                width: "18px",
-                height: "18px",
-                borderRadius: b.label === "Create" ? "6px" : "50%",
-                background: active ? "var(--ink)" : "var(--chip-2)",
-              }}
-            />
-            {b.label}
-          </Link>
-        );
-      })}
-    </div>
-  );
-}
-
-const WATCH_RE = /^\/(g\/|@[^/]+\/[^/]+)/;
-
 /** Background: a home gradient, or on a watch page a neutral top wash, plus slow blooms. */
 function Ambient() {
   const { light } = useShell();
   const pathname = usePathname();
-  const isWatch = WATCH_RE.test(pathname ?? "");
+  const isWatch = isWatchPath(pathname);
 
   const base = isWatch
     ? `radial-gradient(110% 62% at 50% -8%, ${light ? "oklch(0.82 0.01 260 / 0.5)" : "oklch(0.58 0.02 260 / 0.55)"} 0%, rgba(15,15,15,0) 60%), radial-gradient(80% 50% at 88% 18%, ${light ? "oklch(0.86 0.01 260 / 0.38)" : "oklch(0.52 0.02 260 / 0.3)"} 0%, rgba(15,15,15,0) 62%), var(--amb-base)`
@@ -805,7 +750,7 @@ function Ambient() {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { mobile, theme, drawerMode } = useShell();
+  const { theme, drawerMode } = useShell();
 
   return (
     <div
@@ -819,9 +764,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       {drawerMode ? <Sidebar /> : null}
       <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "flex-start", gap: "12px", padding: "12px" }}>
         {drawerMode ? null : <Sidebar />}
-        <main style={{ flex: 1, minWidth: 0, paddingBottom: mobile ? "84px" : "12px" }}>{children}</main>
+        <main style={{ flex: 1, minWidth: 0, paddingBottom: "12px" }}>{children}</main>
       </div>
-      <BottomNav />
       <Overlays />
     </div>
   );

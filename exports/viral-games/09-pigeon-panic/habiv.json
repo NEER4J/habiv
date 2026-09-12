@@ -1,0 +1,35 @@
+{
+  "title": "Pigeon Panic",
+  "tagline": "Protect one very important chip from a flock with excellent timing.",
+  "description": "A street-food cart, one crispy chip, and an increasingly coordinated pigeon squad. Tap to shoo, hold to fake, and do not waste your last crumb.",
+  "categories": [
+    "arcade"
+  ],
+  "tags": [
+    "arcade",
+    "funny",
+    "score attack"
+  ],
+  "orientation": "any",
+  "durationSec": 40,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Shush a pigeon"
+      },
+      {
+        "key": "Hold",
+        "action": "Fake a toss"
+      },
+      {
+        "key": "R",
+        "action": "Reset the cart"
+      }
+    ],
+    "touch": "Shush a pigeon"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Pigeon Panic. A street-food cart, one crispy chip, and an increasingly coordinated pigeon squad. Tap to shoo, hold to fake, and do not waste your last crumb.",
+  "changelog": "Initial browser-game build"
+}

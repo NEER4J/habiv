@@ -1,0 +1,35 @@
+{
+  "title": "Signal / Noise",
+  "tagline": "Separate a real message from a very convincing hum.",
+  "description": "A waveform hides a short message inside layers of noise. Tune the filters until the pattern stabilizes, then repeat the decoded phrase before the screen scrambles it.",
+  "categories": [
+    "experimental"
+  ],
+  "tags": [
+    "experimental",
+    "audio",
+    "decode"
+  ],
+  "orientation": "any",
+  "durationSec": 85,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Lock a signal"
+      },
+      {
+        "key": "← →",
+        "action": "Tune filter"
+      },
+      {
+        "key": "R",
+        "action": "Resample"
+      }
+    ],
+    "touch": "Lock a signal"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Signal / Noise. A waveform hides a short message inside layers of noise. Tune the filters until the pattern stabilizes, then repeat the decoded phrase before the screen scrambles it.",
+  "changelog": "Initial browser-game build"
+}

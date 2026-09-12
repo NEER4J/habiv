@@ -1,0 +1,35 @@
+{
+  "title": "Loop Detective",
+  "tagline": "The same ten seconds keep happening. Find the frame that changed.",
+  "description": "A hallway security feed repeats every ten seconds. Compare each loop, mark the single frame that should not exist, and decide whether to break the loop.",
+  "categories": [
+    "experimental"
+  ],
+  "tags": [
+    "experimental",
+    "mystery",
+    "loop"
+  ],
+  "orientation": "any",
+  "durationSec": 100,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Mark a frame"
+      },
+      {
+        "key": "← →",
+        "action": "Scrub the loop"
+      },
+      {
+        "key": "R",
+        "action": "Reset"
+      }
+    ],
+    "touch": "Mark a frame"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Loop Detective. A hallway security feed repeats every ten seconds. Compare each loop, mark the single frame that should not exist, and decide whether to break the loop.",
+  "changelog": "Initial browser-game build"
+}

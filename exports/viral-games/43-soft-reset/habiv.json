@@ -1,0 +1,35 @@
+{
+  "title": "Soft Reset",
+  "tagline": "Tidy a tiny digital room until it feels like morning.",
+  "description": "A desktop is cluttered with half-finished notes, blinking reminders, and a sleeping cursor. Sort the windows, archive the noise, and make one corner quiet.",
+  "categories": [
+    "ambient"
+  ],
+  "tags": [
+    "ambient",
+    "desktop",
+    "calm"
+  ],
+  "orientation": "any",
+  "durationSec": 130,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Archive a note"
+      },
+      {
+        "key": "Drag",
+        "action": "Arrange a window"
+      },
+      {
+        "key": "R",
+        "action": "Reset desktop"
+      }
+    ],
+    "touch": "Archive a note"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Soft Reset. A desktop is cluttered with half-finished notes, blinking reminders, and a sleeping cursor. Sort the windows, archive the noise, and make one corner quiet.",
+  "changelog": "Initial browser-game build"
+}

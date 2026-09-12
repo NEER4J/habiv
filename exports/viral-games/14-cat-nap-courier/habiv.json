@@ -1,0 +1,35 @@
+{
+  "title": "Cat Nap Courier",
+  "tagline": "Deliver tiny parcels without waking the neighborhood cats.",
+  "description": "Carry parcels across a quiet apartment block while every cat sleeps in a slightly different way. Choose routes, place treats, and learn who snores.",
+  "categories": [
+    "cozy"
+  ],
+  "tags": [
+    "cats",
+    "cozy",
+    "delivery"
+  ],
+  "orientation": "any",
+  "durationSec": 90,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Deliver a parcel"
+      },
+      {
+        "key": "Drag",
+        "action": "Choose a route"
+      },
+      {
+        "key": "R",
+        "action": "New route"
+      }
+    ],
+    "touch": "Deliver a parcel"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Cat Nap Courier. Carry parcels across a quiet apartment block while every cat sleeps in a slightly different way. Choose routes, place treats, and learn who snores.",
+  "changelog": "Initial browser-game build"
+}

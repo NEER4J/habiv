@@ -8,6 +8,7 @@ const items = [
   { href: "/admin", label: "Overview" },
   { href: "/admin/uploads", label: "Uploads" },
   { href: "/admin/games", label: "Games" },
+  { href: "/admin/home", label: "Home picks" },
   { href: "/admin/users", label: "Users" },
   { href: "/admin/reports", label: "Reports" },
   { href: "/admin/categories", label: "Categories" },

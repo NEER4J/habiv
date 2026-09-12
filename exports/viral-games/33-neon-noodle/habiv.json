@@ -1,0 +1,35 @@
+{
+  "title": "Neon Noodle",
+  "tagline": "Stretch the noodle, dodge the chopsticks, serve the perfect bowl.",
+  "description": "Guide one impossible noodle through a busy neon kitchen. Collect broth bubbles, bend around chopsticks, and deliver the strand before the timer turns spicy.",
+  "categories": [
+    "arcade"
+  ],
+  "tags": [
+    "arcade",
+    "food",
+    "neon"
+  ],
+  "orientation": "any",
+  "durationSec": 38,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Grab broth"
+      },
+      {
+        "key": "Drag",
+        "action": "Steer the noodle"
+      },
+      {
+        "key": "R",
+        "action": "Cook again"
+      }
+    ],
+    "touch": "Grab broth"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Neon Noodle. Guide one impossible noodle through a busy neon kitchen. Collect broth bubbles, bend around chopsticks, and deliver the strand before the timer turns spicy.",
+  "changelog": "Initial browser-game build"
+}

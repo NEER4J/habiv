@@ -50,3 +50,6 @@ jobs/node_modules/
 workers/game-origin/node_modules/
 workers/game-origin/public/sdk/
 workers/game-origin-vercel/public/sdk/
+
+# generated demo account credentials (keep local and private)
+/exports/viral-games/dummy-accounts.private.json

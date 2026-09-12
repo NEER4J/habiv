@@ -14,8 +14,9 @@ import { refreshLeaderboard } from "@/lib/actions/leaderboard";
 import { createClient } from "@/lib/supabase/client";
 import type { CommentItem } from "@/lib/db/comments";
 import { gameOrigin, siteUrl } from "@/lib/site";
-import { bpanel, chipBtn, chipStyle, ctrlBtn, mono, monoLabel, pill } from "@/lib/habiv/ui";
-import { Maximize, Pause, Play, RectangleHorizontal, RotateCcw, Volume2, VolumeX } from "lucide-react";
+import { createPortal } from "react-dom";
+import { bpanel, chipBtn, chipStyle, ctrlBtn, modalScrimStyle, modalSmStyleFor, mono, monoLabel, pill } from "@/lib/habiv/ui";
+import { Maximize, RectangleHorizontal, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { CreatorAvatar, RailRow } from "./game-card";
 import { useShell } from "./shell-context";
 
@@ -48,6 +49,9 @@ const ctrlIcon = { size: 15, strokeWidth: 1.8, "aria-hidden": true } as const;
 
 // Fullscreen controls fade out after this long without the pointer near them.
 const FS_CONTROLS_IDLE_MS = 2500;
+const MUTED_KEY = "hv:muted";
+/** Board rows shown on the page; the rest of the top 50 opens in a modal. */
+const BOARD_PREVIEW = 5;
 
 // A guest who closes the "sign in to keep it" prompt isn't asked again this visit.
 const GUEST_PROMPT_OFF_KEY = "hv_guest_score_prompt_off";
@@ -131,7 +135,8 @@ export function WatchView({ data }: { data: WatchData }) {
   // Today's board and the viewer's place on it; kept live after the first render (refreshBoard below).
   const [leaderboard, setLeaderboard] = useState(data.leaderboard);
   const [myRank, setMyRank] = useState(viewer.rank);
-  const { theatre, setTheatre, openModal, setModalGameId, isSaved, toggleSaved, showToast, mobile, light, profile, signedIn, requireAuth, openAuth } =
+  const [boardOpen, setBoardOpen] = useState(false);
+  const { theatre, setTheatre, openModal, setModalGameId, isSaved, toggleSaved, showToast, mobile, light, profile, signedIn, requireAuth, openAuth, modal, searchOpen } =
     useShell();
 
   // Player
@@ -140,6 +145,8 @@ export function WatchView({ data }: { data: WatchData }) {
   const [frameKey, setFrameKey] = useState(0);
   // Runs this viewer started since the page loaded, so the count moves on Play without a refresh.
   const [playsBump, setPlaysBump] = useState(0);
+  // Distinct players with a fresh open run on this game.
+  const [nowPlaying, setNowPlaying] = useState(data.nowPlaying);
   // Corner note after a scored run: a guest is asked to sign in to keep the score; a signed-in
   // player hears only about a new personal best in a board's top 3.
   const [note, setNote] = useState<{ text: string; guest: boolean } | null>(null);
@@ -152,7 +159,24 @@ export function WatchView({ data }: { data: WatchData }) {
   const [fullscreen, setFullscreen] = useState(false);
   const [fsClosing, setFsClosing] = useState(false);
   const [fsControls, setFsControls] = useState(true);
-  const [muted, setMuted] = useState(true);
+  // Sound on unless this browser turned it off before (the bridge enforces it inside the game).
+  const [muted, setMuted] = useState(false);
+  useEffect(() => {
+    try {
+      if (localStorage.getItem(MUTED_KEY) === "1") setMuted(true);
+    } catch {
+      /* storage blocked */
+    }
+  }, []);
+  const toggleMuted = () =>
+    setMuted((m) => {
+      try {
+        localStorage.setItem(MUTED_KEY, m ? "0" : "1");
+      } catch {
+        /* storage blocked */
+      }
+      return !m;
+    });
 
   // Social
   const [liked, setLiked] = useState(viewer.liked);
@@ -160,8 +184,32 @@ export function WatchView({ data }: { data: WatchData }) {
   const [following, setFollowing] = useState(viewer.following);
   const [followers, setFollowers] = useState(game.followers);
   const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement | null>(null);
+  // Tallest height the game has said its content needs (bridge "size"); the phone player grows to it.
+  const [fitHeight, setFitHeight] = useState(0);
+
+  // The ··· menu closes on an outside press or Escape.
+  useEffect(() => {
+    if (!moreOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(e.target as Node)) setMoreOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMoreOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [moreOpen]);
   // Opened when playing an older version, so the version list is right there.
   const [descOpen, setDescOpen] = useState(!!game.playing);
+  // Phones show two lines of the description until Read more.
+  const [descMore, setDescMore] = useState(false);
+  // Narrower pills on phones so the whole action row, ··· included, fits on one line.
+  const tight: CSSProperties | undefined = mobile ? { padding: "0 12px" } : undefined;
   const [copied, setCopied] = useState(false);
 
   // Rail
@@ -211,6 +259,7 @@ export function WatchView({ data }: { data: WatchData }) {
     setState("cover");
     setFrameOn(false);
     setPlaysBump(0);
+    setNowPlaying(data.nowPlaying);
     setNote(null);
     setLeaderboard(data.leaderboard);
     setMyRank(viewer.rank);
@@ -230,7 +279,7 @@ export function WatchView({ data }: { data: WatchData }) {
     setReplyTo(null);
     setReplyDraft("");
     setRepliesOpen(null);
-  }, [game.id, game.likes, game.followers, game.comments, viewer.liked, viewer.following, viewer.rank, data.comments.items, data.leaderboard]);
+  }, [game.id, game.likes, game.followers, game.comments, viewer.liked, viewer.following, viewer.rank, data.comments.items, data.leaderboard, data.nowPlaying]);
 
   useEffect(
     () => () => {
@@ -252,6 +301,29 @@ export function WatchView({ data }: { data: WatchData }) {
     });
   }, [game.id]);
 
+  const presenceSeq = useRef(0);
+  const refreshNowPlaying = useCallback(() => {
+    const seq = ++presenceSeq.current;
+    void fetch(`/api/games/${game.id}/playing`, { cache: "no-store" })
+      .then(async (res) => {
+        if (!res.ok) return null;
+        return (await res.json()) as { playing?: number };
+      })
+      .then((res) => {
+        if (seq !== presenceSeq.current || typeof res?.playing !== "number") return;
+        setNowPlaying(Math.max(0, res.playing));
+      })
+      .catch(() => {
+        /* Keep the last known count when presence is temporarily unavailable. */
+      });
+  }, [game.id]);
+
+  useEffect(() => {
+    refreshNowPlaying();
+    const timer = setInterval(refreshNowPlaying, 15_000);
+    return () => clearInterval(timer);
+  }, [refreshNowPlaying]);
+
   const boardId = leaderboard?.id ?? null;
   useEffect(() => {
     if (!boardId) return;
@@ -271,6 +343,15 @@ export function WatchView({ data }: { data: WatchData }) {
     };
   }, [boardId, refreshBoard]);
 
+  useEffect(() => {
+    if (!boardOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setBoardOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [boardOpen]);
+
   const onHostEvent = useCallback(
     (e: HostEvent) => {
       switch (e.type) {
@@ -281,6 +362,14 @@ export function WatchView({ data }: { data: WatchData }) {
         case "run_start":
           if (e.counted) setPlaysBump((n) => n + 1);
           setState("playing");
+          refreshNowPlaying();
+          break;
+        case "run_end":
+          refreshNowPlaying();
+          break;
+        // Grow-only, so a frame that grew to fit never bounces back once the content fits.
+        case "size":
+          setFitHeight((h) => Math.max(h, e.height));
           break;
         // The game draws its own end screen; the page only calls out a new personal best that made a
         // top 3 (naming the longest board it made) and asks guests to sign in to keep their score.
@@ -298,7 +387,7 @@ export function WatchView({ data }: { data: WatchData }) {
           }
           if (!rank) break;
           setNote({ text: rank, guest: false });
-          noteTimer.current = setTimeout(() => setNote(null), 4000);
+          noteTimer.current = setTimeout(() => setNote(null), 7000);
           break;
         }
         case "happytime":
@@ -311,7 +400,7 @@ export function WatchView({ data }: { data: WatchData }) {
           break;
       }
     },
-    [showToast, refreshBoard],
+    [showToast, refreshBoard, refreshNowPlaying],
   );
 
   // One bridge host per mounted iframe; a new frameKey is a fresh iframe.
@@ -340,6 +429,13 @@ export function WatchView({ data }: { data: WatchData }) {
     mutedRef.current = muted;
     hostRef.current?.mute(muted);
   }, [muted]);
+
+  // Fixed for each mounted frame (a new frameKey is a fresh iframe): a src that followed `muted`
+  // would reload the game on every toggle, and later toggles go over the bridge instead.
+  const [frameSrc, setFrameSrc] = useState<string | undefined>(undefined);
+  useEffect(() => {
+    setFrameSrc(game.versionId ? gameFrameSrc({ versionId: game.versionId, playerId: viewer.playerId, muted: mutedRef.current }) : undefined);
+  }, [game.versionId, viewer.playerId, frameKey]);
 
   const launch = useCallback(
     (fromPlayButton: boolean) => {
@@ -430,13 +526,22 @@ export function WatchView({ data }: { data: WatchData }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && fullscreen) exitFullscreen();
+      // Space on the cover plays from anywhere on the page: back up to the player, then start.
+      // Typing, focused controls (which Space presses natively), search and modals keep the key.
+      if (e.code !== "Space" || state !== "cover" || !canPlay || e.repeat || e.metaKey || e.ctrlKey || e.altKey || modal || searchOpen) return;
+      const t = e.target instanceof HTMLElement ? e.target : null;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT|BUTTON|A)$/.test(t.tagName))) return;
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      start();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  // Fullscreen controls show on entry and when the pointer comes near them, then fade so they never
-  // sit over the game. Pointer moves over the iframe never reach this page, hence the edge strip.
+  // Fullscreen controls stay hidden at the top until the pointer reaches the top edge (or taps it),
+  // then fade after a pause so they never sit over the game. Pointer moves over the iframe never
+  // reach this page, hence the edge strip.
   const pokeFsControls = useCallback(() => {
     setFsControls(true);
     clearTimeout(fsHideTimer.current);
@@ -449,9 +554,9 @@ export function WatchView({ data }: { data: WatchData }) {
   };
 
   useEffect(() => {
-    if (fullscreen) pokeFsControls();
-    else clearTimeout(fsHideTimer.current);
-  }, [fullscreen, pokeFsControls]);
+    clearTimeout(fsHideTimer.current);
+    setFsControls(false);
+  }, [fullscreen]);
 
   useEffect(() => () => clearTimeout(fsHideTimer.current), []);
 
@@ -471,6 +576,11 @@ export function WatchView({ data }: { data: WatchData }) {
   const openShare = () => {
     setModalGameId(game.id);
     openModal("share");
+  };
+  const openShareScore = () => {
+    setNote(null);
+    setModalGameId(game.id);
+    openModal("shareScore");
   };
   const openRemix = () => {
     if (game.remixLicence === "no_remix") return;
@@ -670,7 +780,66 @@ export function WatchView({ data }: { data: WatchData }) {
   // The viewer's row: by account, or by this browser's player id for a guest score not yet linked.
   const isYou = (e: { user: { id: string } | null; playerId: string }) =>
     (!!viewer.userId && e.user?.id === viewer.userId) || (!e.user && !!viewer.playerId && e.playerId === viewer.playerId);
-  const highlightedRow = !!leaderboard?.entries.some(isYou);
+  // The page shows the top few; the full top 50 opens in a modal.
+  const boardTop = leaderboard?.entries.slice(0, BOARD_PREVIEW) ?? [];
+  const highlightedRow = boardTop.some(isYou);
+  // On the viewer's own row, in place of the HUMAN tag.
+  const shareMine = (
+    <button
+      type="button"
+      onClick={() => {
+        setBoardOpen(false);
+        openShareScore();
+      }}
+      style={{ height: "24px", padding: "0 10px", borderRadius: "999px", border: 0, background: "var(--chip-2)", color: "var(--ink)", fontSize: "11.5px", fontWeight: 600, cursor: "pointer" }}
+    >
+      Share
+    </button>
+  );
+  const boardRow =(r: NonNullable<typeof leaderboard>["entries"][number]) => {
+    const you = isYou(r);
+    return (
+      <div
+        key={`${r.rank}-${r.playerId}`}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+          padding: mobile ? "7px 8px" : "9px 10px",
+          borderRadius: "8px",
+          background: you ? "var(--chip)" : "transparent",
+          color: you ? "var(--ink)" : "var(--ink-2)",
+        }}
+      >
+        <span style={{ fontFamily: mono, fontSize: "12px", color: "var(--ink-5)", width: "26px" }}>{String(r.rank).padStart(2, "0")}</span>
+        <span style={{ flex: 1, fontSize: "13.5px", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          {r.user?.handle ?? (r.isBot && r.botLabel ? r.botLabel : "guest")}
+          {you ? <span style={{ fontFamily: mono, fontSize: "10.5px", color: "var(--ink-5)", marginLeft: "8px" }}>you</span> : null}
+        </span>
+        {you ? shareMine : <span style={{ fontFamily: mono, fontSize: "11px", color: "var(--ink-5)" }}>{r.isBot ? "BOT" : "HUMAN"}</span>}
+        <span style={{ fontFamily: mono, fontSize: "13px", minWidth: "64px", textAlign: "right" }}>{r.score.toLocaleString()}</span>
+      </div>
+    );
+  };
+  const myRankRow = myRank ? (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "12px",
+        padding: mobile ? "7px 8px" : "9px 10px",
+        borderRadius: "8px",
+        background: "var(--chip)",
+        color: "var(--ink)",
+        marginTop: "2px",
+      }}
+    >
+      <span style={{ fontFamily: mono, fontSize: "12px", color: "var(--ink-5)", width: "26px" }}>{String(myRank.rank).padStart(2, "0")}</span>
+      <span style={{ flex: 1, fontSize: "13.5px", fontWeight: 500 }}>you · #{myRank.rank} of {myRank.total.toLocaleString()}</span>
+      {shareMine}
+      <span style={{ fontFamily: mono, fontSize: "13px", minWidth: "64px", textAlign: "right" }}>{myRank.score.toLocaleString()}</span>
+    </div>
+  ) : null;
 
   const playerBox: CSSProperties = fullscreen
     ? {
@@ -698,7 +867,7 @@ export function WatchView({ data }: { data: WatchData }) {
 
   const controlBar = (
     items: ReactNode,
-    bottom: string,
+    top: string,
     bg: string,
     shown = true,
     hover?: { onPointerEnter: () => void; onPointerLeave: () => void },
@@ -708,8 +877,8 @@ export function WatchView({ data }: { data: WatchData }) {
       style={{
         position: "absolute",
         left: "50%",
-        bottom,
-        transform: shown ? "translateX(-50%)" : "translate(-50%, 12px)",
+        top,
+        transform: shown ? "translateX(-50%)" : "translate(-50%, -12px)",
         opacity: shown ? 1 : 0,
         pointerEvents: shown ? "auto" : "none",
         transition: "opacity 200ms ease, transform 200ms ease",
@@ -724,6 +893,10 @@ export function WatchView({ data }: { data: WatchData }) {
       {items}
     </div>
   );
+
+  // Player width / height. Phones are too narrow for a 16:9 box to hold most games, so only landscape
+  // builds keep it there; the rest get a taller frame.
+  const frameRatio = !mobile || game.orientation === "landscape" ? 16 / 9 : game.orientation === "portrait" ? 9 / 16 : 4 / 5;
 
   return (
     <>
@@ -757,12 +930,18 @@ export function WatchView({ data }: { data: WatchData }) {
           ) : null}
           {/* Player slot keeps the page layout; the box inside goes fixed for fullscreen. */}
           <div
+            className={theatre ? undefined : "hb-player-slot"}
             style={{
               position: "relative",
-              width: "100%",
+              // Never taller than the screen (--player-max-h in globals.css): past that height the player
+              // narrows and centres instead, so it keeps its aspect ratio.
+              width: theatre ? "100%" : `min(100%, calc(var(--player-max-h) * ${frameRatio}))`,
+              margin: theatre ? undefined : "0 auto",
               height: theatre ? "min(calc(100vh - 170px), 56.25vw)" : "auto",
-              aspectRatio: theatre ? "auto" : "16 / 9",
-              transition: "height 340ms cubic-bezier(.22,.8,.3,1)",
+              aspectRatio: theatre ? "auto" : `${frameRatio}`,
+              // The game reported content taller than the frame: grow to it, still within the cap.
+              minHeight: mobile && !theatre && fitHeight ? `min(${fitHeight}px, var(--player-max-h))` : undefined,
+              transition: "height 340ms cubic-bezier(.22,.8,.3,1), min-height 240ms ease",
               zIndex: theatre ? 50 : 1,
             }}
           >
@@ -772,7 +951,7 @@ export function WatchView({ data }: { data: WatchData }) {
                   key={frameKey}
                   ref={iframeRef}
                   title={game.title}
-                  src={gameFrameSrc({ versionId: game.versionId, playerId: viewer.playerId })}
+                  src={frameSrc}
                   sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-forms allow-modals allow-orientation-lock"
                   allow="autoplay; fullscreen *; gamepad; xr-spatial-tracking; cross-origin-isolated; accelerometer; gyroscope"
                   allowFullScreen
@@ -781,39 +960,6 @@ export function WatchView({ data }: { data: WatchData }) {
                   style={frameStyle}
                 />
               ) : null}
-
-
-              <div
-                style={{
-                  position: "absolute",
-                  right: "14px",
-                  top: "14px",
-                  zIndex: 6,
-                  opacity: fullscreen && !fsControlsShown ? 0 : 1,
-                  transition: "opacity 200ms ease",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "7px",
-                  padding: "5px 10px",
-                  borderRadius: "6px",
-                  background: "rgba(0,0,0,0.72)",
-                  fontFamily: mono,
-                  fontSize: "10.5px",
-                  letterSpacing: "0.06em",
-                  color: "#e6e6e6",
-                }}
-              >
-                <span
-                  style={{
-                    width: "6px",
-                    height: "6px",
-                    borderRadius: "50%",
-                    background: state === "playing" ? "#7ed08a" : "rgba(255,255,255,0.4)",
-                    animation: state === "playing" ? "hbBlink 2s ease-in-out infinite" : "none",
-                  }}
-                />
-                {fmt(game.plays + playsBump)} runs
-              </div>
 
               {state === "cover" || state === "loading" ? (
                 <div
@@ -850,6 +996,23 @@ export function WatchView({ data }: { data: WatchData }) {
                           <path d="M2 1.6 20 12 2 22.4z" />
                         </svg>
                         Play game
+                        {!mobile ? (
+                          <kbd
+                            style={{
+                              marginLeft: "2px",
+                              padding: "2px 6px",
+                              borderRadius: "5px",
+                              border: "1px solid rgba(12,12,14,0.18)",
+                              fontFamily: mono,
+                              fontSize: "10.5px",
+                              fontWeight: 500,
+                              letterSpacing: "0.04em",
+                              color: "rgba(12,12,14,0.55)",
+                            }}
+                          >
+                            Space
+                          </kbd>
+                        ) : null}
                       </button>
                     ) : (
                       <div style={{ ...onPlayerChip, height: "auto", padding: "10px 16px", cursor: "default", flexDirection: "column", gap: "4px" }}>
@@ -919,8 +1082,8 @@ export function WatchView({ data }: { data: WatchData }) {
                     alignItems: "center",
                     flexWrap: "wrap",
                     gap: "10px",
-                    pointerEvents: note.guest ? "auto" : "none",
-                    padding: note.guest ? "7px 7px 7px 12px" : "7px 12px",
+                    pointerEvents: "auto",
+                    padding: "7px 7px 7px 12px",
                     borderRadius: "10px",
                     background: "rgba(0,0,0,0.78)",
                     color: "#f5f5f7",
@@ -930,6 +1093,9 @@ export function WatchView({ data }: { data: WatchData }) {
                   }}
                 >
                   <span>{note.text}</span>
+                  <button onClick={openShareScore} style={{ ...onPlayerPrimary, height: "28px", padding: "0 12px", fontSize: "12.5px" }}>
+                    Share score
+                  </button>
                   {note.guest ? (
                     <>
                       <button
@@ -937,7 +1103,7 @@ export function WatchView({ data }: { data: WatchData }) {
                           setNote(null);
                           openAuth("signin");
                         }}
-                        style={{ ...onPlayerPrimary, height: "28px", padding: "0 12px", fontSize: "12.5px" }}
+                        style={{ height: "28px", padding: "0 12px", borderRadius: "999px", background: "rgba(255,255,255,0.14)", color: "#f5f5f7", fontSize: "12.5px", fontWeight: 600, cursor: "pointer" }}
                       >
                         Sign in to keep it
                       </button>
@@ -956,34 +1122,13 @@ export function WatchView({ data }: { data: WatchData }) {
                 </div>
               ) : null}
 
-              {theatre && !fullscreen
-                ? controlBar(
-                    <>
-                      <button onClick={() => setTheatre(false)} style={onPlayerChip}>
-                        Exit theatre
-                      </button>
-                      <button onClick={restart} style={onPlayerChip}>
-                        Restart
-                      </button>
-                      <button onClick={() => setMuted((m) => !m)} style={onPlayerChip}>
-                        {soundLabel}
-                      </button>
-                      <button onClick={enterFullscreen} style={onPlayerChip}>
-                        Fullscreen
-                      </button>
-                    </>,
-                    "16px",
-                    "rgba(0,0,0,0.72)",
-                  )
-                : null}
-
               {fullscreen ? (
                 <div
                   aria-hidden
                   onPointerEnter={pokeFsControls}
                   onPointerMove={pokeFsControls}
                   onPointerDown={pokeFsControls}
-                  style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "28px", zIndex: 4 }}
+                  style={{ position: "absolute", left: 0, right: 0, top: 0, height: "28px", zIndex: 4 }}
                 />
               ) : null}
 
@@ -999,11 +1144,11 @@ export function WatchView({ data }: { data: WatchData }) {
                       <button onClick={togglePause} style={onPlayerChip}>
                         {pauseLabel}
                       </button>
-                      <button onClick={() => setMuted((m) => !m)} style={onPlayerChip}>
+                      <button onClick={toggleMuted} style={onPlayerChip}>
                         {soundLabel}
                       </button>
                     </>,
-                    "22px",
+                    "16px",
                     "rgba(0,0,0,0.66)",
                     fsControlsShown,
                     { onPointerEnter: holdFsControls, onPointerLeave: pokeFsControls },
@@ -1014,17 +1159,14 @@ export function WatchView({ data }: { data: WatchData }) {
 
           {/* Controls */}
           <div style={{ ...bpanel, display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px", padding: "7px 10px" }}>
-            <button onClick={restart} disabled={!canPlay} style={{ ...ctrlIconBtn, opacity: canPlay ? 1 : 0.5 }}>
+            {/* Phones get one row of icon-only buttons (labels are hb-desk-only) and no theatre mode. */}
+            <button onClick={restart} disabled={!canPlay} aria-label="Restart" style={{ ...ctrlIconBtn, opacity: canPlay ? 1 : 0.5 }}>
               <RotateCcw {...ctrlIcon} />
-              Restart
+              <span className="hb-desk-only">Restart</span>
             </button>
-            <button onClick={togglePause} disabled={!canPlay} style={{ ...ctrlIconBtn, opacity: canPlay ? 1 : 0.5 }}>
-              {state === "playing" ? <Pause {...ctrlIcon} /> : <Play {...ctrlIcon} />}
-              {pauseLabel}
-            </button>
-            <button onClick={() => setMuted((m) => !m)} style={ctrlIconBtn}>
+            <button onClick={toggleMuted} aria-label={soundLabel} style={ctrlIconBtn}>
               {muted ? <VolumeX {...ctrlIcon} /> : <Volume2 {...ctrlIcon} />}
-              {soundLabel}
+              <span className="hb-desk-only">{soundLabel}</span>
             </button>
             <div style={{ flex: 1, minWidth: "8px" }} />
             <span style={{ fontFamily: mono, fontSize: "11px", color: "var(--ink-5)", marginRight: "6px" }}>{stateLabel}</span>
@@ -1033,14 +1175,15 @@ export function WatchView({ data }: { data: WatchData }) {
                 setTheatre(!theatre);
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
+              className="hb-desk-only"
               style={ctrlIconBtn}
             >
               <RectangleHorizontal {...ctrlIcon} />
-              Theatre
+              {theatre ? "Exit theatre" : "Theatre"}
             </button>
-            <button onClick={enterFullscreen} style={ctrlIconBtn}>
+            <button onClick={enterFullscreen} aria-label="Fullscreen" style={ctrlIconBtn}>
               <Maximize {...ctrlIcon} />
-              Fullscreen
+              <span className="hb-desk-only">Fullscreen</span>
             </button>
           </div>
 
@@ -1049,11 +1192,12 @@ export function WatchView({ data }: { data: WatchData }) {
             <h1 style={{ margin: 0, fontSize: "20px", fontWeight: 600, letterSpacing: "-0.02em" }}>{game.title}</h1>
 
             <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "14px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0 }}>
+              {/* Phones give the creator a row of their own, with Follow at its right end. */}
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", minWidth: 0, width: mobile ? "100%" : undefined }}>
                 <Link href={`/@${game.creator}`} style={{ display: "flex", flex: "0 0 auto", color: "inherit" }}>
                   <CreatorAvatar game={game} />
                 </Link>
-                <div style={{ minWidth: 0 }}>
+                <div style={{ minWidth: 0, flex: mobile ? 1 : undefined }}>
                   <Link href={`/@${game.creator}`} style={{ display: "block", fontSize: "15px", fontWeight: 600, color: "var(--ink)" }}>
                     {game.creatorName}
                   </Link>
@@ -1071,7 +1215,7 @@ export function WatchView({ data }: { data: WatchData }) {
                 ) : null}
               </div>
               <div style={{ flex: 1 }} />
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: mobile ? "6px" : "8px", flexWrap: mobile ? "nowrap" : "wrap", width: mobile ? "100%" : undefined }}>
                 <div style={{ display: "flex", alignItems: "center", background: "var(--chip)", borderRadius: "19px", overflow: "hidden" }}>
                   <button
                     onClick={onLike}
@@ -1081,7 +1225,7 @@ export function WatchView({ data }: { data: WatchData }) {
                       alignItems: "center",
                       gap: "7px",
                       height: "36px",
-                      padding: "0 15px",
+                      padding: mobile ? "0 12px" : "0 15px",
                       background: "transparent",
                       color: liked ? "var(--like)" : "var(--ink)",
                       fontSize: "13.5px",
@@ -1098,7 +1242,7 @@ export function WatchView({ data }: { data: WatchData }) {
                       display: "inline-flex",
                       alignItems: "center",
                       height: "36px",
-                      padding: "0 15px",
+                      padding: mobile ? "0 12px" : "0 15px",
                       background: "transparent",
                       color: "var(--ink)",
                       fontSize: "13.5px",
@@ -1109,44 +1253,139 @@ export function WatchView({ data }: { data: WatchData }) {
                     Share
                   </button>
                 </div>
+                {/* Phones have no room for this pill; the count moves into the stats line below. */}
+                {!mobile ? (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    title="Players currently playing this game"
+                    style={{
+                      ...pill(),
+                      color: nowPlaying > 0 ? "var(--pos-ink)" : "var(--ink-2)",
+                      cursor: "default",
+                    }}
+                  >
+                    <span
+                      aria-hidden="true"
+                      style={{
+                        width: "7px",
+                        height: "7px",
+                        borderRadius: "50%",
+                        background: nowPlaying > 0 ? "var(--pos)" : "var(--ink-5)",
+                        animation: nowPlaying > 0 ? "hbBlink 2s ease-in-out infinite" : "none",
+                      }}
+                    />
+                    {fmt(nowPlaying)} playing now
+                  </div>
+                ) : null}
                 {remixable ? (
-                  <button onClick={openRemix} style={chipBtn}>
+                  <button onClick={openRemix} style={{ ...chipBtn, ...tight }}>
                     Remix
                   </button>
                 ) : (
-                  <button disabled title="The creator turned remixing off" style={{ ...chipBtn, opacity: 0.55, cursor: "not-allowed" }}>
+                  <button disabled title="The creator turned remixing off" style={{ ...chipBtn, ...tight, opacity: 0.55, cursor: "not-allowed" }}>
                     Remixes off
                   </button>
                 )}
-                <button onClick={() => toggleSaved(game.id)} style={saved ? { ...pill(), background: "var(--chip-2)" } : pill()}>
+                <button onClick={() => toggleSaved(game.id)} style={{ ...pill(), ...tight, ...(saved ? { background: "var(--chip-2)" } : null) }}>
                   {saved ? "Saved" : "Save"}
                 </button>
-                <button onClick={() => setMoreOpen((m) => !m)} aria-label="More actions" style={chipBtn}>
-                  ···
-                </button>
+                {/* Pinned to the row's right end so the menu, which opens leftward, stays on screen. */}
+                <div ref={moreRef} style={{ position: "relative", marginLeft: mobile ? "auto" : undefined, flex: "0 0 auto" }}>
+                  <button
+                    onClick={() => setMoreOpen((m) => !m)}
+                    aria-label="More actions"
+                    aria-haspopup="menu"
+                    aria-expanded={moreOpen}
+                    style={{ ...chipBtn, ...tight, ...(moreOpen ? { background: "var(--chip-2)" } : null) }}
+                  >
+                    ···
+                  </button>
+                  {moreOpen ? (
+                    <div
+                      role="menu"
+                      style={{
+                        ...bpanel,
+                        position: "absolute",
+                        right: 0,
+                        top: "calc(100% + 8px)",
+                        zIndex: 60,
+                        width: "180px",
+                        padding: "6px",
+                        background: "var(--panel-2)",
+                        boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
+                        animation: "hbRise 160ms ease-out both",
+                      }}
+                    >
+                      {[
+                        { label: copied ? "Copied link" : "Copy link", run: copyLink },
+                        { label: "Embed", run: openShare },
+                        { label: "Report", run: openReport },
+                      ].map((item) => (
+                        <button
+                          key={item.label}
+                          role="menuitem"
+                          className="hb-row"
+                          onClick={() => {
+                            setMoreOpen(false);
+                            item.run();
+                          }}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                            height: "38px",
+                            padding: "0 12px",
+                            borderRadius: "9px",
+                            background: "transparent",
+                            color: item.label === "Report" ? "var(--ink-3)" : "var(--ink)",
+                            fontSize: "13.5px",
+                            fontWeight: 500,
+                            textAlign: "left",
+                            cursor: "pointer",
+                          }}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
               </div>
             </div>
 
-            {moreOpen ? (
-              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                <button onClick={copyLink} style={chipBtn}>
-                  {copied ? "Copied" : "Copy"} link
-                </button>
-                <button onClick={openShare} style={chipBtn}>
-                  Embed
-                </button>
-                <button onClick={openReport} style={chipBtn}>
-                  Report
-                </button>
-              </div>
-            ) : null}
-
             <div style={{ padding: "14px 16px", borderRadius: "12px", background: "var(--chip)" }}>
               <div style={{ fontFamily: mono, fontSize: "12.5px", letterSpacing: "0.04em", color: "var(--ink-2)" }}>
-                {fmt(game.plays + playsBump)} runs · best {best(game)} · {fmt(game.remixes)} remixes · {game.age}
+                {fmt(game.plays + playsBump)} runs{mobile ? ` · ${fmt(nowPlaying)} playing now` : ""} · best {best(game)} · {fmt(game.remixes)} remixes · {game.age}
               </div>
               {description ? (
-                <div style={{ marginTop: "8px", fontSize: "14px", lineHeight: 1.6, color: "var(--ink-2)", maxWidth: "78ch", whiteSpace: "pre-line" }}>{description}</div>
+                <>
+                  <div
+                    style={{
+                      marginTop: "8px",
+                      fontSize: "14px",
+                      lineHeight: 1.6,
+                      color: "var(--ink-2)",
+                      maxWidth: "78ch",
+                      whiteSpace: "pre-line",
+                      ...(mobile && !descMore
+                        ? { display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }
+                        : null),
+                    }}
+                  >
+                    {description}
+                  </div>
+                  {/* About two phone lines of text; shorter descriptions never get clipped. */}
+                  {mobile && (description.length > 90 || description.includes("\n")) ? (
+                    <button
+                      type="button"
+                      onClick={() => setDescMore((m) => !m)}
+                      style={{ marginTop: "4px", padding: 0, background: "none", border: 0, color: "var(--ink)", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
+                    >
+                      {descMore ? "Show less" : "Read more"}
+                    </button>
+                  ) : null}
+                </>
               ) : null}
               {game.remixedFrom ? (
                 <div style={{ marginTop: "8px", fontSize: "12.5px", color: "var(--ink-4)" }}>
@@ -1222,7 +1461,7 @@ export function WatchView({ data }: { data: WatchData }) {
 
           {/* How to play: only when the creator gave instructions */}
           {howToKeys.length || howToTouch ? (
-          <div style={{ ...bpanel, padding: "16px 18px" }}>
+          <div style={{ ...bpanel, padding: mobile ? "12px 14px" : "16px 18px" }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
               <div style={monoLabel}>How to play</div>
               <div style={{ fontFamily: mono, fontSize: "10.5px", color: "var(--ink-5)" }}>
@@ -1231,7 +1470,14 @@ export function WatchView({ data }: { data: WatchData }) {
             </div>
             {summary ? <div style={{ marginTop: "10px", fontSize: "14.5px", lineHeight: 1.5, color: "var(--ink)", maxWidth: "70ch" }}>{summary}.</div> : null}
             {howToKeys.length ? (
-            <div style={{ marginTop: "14px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "8px" }}>
+            <div
+              style={{
+                marginTop: mobile ? "10px" : "14px",
+                display: "grid",
+                gridTemplateColumns: mobile ? "repeat(2, minmax(0, 1fr))" : "repeat(auto-fit, minmax(190px, 1fr))",
+                gap: mobile ? "6px" : "8px",
+              }}
+            >
               {howToKeys.map((c) => (
                 <div key={c.key} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <span
@@ -1260,74 +1506,60 @@ export function WatchView({ data }: { data: WatchData }) {
           </div>
           ) : null}
 
-          {/* Today's board */}
-          <div style={{ ...bpanel, padding: "16px 18px" }}>
+          {/* Today's board: only games with a leaderboard, which the publish flow offers only to builds that send scores. */}
+          {leaderboard ? (
+          <div style={{ ...bpanel, padding: mobile ? "12px 14px" : "16px 18px" }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
               <div style={monoLabel}>Today&apos;s board · resets at midnight UTC</div>
               <div style={{ fontFamily: mono, fontSize: "11px", color: "var(--ink-5)" }}>{fmt(runsToday)} runs today</div>
             </div>
-            <div style={{ marginTop: "12px", display: "flex", flexDirection: "column" }}>
-              {leaderboard ? (
-                <>
-                  {leaderboard.entries.length ? (
-                    leaderboard.entries.map((r) => {
-                      const you = isYou(r);
-                      return (
-                        <div
-                          key={`${r.rank}-${r.playerId}`}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "12px",
-                            padding: "9px 10px",
-                            borderRadius: "8px",
-                            background: you ? "var(--chip)" : "transparent",
-                            color: you ? "var(--ink)" : "var(--ink-2)",
-                          }}
-                        >
-                          <span style={{ fontFamily: mono, fontSize: "12px", color: "var(--ink-5)", width: "26px" }}>{String(r.rank).padStart(2, "0")}</span>
-                          <span style={{ flex: 1, fontSize: "13.5px", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            {r.user?.handle ?? (r.isBot && r.botLabel ? r.botLabel : "guest")}
-                            {you ? <span style={{ fontFamily: mono, fontSize: "10.5px", color: "var(--ink-5)", marginLeft: "8px" }}>you</span> : null}
-                          </span>
-                          <span style={{ fontFamily: mono, fontSize: "11px", color: "var(--ink-5)" }}>{r.isBot ? "BOT" : "HUMAN"}</span>
-                          <span style={{ fontFamily: mono, fontSize: "13px", minWidth: "64px", textAlign: "right" }}>{r.score.toLocaleString()}</span>
-                        </div>
-                      );
-                    })
-                  ) : (
-                    <div style={{ padding: "9px 10px", fontSize: "13px", color: "var(--ink-5)" }}>Nobody has scored today. Yours would be first.</div>
-                  )}
-                  {myRank && !highlightedRow ? (
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "12px",
-                        padding: "9px 10px",
-                        borderRadius: "8px",
-                        background: "var(--chip)",
-                        color: "var(--ink)",
-                        marginTop: "8px",
-                      }}
-                    >
-                      <span style={{ fontFamily: mono, fontSize: "12px", color: "var(--ink-5)", width: "26px" }}>{String(myRank.rank).padStart(2, "0")}</span>
-                      <span style={{ flex: 1, fontSize: "13.5px", fontWeight: 500 }}>you · #{myRank.rank} of {myRank.total.toLocaleString()}</span>
-                      <span style={{ fontFamily: mono, fontSize: "11px", color: "var(--ink-5)" }}>HUMAN</span>
-                      <span style={{ fontFamily: mono, fontSize: "13px", minWidth: "64px", textAlign: "right" }}>{myRank.score.toLocaleString()}</span>
-                    </div>
-                  ) : null}
-                </>
+            <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "6px" }}>
+              {boardTop.length ? (
+                boardTop.map(boardRow)
               ) : (
-                <div style={{ padding: "12px 10px", borderRadius: "8px", background: "var(--chip)", fontSize: "13px", color: "var(--ink-4)" }}>
-                  No leaderboard for this game
-                </div>
+                <div style={{ padding: "9px 10px", fontSize: "13px", color: "var(--ink-5)" }}>Nobody has scored today. Yours would be first.</div>
               )}
+              {!highlightedRow ? myRankRow : null}
             </div>
+            {leaderboard.entries.length > BOARD_PREVIEW ? (
+              <button
+                type="button"
+                onClick={() => setBoardOpen(true)}
+                style={{ marginTop: mobile ? "8px" : "10px", width: "100%", height: mobile ? "32px" : "36px", borderRadius: "8px", border: 0, background: "var(--chip)", color: "var(--ink-2)", fontSize: "13px", fontWeight: 500, cursor: "pointer" }}
+              >
+                See top {leaderboard.entries.length}
+              </button>
+            ) : null}
           </div>
+          ) : null}
+
+          {/* Portaled to <body> so no panel's backdrop-filter becomes the fixed scrim's containing block. */}
+          {boardOpen && leaderboard
+            ? createPortal(
+                <div style={modalScrimStyle}>
+                  <div onClick={() => setBoardOpen(false)} style={{ position: "absolute", inset: 0 }} />
+                  <div role="dialog" aria-modal="true" aria-labelledby="board-title" style={{ ...modalSmStyleFor(light), color: "var(--ink)" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
+                      <div id="board-title" style={{ fontSize: "20px", fontWeight: 600, letterSpacing: "-0.02em" }}>Today&apos;s top {leaderboard.entries.length}</div>
+                      <button type="button" aria-label="Close" onClick={() => setBoardOpen(false)} style={{ background: "none", border: 0, padding: "4px", color: "var(--ink-4)", fontSize: "22px", lineHeight: 1, cursor: "pointer" }}>
+                        ×
+                      </button>
+                    </div>
+                    <div style={{ marginTop: "4px", fontFamily: mono, fontSize: "11px", color: "var(--ink-5)" }}>
+                      {leaderboard.total.toLocaleString()} {leaderboard.total === 1 ? "player" : "players"} today · resets at midnight UTC
+                    </div>
+                    <div style={{ marginTop: "14px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                      {leaderboard.entries.map(boardRow)}
+                      {!leaderboard.entries.some(isYou) ? myRankRow : null}
+                    </div>
+                  </div>
+                </div>,
+                document.body,
+              )
+            : null}
 
           {/* Build stats */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "10px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: mobile ? "repeat(3, minmax(0, 1fr))" : "repeat(auto-fit, minmax(150px, 1fr))", gap: mobile ? "8px" : "10px" }}>
             {[
               {
                 label: "Model",
@@ -1346,9 +1578,9 @@ export function WatchView({ data }: { data: WatchData }) {
               { label: "Versions", value: game.versions ? `v${game.versions}` : "—", note: `last push ${game.age}` },
               { label: "Remix licence", value: remixable ? "Open" : "No remixes", note: `${fmt(game.remixes)} forks` },
             ].map((s) => (
-              <div key={s.label} style={{ ...bpanel, borderRadius: "12px", padding: "12px 14px" }}>
-                <div style={statLabel}>{s.label}</div>
-                <div style={{ marginTop: "6px", fontSize: "14px", fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div key={s.label} style={{ ...bpanel, borderRadius: "12px", padding: mobile ? "9px 10px" : "12px 14px" }}>
+                <div style={{ ...statLabel, ...(mobile ? { whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } : null) }}>{s.label}</div>
+                <div style={{ marginTop: mobile ? "4px" : "6px", fontSize: mobile ? "13px" : "14px", fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   {s.href ? (
                     <Link href={s.href} title={`More games made with ${s.value}`} style={{ color: "inherit", textDecoration: "underline", textDecorationColor: "var(--chip-2)", textUnderlineOffset: "3px" }}>
                       {s.value}
@@ -1357,78 +1589,97 @@ export function WatchView({ data }: { data: WatchData }) {
                     s.value
                   )}
                 </div>
-                <div style={{ marginTop: "3px", fontSize: "12px", color: "var(--ink-5)" }}>{s.note}</div>
+                <div
+                  style={{
+                    marginTop: "3px",
+                    fontSize: mobile ? "11px" : "12px",
+                    color: "var(--ink-5)",
+                    ...(mobile ? { whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } : null),
+                  }}
+                >
+                  {s.note}
+                </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Up next rail */}
-        {!theatre ? (
-          <aside style={{ ...bpanel, flex: "1 1 320px", maxWidth: mobile ? "none" : "360px", padding: "12px", alignSelf: "stretch" }}>
-            <div
+        {/* Up next rail: beside the player, or a full-width row under it once the row wraps (tablets)
+            and in theatre mode, where the queue goes two columns (.hb-queue in globals.css). */}
+        <aside
+          className="hb-watch-side"
+          style={{
+            ...bpanel,
+            flex: theatre ? "1 1 100%" : "1 1 320px",
+            // 932px = section basis 600 + gap 12 + rail basis 320: below it the rail has wrapped, so drop the cap.
+            maxWidth: theatre ? "none" : "max(360px, calc((932px - 100%) * 9999))",
+            marginTop: theatre ? "12px" : undefined,
+            padding: "12px",
+            alignSelf: "stretch",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "10px",
+              paddingBottom: "10px",
+              borderBottom: "1px solid var(--divider)",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "baseline", gap: "9px" }}>
+              <span style={{ fontSize: "15px", fontWeight: 600 }}>Up next</span>
+              <span style={{ fontFamily: mono, fontSize: "10.5px", color: "var(--ink-6)" }}>{recPool.length} in queue</span>
+            </div>
+            <button
+              onClick={() => setQueueSeed((q) => q + 1)}
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: "10px",
-                paddingBottom: "10px",
-                borderBottom: "1px solid var(--divider)",
+                height: "28px",
+                padding: "0 12px",
+                borderRadius: "6px",
+                fontFamily: mono,
+                fontSize: "10.5px",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+                background: "var(--chip)",
+                color: "var(--ink-4)",
+                cursor: "pointer",
               }}
             >
-              <div style={{ display: "flex", alignItems: "baseline", gap: "9px" }}>
-                <span style={{ fontSize: "15px", fontWeight: 600 }}>Up next</span>
-                <span style={{ fontFamily: mono, fontSize: "10.5px", color: "var(--ink-6)" }}>{recPool.length} in queue</span>
-              </div>
+              Shuffle
+            </button>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "6px", padding: "10px 0 8px" }}>
+            {["All", "Same model", `@${game.creator}`, game.type].map((l) => (
               <button
-                onClick={() => setQueueSeed((q) => q + 1)}
+                key={l}
+                onClick={() => setRailFilter(l)}
                 style={{
+                  flex: "0 0 auto",
                   height: "28px",
-                  padding: "0 12px",
+                  padding: "0 11px",
                   borderRadius: "6px",
-                  fontFamily: mono,
-                  fontSize: "10.5px",
-                  letterSpacing: "0.08em",
-                  textTransform: "uppercase",
-                  background: "var(--chip)",
-                  color: "var(--ink-4)",
+                  fontSize: "12px",
+                  fontWeight: 500,
                   cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  background: railFilter === l ? "var(--ink)" : "var(--chip)",
+                  color: railFilter === l ? "var(--ink-invert)" : "var(--ink-4)",
                 }}
               >
-                Shuffle
+                {l}
               </button>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: "6px", padding: "10px 0 8px" }}>
-              {["All", "Same model", `@${game.creator}`, game.type].map((l) => (
-                <button
-                  key={l}
-                  onClick={() => setRailFilter(l)}
-                  style={{
-                    flex: "0 0 auto",
-                    height: "28px",
-                    padding: "0 11px",
-                    borderRadius: "6px",
-                    fontSize: "12px",
-                    fontWeight: 500,
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                    background: railFilter === l ? "var(--ink)" : "var(--chip)",
-                    color: railFilter === l ? "var(--ink-invert)" : "var(--ink-4)",
-                  }}
-                >
-                  {l}
-                </button>
-              ))}
-            </div>
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              {queue.length ? (
-                queue.map((x, i) => <RailRow key={x.id} game={x} queueNo={String(i + 1).padStart(2, "0")} />)
-              ) : (
-                <div style={{ padding: "14px 8px", fontSize: "13px", color: "var(--ink-5)" }}>Nothing else in the queue yet.</div>
-              )}
-            </div>
-          </aside>
-        ) : null}
+            ))}
+          </div>
+          <div className="hb-queue">
+            {queue.length ? (
+              queue.map((x, i) => <RailRow key={x.id} game={x} queueNo={String(i + 1).padStart(2, "0")} />)
+            ) : (
+              <div style={{ gridColumn: "1 / -1", padding: "14px 8px", fontSize: "13px", color: "var(--ink-5)" }}>Nothing else in the queue yet.</div>
+            )}
+          </div>
+        </aside>
       </div>
 
       {/* Comments */}
@@ -1659,7 +1910,7 @@ export function WatchView({ data }: { data: WatchData }) {
             ))}
           </div>
         </div>
-        {!theatre && !mobile ? <div style={{ flex: "1 1 320px", maxWidth: "360px", minWidth: 0, height: "1px" }} /> : null}
+        {!theatre ? <div className="hb-desk-only" style={{ flex: "1 1 320px", maxWidth: "360px", minWidth: 0, height: "1px" }} /> : null}
       </div>
     </>
   );

@@ -1,0 +1,35 @@
+{
+  "title": "Snack Attack",
+  "tagline": "Catch every snack. Miss one and the lunchbox judges you.",
+  "description": "Move a lunchbox beneath falling snacks while the conveyor belt changes speed every five seconds. Golden snacks add a multiplier; broccoli subtracts it.",
+  "categories": [
+    "arcade"
+  ],
+  "tags": [
+    "arcade",
+    "score",
+    "fast"
+  ],
+  "orientation": "any",
+  "durationSec": 30,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Grab a snack"
+      },
+      {
+        "key": "← →",
+        "action": "Move the box"
+      },
+      {
+        "key": "R",
+        "action": "Restart lunch"
+      }
+    ],
+    "touch": "Grab a snack"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Snack Attack. Move a lunchbox beneath falling snacks while the conveyor belt changes speed every five seconds. Golden snacks add a multiplier; broccoli subtracts it.",
+  "changelog": "Initial browser-game build"
+}

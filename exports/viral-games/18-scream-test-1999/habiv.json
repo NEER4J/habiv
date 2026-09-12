@@ -1,0 +1,35 @@
+{
+  "title": "Scream Test 1999",
+  "tagline": "A forgotten desktop asks one question: did you hear that?",
+  "description": "Run diagnostics on a beige computer, watch the waveform, and keep the volume low enough that the thing behind the monitor does not notice you listening.",
+  "categories": [
+    "horror"
+  ],
+  "tags": [
+    "horror",
+    "retro",
+    "found footage"
+  ],
+  "orientation": "any",
+  "durationSec": 100,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Run a diagnostic"
+      },
+      {
+        "key": "1–4",
+        "action": "Choose a test"
+      },
+      {
+        "key": "Space",
+        "action": "Mute the room"
+      }
+    ],
+    "touch": "Run a diagnostic"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Scream Test 1999. Run diagnostics on a beige computer, watch the waveform, and keep the volume low enough that the thing behind the monitor does not notice you listening.",
+  "changelog": "Initial browser-game build"
+}

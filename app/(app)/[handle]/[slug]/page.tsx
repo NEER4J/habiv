@@ -8,14 +8,15 @@ import { siteUrl } from "@/lib/site";
 import { categoryName, type GameFull } from "@/lib/habiv/games";
 import { absoluteUrl, breadcrumbLd, clip, isoDuration, organizationLd, siteName } from "@/lib/seo";
 import { loadWatch } from "@/lib/habiv/page-data";
+import { readScoreShare } from "@/lib/share/score";
 import { JsonLd } from "@/components/seo/json-ld";
 import { WatchView } from "@/components/habiv/watch-view";
 import { WatchSkeleton } from "@/components/habiv/skeletons";
 
 type Params = Promise<{ handle: string; slug: string }>;
 
-export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
-  const { handle: raw, slug } = await params;
+export async function generateMetadata({ params, searchParams }: { params: Params; searchParams: SearchParams }): Promise<Metadata> {
+  const [{ handle: raw, slug }, { s }] = await Promise.all([params, searchParams]);
   const handle = handleFromRouteParam(raw);
   // The 404 is sent after streaming starts (status 200), so the page itself must say noindex.
   if (!handle) return { title: "Page not found", robots: { index: false, follow: true } };
@@ -26,20 +27,42 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const lead = game.tagline?.trim() || (game.description ? clip(game.description, 110) : `${game.title} is a tiny ${category.toLowerCase()} game by @${h}.`);
   const description = clip(`${lead.replace(/[.!?…]?$/, ".")} Play free in your browser on Habiv. No download.`);
   const url = `${siteUrl}${game.url}`;
-  // No images: the route's opengraph-image.tsx renders the social card.
+
+  // A shared result (?s=, signed) swaps in the score card and a bragging title for social previews.
+  const token = typeof s === "string" ? s : null;
+  const shared = token ? readScoreShare(token) : null;
+  const scored = shared?.gameId === game.id ? shared : null;
+  let socialTitle = `${game.title} by @${h}`;
+  let socialDescription = description;
+  let image = { url: `${siteUrl}/og/game/${game.id}`, width: 1200, height: 630, type: "image/jpeg", alt: `${game.title} by @${h} on Habiv` };
+  if (scored && token) {
+    const who = scored.name ? `@${scored.name}` : "A player";
+    socialTitle =
+      scored.score != null ? `${who} scored ${scored.score.toLocaleString("en-US")} in ${game.title}` : `${who} played ${scored.rounds} ${scored.rounds === 1 ? "round" : "rounds"} of ${game.title}`;
+    socialDescription = clip(
+      `${scored.rank != null && scored.total ? `#${scored.rank} of ${scored.total.toLocaleString("en-US")} all time. ` : ""}Can you beat it? Play ${game.title} free in your browser on Habiv.`,
+    );
+    image = { ...image, url: `${siteUrl}/og/score/${token}`, alt: socialTitle };
+  }
+  // og:url keeps the token: Facebook re-scrapes og:url, which would otherwise drop the score card.
+  const shareUrl = scored && token ? `${url}?s=${token}` : url;
+
   return {
     title: `${game.title}: ${category} game by @${h}`,
     description,
     keywords: [game.title, `${category.toLowerCase()} game`, "browser game", "free online game", "AI game", game.currentVersion?.model, game.currentVersion?.agent].filter((k): k is string => !!k),
     authors: [{ name: game.creator.displayName, url: `${siteUrl}/@${h}` }],
     alternates: { canonical: url },
-    openGraph: { siteName, locale: "en_US", type: "website", title: `${game.title} by @${h}`, description, url },
-    twitter: { card: "summary_large_image", title: `${game.title} by @${h}`, description },
+    openGraph: { siteName, locale: "en_US", type: "website", title: socialTitle, description: socialDescription, url: shareUrl, images: [image] },
+    twitter: { card: "summary_large_image", title: socialTitle, description: socialDescription, images: [image] },
   };
 }
 
-/** `?v=3` plays version 3 instead of the live one (the canonical URL stays the bare game page). */
-type SearchParams = Promise<{ v?: string | string[] }>;
+/**
+ * `?v=3` plays version 3 instead of the live one; `?s=` carries a shared score for the social card.
+ * The canonical URL stays the bare game page either way.
+ */
+type SearchParams = Promise<{ v?: string | string[]; s?: string | string[] }>;
 
 export default function GamePage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   return (

@@ -1,0 +1,35 @@
+{
+  "title": "Ghost in the Queue",
+  "tagline": "Someone keeps joining the line. They are not on the list.",
+  "description": "Manage a tiny ticket queue while an invisible guest moves between positions. Watch timestamps, ask one careful question, and decide when to serve the impossible ticket.",
+  "categories": [
+    "experimental"
+  ],
+  "tags": [
+    "experimental",
+    "mystery",
+    "queue"
+  ],
+  "orientation": "any",
+  "durationSec": 95,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Inspect a ticket"
+      },
+      {
+        "key": "1–4",
+        "action": "Call the queue"
+      },
+      {
+        "key": "R",
+        "action": "New line"
+      }
+    ],
+    "touch": "Inspect a ticket"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Ghost in the Queue. Manage a tiny ticket queue while an invisible guest moves between positions. Watch timestamps, ask one careful question, and decide when to serve the impossible ticket.",
+  "changelog": "Initial browser-game build"
+}

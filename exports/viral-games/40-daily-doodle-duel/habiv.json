@@ -1,0 +1,35 @@
+{
+  "title": "Daily Doodle Duel",
+  "tagline": "Draw the prompt in ten seconds. The judge is a little triangle.",
+  "description": "A prompt arrives, the clock starts, and a simple shape waits for your best interpretation. Accuracy, speed, and personality all matter.",
+  "categories": [
+    "reaction"
+  ],
+  "tags": [
+    "drawing",
+    "daily",
+    "challenge"
+  ],
+  "orientation": "any",
+  "durationSec": 60,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Submit doodle"
+      },
+      {
+        "key": "Drag",
+        "action": "Draw"
+      },
+      {
+        "key": "R",
+        "action": "Practice"
+      }
+    ],
+    "touch": "Submit doodle"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Daily Doodle Duel. A prompt arrives, the clock starts, and a simple shape waits for your best interpretation. Accuracy, speed, and personality all matter.",
+  "changelog": "Initial browser-game build"
+}

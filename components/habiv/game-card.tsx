@@ -17,6 +17,9 @@ import {
 } from "@/lib/habiv/games";
 import { bpanel, mono } from "@/lib/habiv/ui";
 import { useShell } from "./shell-context";
+import { GeneratedThumb, thumbInputForGame } from "./generated-thumb";
+import { CARD, COVER } from "@/lib/thumbs/styles";
+import type { ThumbInput, ThumbSize } from "@/lib/thumbs/styles";
 
 const blurChip: CSSProperties = {
   position: "absolute",
@@ -75,16 +78,21 @@ function FadeImg({ src }: { src: string }) {
 /** Image layer on a shimmer so tiles never flash empty while art loads. */
 export function ArtFrame({
   src,
+  fallback,
+  fallbackSize,
   style,
   children,
 }: {
-  src: string;
+  src: string | null;
+  fallback?: ThumbInput;
+  fallbackSize?: ThumbSize;
   style?: CSSProperties;
   children?: ReactNode;
 }) {
+  const shouldUseFallback = !src || src.startsWith("data:image/svg+xml");
   return (
     <div style={{ position: "relative", overflow: "hidden", background: "var(--chip)", ...style }}>
-      <FadeImg key={src} src={src} />
+      {shouldUseFallback && fallback && fallbackSize ? <GeneratedThumb input={fallback} size={fallbackSize} /> : src ? <FadeImg key={src} src={src} /> : null}
       {children}
     </div>
   );
@@ -155,7 +163,8 @@ type CardProps = {
 export function GameCard({ game: g, showModel = true, showCreator = true, showStats = true }: CardProps) {
   const { cols } = useShell();
   const portrait = isPortrait(g);
-  const src = cols === 2 || portrait ? poster(g, 560) : art(g, 1000);
+  const src = cols === 2 || portrait ? g.cardUrl ?? g.coverUrl : g.coverUrl ?? g.cardUrl;
+  const fallback = thumbInputForGame(g);
   return (
     <Link
       href={g.url}
@@ -170,7 +179,7 @@ export function GameCard({ game: g, showModel = true, showCreator = true, showSt
         animation: "hbFade 320ms ease-out both",
       }}
     >
-      <ArtFrame src={src} style={cardArtStyle(cols)}>
+      <ArtFrame src={src} fallback={fallback} fallbackSize={portrait ? CARD : COVER} style={cardArtStyle(cols)}>
         <span style={{ ...blurChip, right: "8px", fontSize: "10.5px" }}>{g.duration}</span>
         {showModel ? (
           <span style={{ ...blurChip, left: "8px", fontSize: "9.5px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.9)" }}>
@@ -339,34 +348,49 @@ const catIcons: Record<string, string> = {
 
 const catIconList = Object.values(catIcons);
 
-/** Category cells with live counts. Empty categories are hidden unless the catalog is still small. */
-export function CategoryCells({ categories, onPick }: { categories: CategoryInfo[]; onPick: (name: string) => void }) {
+/**
+ * Category cells with live counts. Empty categories are hidden unless the catalog is still small.
+ * Six to a row on desktop; on phones, one row that scrolls sideways with two in view.
+ */
+/** Category tiles. With `onPick` they filter in place (Explore); without it they link to that category on Explore (Home). */
+export function CategoryCells({ categories, onPick }: { categories: CategoryInfo[]; onPick?: (name: string) => void }) {
   const { cols, light } = useShell();
   const active = categories.filter((c) => c.games > 0);
   const shown = active.length >= 4 ? active : categories;
+  if (!shown.length) return null;
+  const narrow = cols === 2;
+  const perRow = spanFor(cols, [2, 3, 4, 6]);
+  // Matches BentoGrid so the inner rows line up with the outer ones.
+  const gap = narrow ? 10 : 12;
   return (
-    <>
+    <div
+      className={narrow ? "hb-no-scrollbar" : undefined}
+      style={{
+        gridColumn: "1 / -1",
+        gridRow: `span ${narrow ? 1 : Math.ceil(shown.length / perRow)}`,
+        minWidth: 0,
+        gap: `${gap}px`,
+        ...(narrow
+          ? { display: "flex", overflowX: "auto", scrollSnapType: "x mandatory", overscrollBehaviorX: "contain" }
+          : { display: "grid", gridTemplateColumns: `repeat(${perRow}, minmax(0, 1fr))`, gridAutoRows: "56px" }),
+      }}
+    >
       {shown.map((c, i) => {
         const hue = 20 + i * 42;
         const path = catIcons[c.name] ?? catIconList[i % catIconList.length];
-        return (
-          <button
-            key={c.slug}
-            onClick={() => onPick(c.name)}
-            className="hb-lift-sm"
-            style={{
-              ...bpanel,
-              gridColumn: `span ${spanFor(cols, [1, 3, 2, 3])}`,
-              gridRow: "span 1",
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              padding: "0 14px",
-              color: "var(--ink)",
-              cursor: "pointer",
-              textAlign: "left",
-            }}
-          >
+        const tileStyle: CSSProperties = {
+          ...bpanel,
+          ...(narrow ? { flex: `0 0 calc((100% - ${gap}px) / 2)`, scrollSnapAlign: "start" } : null),
+          display: "flex",
+          alignItems: "center",
+          gap: "10px",
+          padding: "0 14px",
+          color: "var(--ink)",
+          cursor: "pointer",
+          textAlign: "left",
+        };
+        const body = (
+          <>
             <span
               style={{
                 display: "flex",
@@ -396,10 +420,19 @@ export function CategoryCells({ categories, onPick }: { categories: CategoryInfo
             <span style={{ fontFamily: mono, fontSize: "10px", color: "var(--ink-5)", whiteSpace: "nowrap" }}>
               {c.games} {c.games === 1 ? "game" : "games"}
             </span>
+          </>
+        );
+        return onPick ? (
+          <button key={c.slug} onClick={() => onPick(c.name)} className="hb-lift-sm" style={tileStyle}>
+            {body}
           </button>
+        ) : (
+          <Link key={c.slug} href={`/explore?category=${encodeURIComponent(c.slug)}`} className="hb-lift-sm" style={tileStyle}>
+            {body}
+          </Link>
         );
       })}
-    </>
+    </div>
   );
 }
 

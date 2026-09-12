@@ -1,0 +1,35 @@
+{
+  "title": "Moonbase Merge",
+  "tagline": "Merge tiny machines until the moonbase can make breakfast.",
+  "description": "Slide solar panels, rovers, and coffee modules into a compact moonbase grid. Equal machines combine into smarter ones, but every merge uses floor space.",
+  "categories": [
+    "puzzle"
+  ],
+  "tags": [
+    "merge",
+    "space",
+    "grid"
+  ],
+  "orientation": "any",
+  "durationSec": 100,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Merge a machine"
+      },
+      {
+        "key": "← →",
+        "action": "Slide the base"
+      },
+      {
+        "key": "Z",
+        "action": "Undo"
+      }
+    ],
+    "touch": "Merge a machine"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Moonbase Merge. Slide solar panels, rovers, and coffee modules into a compact moonbase grid. Equal machines combine into smarter ones, but every merge uses floor space.",
+  "changelog": "Initial browser-game build"
+}

@@ -1,0 +1,35 @@
+{
+  "title": "Houseplant Hotline",
+  "tagline": "Answer calls from plants who are mostly overreacting.",
+  "description": "Plants call in with mysterious symptoms: droopy, dramatic, or simply bored. Match each voice to a care plan and unlock increasingly specific personalities.",
+  "categories": [
+    "cozy"
+  ],
+  "tags": [
+    "cozy",
+    "plants",
+    "story"
+  ],
+  "orientation": "any",
+  "durationSec": 120,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Answer a plant"
+      },
+      {
+        "key": "Drag",
+        "action": "Choose care"
+      },
+      {
+        "key": "R",
+        "action": "Open hotline"
+      }
+    ],
+    "touch": "Answer a plant"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Houseplant Hotline. Plants call in with mysterious symptoms: droopy, dramatic, or simply bored. Match each voice to a care plan and unlock increasingly specific personalities.",
+  "changelog": "Initial browser-game build"
+}

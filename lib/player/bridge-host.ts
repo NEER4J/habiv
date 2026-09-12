@@ -13,7 +13,9 @@ export type HostEvent =
   | { type: "happytime" }
   | { type: "level"; kind: "start" | "complete" | "fail"; level: string | null; score: number | null }
   | { type: "beat_game" }
-  | { type: "error"; message: string };
+  | { type: "error"; message: string }
+  /** The game's visible content needs this many CSS px of height (it overflows the frame). */
+  | { type: "size"; height: number };
 
 export type BridgeHostOptions = {
   iframe: HTMLIFrameElement;
@@ -47,17 +49,33 @@ export type BridgeHost = {
 type CurrentRun = { id: string; token: string; auto: boolean; startedAt: number };
 
 const AUTO_START_GRACE_MS = 1500;
+const PRESENCE_HEARTBEAT_MS = 30_000;
 const MAX_DESIGN_KEYS = 100;
 
 async function postJson<T>(url: string, body: unknown, keepalive = false): Promise<T | null> {
   try {
     const res = await fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body), keepalive, credentials: "same-origin" });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const reason = await res.text().catch(() => "");
+      console.warn(`[habiv] ${url} failed: HTTP ${res.status} ${reason.slice(0, 200)}`);
+      return null;
+    }
     return (await res.json()) as T;
-  } catch {
+  } catch (e) {
+    console.warn(`[habiv] ${url} failed:`, e instanceof Error ? e.message : e);
     return null;
   }
 }
+
+/** Why the server refused a score (the `flagged` codes from /api/runs/score), in plain words. */
+const SCORE_FLAGS: Record<string, string> = {
+  too_fast: "the run was shorter than the board's minimum duration",
+  rate: "the score rose faster than the board allows per second",
+  old_version: "it was played on an older version than the live one (reload the page)",
+  preview: "preview runs never rank",
+  no_board: "this game has no leaderboard with that key",
+  already_submitted: "this run already sent a score to that board",
+};
 
 /**
  * Parent side of the bridge: authenticates messages, mints server runs, forwards events to the
@@ -73,7 +91,12 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
   let current: CurrentRun | null = null;
   let gameUsesBridgeRuns = false;
   let autoTimer: ReturnType<typeof setTimeout> | null = null;
+  let heartbeatTimer: ReturnType<typeof setInterval> | null = null;
   let starting: Promise<void> | null = null;
+  // Some older builds send scoreSubmit immediately after runEnd. Keep the just-ended run around
+  // briefly so a valid score can still attach to its token while /api/runs/end is in flight.
+  let scoreRun: CurrentRun | null = null;
+  let scoreRunTimer: ReturnType<typeof setTimeout> | null = null;
   /** Bumped when a round starts, so a late /api/runs/end reply can tell a newer round is already running. */
   let runSeq = 0;
   // The run minted on mount is taken over by the game's first SDK run_start instead of counting twice.
@@ -97,6 +120,21 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
     locale: opts.locale ?? (typeof navigator !== "undefined" ? navigator.language : "en"),
   });
 
+  const stopPresenceHeartbeat = () => {
+    if (heartbeatTimer) clearInterval(heartbeatTimer);
+    heartbeatTimer = null;
+  };
+
+  const startPresenceHeartbeat = () => {
+    stopPresenceHeartbeat();
+    if (preview) return;
+    heartbeatTimer = setInterval(() => {
+      const run = current;
+      if (!run) return;
+      void postJson("/api/runs/heartbeat", { run_id: run.id, run_token: run.token });
+    }, PRESENCE_HEARTBEAT_MS);
+  };
+
   const startRun = async (level: string | undefined, auto: boolean) => {
     if (starting) await starting;
     if (destroyed) return;
@@ -113,6 +151,7 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
         // The server counts only the session's first run of this game; restarts come back uncounted.
         counted = !!current && !!res?.counted;
       }
+      if (current) startPresenceHeartbeat();
       frame.post(initMessage());
       track({ ...base, name: "run_start", level });
       emit({ type: "run_start", runId: current?.id ?? null, auto, counted });
@@ -124,7 +163,16 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
   const endRun = async (outcome: RunOutcome, extra: { score?: number; level?: string; progress_pct?: number }, keepalive: boolean) => {
     const run = current;
     current = null;
+    stopPresenceHeartbeat();
     adoptLaunchRun = false;
+    if (run && outcome !== "quit" && extra.score !== undefined) {
+      scoreRun = run;
+      if (scoreRunTimer) clearTimeout(scoreRunTimer);
+      scoreRunTimer = setTimeout(() => {
+        scoreRun = null;
+        scoreRunTimer = null;
+      }, 5000);
+    }
     if (!run) {
       // No server run (minting failed or was refused): the round still ended in the game, so the
       // page shows its result the same way every time. Quits come only from the host, never here.
@@ -148,8 +196,8 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
     track({ ...base, name: "score_submit", value, props: { board } });
     // A score sent right after runStart would otherwise find no run while /api/runs/start is still answering.
     if (starting) await starting;
-    // Held here because the game's runEnd usually follows at once and clears `current` mid-loop.
-    const run = current;
+    // A score may arrive before runEnd (normal) or immediately after it (legacy builds).
+    const run = current ?? scoreRun;
     if (preview || !run?.token || value === undefined) {
       if (!preview && value !== undefined) console.warn("[habiv] score dropped: no server run to attach it to");
       return;
@@ -160,7 +208,13 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
         "/api/runs/score",
         { run_id: run.id, run_token: run.token, board: key, value },
       );
+      if (res && !res.accepted) console.warn(`[habiv] score ${value} not ranked on "${key}": ${SCORE_FLAGS[res.flagged ?? ""] ?? res.flagged}`);
       if (res) emit({ type: "score_result", accepted: res.accepted, flagged: res.flagged, boards: res.boards ?? [] });
+    }
+    if (run === scoreRun) {
+      scoreRun = null;
+      if (scoreRunTimer) clearTimeout(scoreRunTimer);
+      scoreRunTimer = null;
     }
   };
 
@@ -243,6 +297,11 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
         track({ ...base, name: "error", props: { message: msg.message.slice(0, 200) } });
         emit({ type: "error", message: msg.message });
         break;
+      case "size":
+        if (typeof msg.height === "number" && Number.isFinite(msg.height) && msg.height > 0) {
+          emit({ type: "size", height: Math.min(Math.round(msg.height), 4000) });
+        }
+        break;
     }
   };
 
@@ -279,12 +338,16 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
     destroy() {
       destroyed = true;
       if (autoTimer) clearTimeout(autoTimer);
+      stopPresenceHeartbeat();
       overlay?.removeEventListener("pointerdown", onFirstInteraction);
       overlay?.removeEventListener("keydown", onFirstInteraction);
       window.removeEventListener("blur", onBlur);
       document.removeEventListener("visibilitychange", onHide);
       window.removeEventListener("pagehide", onHide);
       if (current) void endRun("quit", {}, true);
+      if (scoreRunTimer) clearTimeout(scoreRunTimer);
+      scoreRun = null;
+      scoreRunTimer = null;
       frame.detach();
     },
     pause() {

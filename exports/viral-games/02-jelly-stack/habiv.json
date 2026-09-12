@@ -1,0 +1,35 @@
+{
+  "title": "Jelly Stack",
+  "tagline": "Drop soft colors, make a chain, and pray the wobble holds.",
+  "description": "Place one jelly at a time on a tiny tray. Matching colors clears space while mismatches lean until one brave move saves the tower or sends it sliding off screen.",
+  "categories": [
+    "puzzle"
+  ],
+  "tags": [
+    "merge",
+    "cozy",
+    "chain"
+  ],
+  "orientation": "any",
+  "durationSec": 90,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Choose a matching tile"
+      },
+      {
+        "key": "1–9",
+        "action": "Pick a tile"
+      },
+      {
+        "key": "R",
+        "action": "Restart"
+      }
+    ],
+    "touch": "Choose a matching tile"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Jelly Stack. Place one jelly at a time on a tiny tray. Matching colors clears space while mismatches lean until one brave move saves the tower or sends it sliding off screen.",
+  "changelog": "Initial browser-game build"
+}

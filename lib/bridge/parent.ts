@@ -5,13 +5,17 @@ import { isGameMessage, type GameToParent, type ParentToGame } from "@/lib/bridg
 
 export type FrameMode = "play" | "preview" | "smoke";
 
-/** Builds the iframe src for a version. `origin` tells the bridge who to talk to. */
-export function gameFrameSrc(opts: { versionId: string; mode?: FrameMode; playerId?: string | null; origin?: string }): string {
+/**
+ * Builds the iframe src for a version. `origin` tells the bridge who to talk to; `muted` lets it
+ * silence the game from its first sound, before the init message arrives.
+ */
+export function gameFrameSrc(opts: { versionId: string; mode?: FrameMode; playerId?: string | null; origin?: string; muted?: boolean }): string {
   const base = opts.origin ?? gameOrigin;
   const params = new URLSearchParams();
   params.set("origin", typeof window !== "undefined" ? window.location.origin : "https://habiv.com");
   if (opts.mode && opts.mode !== "play") params.set("mode", opts.mode);
   if (opts.playerId) params.set("pid", opts.playerId);
+  if (opts.muted) params.set("muted", "1");
   return `${base}/v/${opts.versionId}/?${params.toString()}`;
 }
 

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidateTag, updateTag } from "next/cache";
 import { getAdminContext } from "@/lib/db/admin";
 import { FEED_TAG, gameTag } from "@/lib/db/games";
+import { HOME_PICK_KEYS, HOME_PICK_SLOTS } from "@/lib/db/feed";
 import { profileTag } from "@/lib/db/profiles";
 import { enqueueIngest } from "@/lib/jobs/trigger";
 import type { TablesUpdate } from "@/lib/supabase/database.types";
@@ -167,6 +168,16 @@ export async function setSiteSetting(key: string, value: unknown): Promise<Resul
   if (error) return { ok: false, error: error.message };
   revalidateTag(FEED_TAG, "max");
   return { ok: true };
+}
+
+const homePicksSchema = z.array(z.string().uuid()).max(HOME_PICK_SLOTS);
+
+/** Pins up to four games to the home hero queue ("featured") or the quick play row ("quick"), in order. */
+export async function setHomePicks(slot: keyof typeof HOME_PICK_KEYS, ids: string[]): Promise<Result> {
+  if (!(slot in HOME_PICK_KEYS)) return { ok: false, error: "Bad slot." };
+  const parsed = homePicksSchema.safeParse(Array.from(new Set(ids)));
+  if (!parsed.success) return { ok: false, error: `Pick up to ${HOME_PICK_SLOTS} games.` };
+  return setSiteSetting(HOME_PICK_KEYS[slot], parsed.data);
 }
 
 /** Soft-delete a comment as admin. */

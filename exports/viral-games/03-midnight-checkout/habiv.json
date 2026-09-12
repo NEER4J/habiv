@@ -1,0 +1,35 @@
+{
+  "title": "Midnight Checkout",
+  "tagline": "Close the store before the last customer remembers your name.",
+  "description": "You are alone at a convenience store after midnight. Scan ordinary objects, watch the freezer reflection, and follow the correct closing sequence before the last customer stops being ordinary.",
+  "categories": [
+    "horror"
+  ],
+  "tags": [
+    "horror",
+    "spot the oddity",
+    "night shift"
+  ],
+  "orientation": "any",
+  "durationSec": 120,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Choose an item"
+      },
+      {
+        "key": "1–4",
+        "action": "Use a register key"
+      },
+      {
+        "key": "P",
+        "action": "Pause"
+      }
+    ],
+    "touch": "Choose an item"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Midnight Checkout. You are alone at a convenience store after midnight. Scan ordinary objects, watch the freezer reflection, and follow the correct closing sequence before the last customer stops being ordinary.",
+  "changelog": "Initial browser-game build"
+}

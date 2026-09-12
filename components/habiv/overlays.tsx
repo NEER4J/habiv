@@ -20,9 +20,10 @@ import { loadGameForModal, loadNotifications } from "@/lib/actions/shell";
 import type { NotificationItem } from "@/lib/db/notifications";
 import { siteUrl } from "@/lib/site";
 import { Avatar } from "./avatar";
-import { railThumbStyle } from "./game-card";
+import { railThumbStyle, shimmer } from "./game-card";
 import { AuthModal } from "@/components/habiv/auth-modal";
-import { useShell } from "./shell-context";
+import { createScoreShare, type ScoreShareLink } from "@/lib/actions/share";
+import { useShell, type ModalKind } from "./shell-context";
 
 const searchHeadStyle: CSSProperties = {
   fontFamily: mono,
@@ -352,11 +353,11 @@ function Modal({ children }: { children: React.ReactNode }) {
 }
 
 /** Loads the game a modal talks about whenever that modal opens. */
-function useModalGame(kind: "share" | "remix") {
+function useModalGame(...kinds: ModalKind[]) {
   const { modal, modalGameId } = useShell();
   const [game, setGame] = useState<Game | null>(null);
   const [loading, setLoading] = useState(false);
-  const isOpen = modal === kind;
+  const isOpen = kinds.includes(modal);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -412,22 +413,87 @@ async function copyText(text: string): Promise<boolean> {
   }
 }
 
+/** Saves the card image: the share sheet where the device can share files (phones), else a download. */
+async function saveCardImage(path: string, name: string, text: string): Promise<"shared" | "saved" | "cancelled" | "failed"> {
+  try {
+    const res = await fetch(path);
+    if (!res.ok) return "failed";
+    const blob = await res.blob();
+    const file = new File([blob], `${name}.jpg`, { type: blob.type || "image/jpeg" });
+    const coarse = window.matchMedia?.("(pointer: coarse)").matches;
+    if (coarse && navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], text });
+        return "shared";
+      } catch (e) {
+        return e instanceof DOMException && e.name === "AbortError" ? "cancelled" : "failed";
+      }
+    }
+    const href = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = href;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(href), 1000);
+    return "saved";
+  } catch {
+    return "failed";
+  }
+}
+
 function ShareModal() {
-  const { closeModal, showToast } = useShell();
-  const { isOpen, game: g, loading } = useModalGame("share");
+  const { closeModal, showToast, modal, modalGameId } = useShell();
+  const { isOpen, game: g, loading } = useModalGame("share", "shareScore");
   const [copied, setCopied] = useState(false);
+  // The viewer's own result on this game, when they have one; "score" shares that instead of the game.
+  const [mode, setMode] = useState<"game" | "score">("game");
+  const [result, setResult] = useState<ScoreShareLink | null>(null);
+  const [resultLoading, setResultLoading] = useState(false);
+  const [cardReady, setCardReady] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!isOpen) setCopied(false);
-  }, [isOpen]);
+    if (!isOpen) {
+      setCopied(false);
+      return;
+    }
+    setMode(modal === "shareScore" ? "score" : "game");
+    setResult(null);
+    setCardReady(false);
+    if (!modalGameId) return;
+    let live = true;
+    setResultLoading(true);
+    createScoreShare(modalGameId)
+      .then((r) => live && setResult(r))
+      .catch(() => live && setResult(null))
+      .finally(() => live && setResultLoading(false));
+    return () => {
+      live = false;
+    };
+    // Re-run only when the modal opens or switches game; switching tabs must not refetch.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, modalGameId]);
 
   if (!isOpen) return null;
 
-  const shareUrl = g ? `${siteUrl}${g.shortUrl}` : "";
-  const shareText = g ? `${g.title} by @${g.creator} on habiv` : "";
+  const scoreMode = mode === "score";
+  const shareUrl = scoreMode ? (result?.url ?? "") : g ? `${siteUrl}${g.shortUrl}` : "";
+  const shareText = scoreMode ? (result?.text ?? "") : g ? `${g.title} by @${g.creator} on habiv` : "";
   const embedSnippet = g
     ? `<iframe src="${siteUrl}${g.url}?embed=1" width="480" height="270" allow="autoplay; fullscreen"></iframe>`
     : "";
+  const resultLabel = result && result.score == null ? "My plays" : "My score";
+
+  const saveImage = async () => {
+    if (!result || !g || saving) return;
+    setSaving(true);
+    const out = await saveCardImage(result.imagePath, `${g.slug}-${result.score ?? `${result.rounds}-rounds`}`, `${result.text} ${result.url}`);
+    setSaving(false);
+    if (out === "saved") showToast("Image saved");
+    else if (out === "failed") showToast("Could not save the image");
+  };
 
   const copyLink = async () => {
     if (!shareUrl) return;
@@ -462,6 +528,47 @@ function ShareModal() {
         <ModalPlaceholder loading={loading} label="This game isn't available to share." />
       ) : (
         <>
+          {result || (scoreMode && resultLoading) ? (
+            <div role="tablist" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px", padding: "4px", marginBottom: "12px", borderRadius: "12px", background: "var(--chip)" }}>
+              {(["game", "score"] as const).map((m) => (
+                <button
+                  key={m}
+                  role="tab"
+                  aria-selected={mode === m}
+                  onClick={() => setMode(m)}
+                  style={{
+                    height: "32px",
+                    borderRadius: "9px",
+                    background: mode === m ? "var(--panel)" : "transparent",
+                    boxShadow: mode === m ? "0 1px 3px rgba(0,0,0,0.25)" : "none",
+                    color: mode === m ? "var(--ink)" : "var(--ink-4)",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  {m === "game" ? "Game" : resultLabel}
+                </button>
+              ))}
+            </div>
+          ) : null}
+
+          {scoreMode ? (
+            result ? (
+              <div style={{ position: "relative", borderRadius: "14px", overflow: "hidden", aspectRatio: "1200 / 630", background: "var(--well)" }}>
+                {!cardReady ? <div aria-hidden="true" style={{ position: "absolute", inset: 0, ...shimmer }} /> : null}
+                {/* eslint-disable-next-line @next/next/no-img-element -- the generated social card, exactly as others will see it */}
+                <img
+                  src={result.imagePath}
+                  alt={result.text}
+                  onLoad={() => setCardReady(true)}
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: cardReady ? 1 : 0, transition: "opacity 200ms ease" }}
+                />
+              </div>
+            ) : (
+              <ModalPlaceholder loading={resultLoading} label="Play a round first. Your best score shows up here to share." />
+            )
+          ) : (
           <div style={{ position: "relative", borderRadius: "14px", overflow: "hidden", background: "var(--well)" }}>
             <div
               style={{
@@ -514,7 +621,10 @@ function ShareModal() {
               </div>
             </div>
           </div>
+          )}
 
+          {scoreMode && !result ? null : (
+          <>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0,1fr))", gap: "8px", marginTop: "14px" }}>
             {shareTargets.map((t) => (
               <button
@@ -571,7 +681,17 @@ function ShareModal() {
               {copied ? "Copied" : "Copy"}
             </button>
           </div>
+          </>
+          )}
 
+          {scoreMode ? (
+            result ? (
+              <button onClick={saveImage} disabled={saving} style={{ ...chipBtn, width: "100%", marginTop: "10px", justifyContent: "center", cursor: saving ? "default" : "pointer", opacity: saving ? 0.6 : 1 }}>
+                {saving ? "Preparing image…" : "Save image"}
+              </button>
+            ) : null
+          ) : (
+            <>
           <div style={{ marginTop: "16px", fontFamily: mono, fontSize: "10px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-5)" }}>
             Embed (beta)
           </div>
@@ -591,6 +711,8 @@ function ShareModal() {
           >
             {embedSnippet}
           </div>
+            </>
+          )}
         </>
       )}
     </Modal>

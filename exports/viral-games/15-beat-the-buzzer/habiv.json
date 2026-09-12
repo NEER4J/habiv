@@ -1,0 +1,35 @@
+{
+  "title": "Beat the Buzzer",
+  "tagline": "The timer is polite once. Then it starts lying.",
+  "description": "Watch the buzzer, read the color cue, and tap on the exact safe beat. Fake-outs arrive after the third round, so stop trusting your first instinct.",
+  "categories": [
+    "reaction"
+  ],
+  "tags": [
+    "reflex",
+    "reaction",
+    "speed"
+  ],
+  "orientation": "any",
+  "durationSec": 25,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Answer the cue"
+      },
+      {
+        "key": "Space",
+        "action": "Start a round"
+      },
+      {
+        "key": "R",
+        "action": "Reset"
+      }
+    ],
+    "touch": "Answer the cue"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Beat the Buzzer. Watch the buzzer, read the color cue, and tap on the exact safe beat. Fake-outs arrive after the third round, so stop trusting your first instinct.",
+  "changelog": "Initial browser-game build"
+}

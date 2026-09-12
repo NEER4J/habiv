@@ -46,6 +46,30 @@ export async function getDaily(): Promise<DailyPick | null> {
   return { game: toFeedGame(feedRow), resetsAt: midnight.toISOString(), runsToday: d?.plays ?? 0 };
 }
 
+/** site_settings keys holding the admin's home picks: arrays of game ids, in display order. */
+export const HOME_PICK_KEYS = { featured: "home_featured", quick: "home_quick_play" } as const;
+export const HOME_PICK_SLOTS = 4;
+
+const idList = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string").slice(0, HOME_PICK_SLOTS) : []);
+
+/** The games an admin pinned to the home hero queue and to quick play. Games no longer live drop out. */
+export async function getHomePicks(): Promise<{ featured: FeedGame[]; quick: FeedGame[] }> {
+  "use cache";
+  cacheTag(FEED_TAG);
+  cacheLife("minutes");
+  const supabase = createAnonClient();
+  const { data: settings } = await supabase.from("site_settings").select("key, value").in("key", Object.values(HOME_PICK_KEYS));
+  const byKey = new Map((settings ?? []).map((s) => [s.key, idList(s.value)]));
+  const featuredIds = byKey.get(HOME_PICK_KEYS.featured) ?? [];
+  const quickIds = byKey.get(HOME_PICK_KEYS.quick) ?? [];
+  const all = Array.from(new Set([...featuredIds, ...quickIds]));
+  if (!all.length) return { featured: [], quick: [] };
+  const { data: rows } = await supabase.from("game_feed_v").select("*").in("id", all);
+  const games = new Map((rows ?? []).map((r) => toFeedGame(asFeedRow(r))).map((g) => [g.id, g]));
+  const pick = (ids: string[]) => ids.map((id) => games.get(id)).filter((g): g is FeedGame => !!g);
+  return { featured: pick(featuredIds), quick: pick(quickIds) };
+}
+
 /** Games published in the last 7 days (sidebar stat). */
 export async function getBuiltThisWeek(): Promise<number> {
   "use cache";

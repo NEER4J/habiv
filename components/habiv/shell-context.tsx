@@ -16,7 +16,8 @@ import { applyTheme, LIGHT_CLASS, type Theme } from "@/lib/habiv/theme";
 import { toggleSave } from "@/lib/actions/social";
 import type { Game } from "@/lib/habiv/games";
 
-export type ModalKind = "signin" | "share" | "remix" | "report" | "notif" | null;
+/** "shareScore" is the share modal opened on the viewer's own result instead of the game. */
+export type ModalKind = "signin" | "share" | "shareScore" | "remix" | "report" | "notif" | null;
 export type AuthMode = "signin" | "signup" | "reset" | "newpassword";
 export type AuthIntent = { mode: AuthMode; next: string | null; error: string | null };
 export type { Theme };
@@ -125,13 +126,29 @@ export function useShell() {
 
 const WATCH_RE = /^\/(g\/[^/]+|@[^/]+\/[^/]+)/;
 
+/**
+ * Whether a path is a game page. The server can hand the path over percent-encoded
+ * (/%40handle/slug), so match the decoded form or the first paint shows the docked sidebar.
+ */
+export function isWatchPath(pathname: string | null): boolean {
+  let path = pathname ?? "";
+  try {
+    path = decodeURIComponent(path);
+  } catch {
+    // Malformed escapes: match the raw path.
+  }
+  return WATCH_RE.test(path);
+}
+
 export function ShellProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [vw, setVw] = useState(1440);
   const [authIntent, setAuthIntent] = useState<AuthIntent>({ mode: "signin", next: null, error: null });
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // Separate flags so the drawer always starts shut (no open-then-slide-away flash after hydration).
+  const [railOpen, setRailOpen] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [theme, setTheme] = useState<Theme>("dark");
   const [theatre, setTheatre] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -161,14 +178,15 @@ export function ShellProvider({ children }: { children: ReactNode }) {
     setTheme(document.documentElement.classList.contains(LIGHT_CLASS) ? "light" : "dark");
   }, []);
 
-  const isWatch = WATCH_RE.test(pathname ?? "");
+  const isWatch = isWatchPath(pathname);
   const mobile = vw < 760;
   const tablet = vw >= 760 && vw < 1100;
   const drawerMode = mobile || isWatch;
-  const collapsed = !drawerMode && (tablet || !sidebarOpen);
+  const collapsed = !drawerMode && (tablet || !railOpen);
 
   useEffect(() => {
-    setSidebarOpen(!isWatch && !mobile);
+    setDrawerOpen(false);
+    setRailOpen(true);
     setTheatre(false);
   }, [isWatch, mobile]);
 
@@ -278,9 +296,9 @@ export function ShellProvider({ children }: { children: ReactNode }) {
       tablet,
       drawerMode,
       collapsed,
-      sidebarOpen: drawerMode ? sidebarOpen : !collapsed,
-      toggleSidebar: () => setSidebarOpen((v) => !v),
-      closeSidebar: () => setSidebarOpen(false),
+      sidebarOpen: drawerMode ? drawerOpen : !collapsed,
+      toggleSidebar: () => (drawerMode ? setDrawerOpen : setRailOpen)((v) => !v),
+      closeSidebar: () => setDrawerOpen(false),
       theme,
       light: theme === "light",
       toggleTheme: () => {
@@ -321,7 +339,7 @@ export function ShellProvider({ children }: { children: ReactNode }) {
       builtThisWeek,
       totalPlays,
     }),
-    [vw, mobile, tablet, drawerMode, collapsed, sidebarOpen, theme, theatre, searchOpen, closeSearch, query, modal, modalGameId, toast, showToast, savedIds, toggleSaved, profile, signedIn, sessionReady, setSession, requireAuth, openAuth, authIntent, unread, avatarSeed, pinned, builtThisWeek, totalPlays],
+    [vw, mobile, tablet, drawerMode, collapsed, drawerOpen, theme, theatre, searchOpen, closeSearch, query, modal, modalGameId, toast, showToast, savedIds, toggleSaved, profile, signedIn, sessionReady, setSession, requireAuth, openAuth, authIntent, unread, avatarSeed, pinned, builtThisWeek, totalPlays],
   );
 
   return <ShellContext.Provider value={value}>{children}</ShellContext.Provider>;

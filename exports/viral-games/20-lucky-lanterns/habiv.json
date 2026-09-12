@@ -1,0 +1,35 @@
+{
+  "title": "Lucky Lanterns",
+  "tagline": "Light the right lanterns and let the river carry the wishes.",
+  "description": "Arrange lanterns by color and send them downstream in the order the village requests. The river changes one rule each evening while paper notes become more personal.",
+  "categories": [
+    "cozy"
+  ],
+  "tags": [
+    "cozy",
+    "sorting",
+    "wishes"
+  ],
+  "orientation": "any",
+  "durationSec": 75,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Light a lantern"
+      },
+      {
+        "key": "Drag",
+        "action": "Arrange the river"
+      },
+      {
+        "key": "R",
+        "action": "Try again"
+      }
+    ],
+    "touch": "Light a lantern"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Lucky Lanterns. Arrange lanterns by color and send them downstream in the order the village requests. The river changes one rule each evening while paper notes become more personal.",
+  "changelog": "Initial browser-game build"
+}

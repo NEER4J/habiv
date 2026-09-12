@@ -7,6 +7,8 @@
  */
 
 export type ThumbInput = {
+  /** Optional stable seed so repeated titles can still receive different treatments. */
+  seed?: string;
   title: string;
   tagline?: string | null;
   category?: string | null;
@@ -102,7 +104,7 @@ function palette(h: number, h2: number, mode: ThumbMode, k: number): Palette {
  * the theme hues and `o()` an oklch() that honours the theme's chroma.
  */
 type Ctx = ThumbInput & ThumbSize & {
-  tall: boolean; seed: number; unit: number; u: (n: number) => string;
+  tall: boolean; randomSeed: number; unit: number; u: (n: number) => string;
   p: Palette; hA: number; hB: number; o: (l: number, c: number, h: number, a?: number) => string;
 };
 
@@ -226,7 +228,7 @@ const styles: Record<ThumbStyleId, (c: Ctx) => string> = {
   mesh(c) {
     const { u, unit, p, w: W, h: H, tall } = c;
     const pad = unit * 6;
-    const r = rng(c.seed);
+    const r = rng(c.randomSeed);
     const f = fitBox(c.title, tall ? W - pad * 2 : W * 0.68, H * (tall ? 0.34 : 0.42), 0.56, 0.95, 4);
     const strength = p.dark ? 60 : 85;
     const blob = (col: string, x: number, y: number, s: number) => `radial-gradient(${s}% ${s}% at ${x.toFixed(0)}% ${y.toFixed(0)}%,${mix(col, strength)},transparent 70%)`;
@@ -270,7 +272,7 @@ h1{font:800 ${f.fs}px/1 'Plus Jakarta Sans',sans-serif;letter-spacing:-.04em;col
   sticker(c) {
     const { u, p, w: W, h: H, tall } = c;
     const f = fitBox(c.title, W * 0.76, H * (tall ? 0.36 : 0.4), 0.55, 0.95, 4);
-    const r = rng(c.seed + 3);
+    const r = rng(c.randomSeed + 3);
     const labels: [string, string, string][] = [
       [tag(c), p.accent, p.onAccent],
       [esc((c.engine || "html5").toUpperCase()), p.accent2, p.onAccent2],
@@ -297,7 +299,7 @@ h1{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-4de
     const sw = f.fs * 0.09;
     const s1 = p.dark ? p.deep : p.accent;
     const s2 = `color-mix(in oklch, ${s1} 76%, ${p.dark ? p.bg2 : p.deep})`;
-    const r = rng(c.seed + 11);
+    const r = rng(c.randomSeed + 11);
     const glyphs = ["★", "✦", "●", "▲", "♥", "✚"];
     const cols = ["#fff", p.accent2, p.dark ? p.accent : p.ink];
     const confetti = Array.from({ length: 16 }, () =>
@@ -307,7 +309,7 @@ h1{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-4de
     return doc(
       c,
       [FONTS.bagel],
-      `body{background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.28),transparent 45%),repeating-conic-gradient(from ${c.seed % 30}deg at 50% 50%,${s1} 0 10deg,${s2} 10deg 20deg)}
+      `body{background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.28),transparent 45%),repeating-conic-gradient(from ${c.randomSeed % 30}deg at 50% 50%,${s1} 0 10deg,${s2} 10deg 20deg)}
 .cf i{position:absolute;font-style:normal;line-height:1;text-shadow:0 ${u(0.4)} 0 rgba(0,0,0,.25)}
 .lg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-3deg);text-align:center;font:400 ${f.fs}px/1 'Bagel Fat One',sans-serif;white-space:nowrap}
 .a{color:#1b1330;-webkit-text-stroke:${(sw * 2.2).toFixed(1)}px #1b1330;paint-order:stroke fill;text-shadow:0 ${(sw * 1.6).toFixed(1)}px 0 #1b1330}
@@ -362,7 +364,7 @@ h1{position:absolute;left:${u(3)};top:${u(3)};font:400 ${f.fs}px/.95 'Archivo Bl
 h1{position:absolute;left:${pad}px;top:${titleTop}px;font-size:${f.fs}px;line-height:.95;color:${p.ink};white-space:nowrap;letter-spacing:-.01em}
 .slab{position:absolute;left:0;right:0;top:${slabTop * 100}%;height:${tall ? 24 : 30}%;background:${p.accent};clip-path:polygon(0 24%,100% 0,100% 76%,0 100%);display:flex;align-items:center;justify-content:space-between;padding:0 ${pad}px;color:${p.onAccent};font-size:${u(tall ? 3.6 : 4)}}
 .line{position:absolute;left:0;right:0;top:calc(${slabTop * 100}% + ${tall ? 24 : 30}% - ${u(1)});height:${u(1.2)};background:${p.accent2};transform:rotate(${tall ? -2.2 : -1.3}deg);transform-origin:0 0}`,
-      `<div class="big">${String((c.seed % 9) + 1).padStart(2, "0")}</div>
+      `<div class="big">${String((c.randomSeed % 9) + 1).padStart(2, "0")}</div>
 <div class="tags"><span style="background:${p.accent2};color:${p.onAccent2}">${tag(c)}</span><span style="background:${p.ink};color:${p.bg}">${esc((c.engine || "html5").toUpperCase())}</span></div>
 <h1>${lines(f)}</h1><div class="line"></div><div class="slab"><span>${handle(c)}</span><span>▶ PLAY NOW</span></div>`,
     );
@@ -389,7 +391,7 @@ h1{position:absolute;left:${-W * 0.008}px;bottom:${-f.fs * 0.07}px;font:400 ${f.
     const rep = Array.from({ length: 6 }, () => T).join(" &nbsp;/&nbsp; ");
     const bandRows = tall ? 3 : 2;
     const f = fitBox(c.title.toUpperCase(), W * 0.88, rh * bandRows * 0.78, 0.8, 0.9, 3);
-    const r = rng(c.seed);
+    const r = rng(c.randomSeed);
     const echo = Array.from({ length: rows }, (_, i) => `<div class="r" style="top:${i * rh}px;transform:translateX(${-Math.round(r() * W * 0.5)}px)">${rep}</div>`).join("");
     return doc(
       c,
@@ -430,7 +432,7 @@ h1{font:400 ${f.fs}px/.95 Bangers,sans-serif;color:#111;letter-spacing:.03em;whi
     const { u, unit, p, w: W, h: H, tall } = c;
     const pad = unit * 6;
     const f = fitBox(c.title.toUpperCase(), W - pad * 2, H * (tall ? 0.34 : 0.36), 0.74, 1, 4);
-    const pct = 35 + (c.seed % 60);
+    const pct = 35 + (c.randomSeed % 60);
     const cells = 20;
     const on = Math.round((pct / 100) * cells);
     const tip = c.tagline ? esc(c.tagline) : `Built with ${esc(c.engine || "HTML")}${c.creator ? ` by @${esc(c.creator)}` : ""}.`;
@@ -459,7 +461,7 @@ h1{position:absolute;left:${pad}px;top:${H * (tall ? 0.22 : 0.2)}px;font:400 ${f
     const icon = unit * (tall ? 16 : 14);
     const textW = tall ? pillW - unit * 8 : pillW - icon - unit * 26;
     const f = fitBox(c.title, textW, H * (tall ? 0.24 : 0.2), 0.5, 1, 3);
-    const xp = ((c.seed % 9) + 1) * 10;
+    const xp = ((c.randomSeed % 9) + 1) * 10;
     const onToast = p.dark ? "#fff" : p.ink;
     const shape = tall
       ? `flex-direction:column;text-align:center;border-radius:${u(6)};padding:${u(6)} ${u(4)}`
@@ -507,7 +509,7 @@ h1 .cur{display:inline-block;width:.55em;height:.9em;margin-left:.08em;vertical-
     const { u, unit, p, o, hB, w: W, h: H, tall } = c;
     const inset = unit * 4;
     const f = fitBox(c.title.toUpperCase(), (W - inset * 2) * 0.84, (H - inset * 2) * (tall ? 0.4 : 0.36), 1, 1.3, 4);
-    const hi = String((c.seed % 900000) + 100000);
+    const hi = String((c.randomSeed % 900000) + 100000);
     return doc(
       c,
       [FONTS.pixel],
@@ -571,7 +573,7 @@ h1{font-size:${f.fs}px;line-height:1.3;font-weight:400;white-space:nowrap;color:
   vhs(c) {
     const { u, unit, p, w: W, h: H, tall } = c;
     const pad = unit * 5;
-    const s = c.seed;
+    const s = c.randomSeed;
     const f = fitBox(c.title.toUpperCase(), W - pad * 2, H * (tall ? 0.4 : 0.42), 0.5, 0.95, 4);
     const glitch = Math.floor(f.lines.length / 2);
     const title = f.lines.map((l, i) => `<span${i === glitch ? ' class="gl"' : ""}>${esc(l)}</span>`).join("<br>");
@@ -727,7 +729,7 @@ export function renderThumb(id: ThumbStyleId, input: ThumbInput, size: ThumbSize
   const u = (n: number) => `${Math.round(n * unit * 100) / 100}px`;
   const o = (l: number, c: number, h: number, a?: number) => ok(l, c * k, h, a);
   return styles[id]({
-    ...input, ...size, tall: size.h > size.w, seed: hash(input.title || "habiv"), unit, u,
+    ...input, ...size, tall: size.h > size.w, randomSeed: hash(input.seed || input.title || "habiv"), unit, u,
     p: palette(hA, hB, opts.mode ?? "light", k), hA, hB, o,
   });
 }

@@ -1,0 +1,35 @@
+{
+  "title": "Emoji Alibi",
+  "tagline": "Decode the group chat before the typing bubble comes back.",
+  "description": "Four emojis describe a tiny scene, but one clue is lying. Cross-reference the order, the weather, and the suspiciously specific snack to find the impossible alibi.",
+  "categories": [
+    "puzzle"
+  ],
+  "tags": [
+    "daily puzzle",
+    "emoji",
+    "social"
+  ],
+  "orientation": "any",
+  "durationSec": 75,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Pick the false clue"
+      },
+      {
+        "key": "1–9",
+        "action": "Pick a clue"
+      },
+      {
+        "key": "H",
+        "action": "Use a hint"
+      }
+    ],
+    "touch": "Pick the false clue"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Emoji Alibi. Four emojis describe a tiny scene, but one clue is lying. Cross-reference the order, the weather, and the suspiciously specific snack to find the impossible alibi.",
+  "changelog": "Initial browser-game build"
+}

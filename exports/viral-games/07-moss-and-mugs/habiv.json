@@ -1,0 +1,35 @@
+{
+  "title": "Moss & Mugs",
+  "tagline": "Run a rainy-window café for the gentlest customers online.",
+  "description": "Brew three drinks, arrange a mossy counter, and keep the sleepy café bell from ringing twice. Customers leave tiny notes that become tomorrow's décor.",
+  "categories": [
+    "cozy"
+  ],
+  "tags": [
+    "cozy",
+    "cafe",
+    "idle"
+  ],
+  "orientation": "any",
+  "durationSec": 150,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Brew an order"
+      },
+      {
+        "key": "Drag",
+        "action": "Arrange the counter"
+      },
+      {
+        "key": "R",
+        "action": "New shift"
+      }
+    ],
+    "touch": "Brew an order"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Moss & Mugs. Brew three drinks, arrange a mossy counter, and keep the sleepy café bell from ringing twice. Customers leave tiny notes that become tomorrow's décor.",
+  "changelog": "Initial browser-game build"
+}

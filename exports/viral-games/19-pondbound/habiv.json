@@ -1,0 +1,35 @@
+{
+  "title": "Pondbound",
+  "tagline": "Hop lily pads, dodge the ripples, keep the crown dry.",
+  "description": "A tiny frog has one afternoon to cross the pond before the wind reverses. Tap a pad, read the ripple rings, and chain clean landings for a shinier crown.",
+  "categories": [
+    "arcade"
+  ],
+  "tags": [
+    "arcade",
+    "frog",
+    "timing"
+  ],
+  "orientation": "any",
+  "durationSec": 45,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Hop to a pad"
+      },
+      {
+        "key": "Hold",
+        "action": "Aim the tongue"
+      },
+      {
+        "key": "R",
+        "action": "Reset"
+      }
+    ],
+    "touch": "Hop to a pad"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Pondbound. A tiny frog has one afternoon to cross the pond before the wind reverses. Tap a pad, read the ripple rings, and chain clean landings for a shinier crown.",
+  "changelog": "Initial browser-game build"
+}

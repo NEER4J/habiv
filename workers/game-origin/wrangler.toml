@@ -15,7 +15,7 @@ binding = "ASSETS"
 run_worker_first = true
 
 [vars]
-FRAME_ANCESTORS = "https://habiv.com https://*.habiv.com https://*.vercel.app http://localhost:3000"
+FRAME_ANCESTORS = "https://habiv.com https://*.habiv.com https://*.vercel.app https://*.chatgpt.site http://localhost:3000"
 GAMES_BUCKET = "habiv-games"
 
 # Secrets (set with `npx wrangler secret put <NAME>`):

@@ -1,0 +1,35 @@
+{
+  "title": "Hot Potato Protocol",
+  "tagline": "Pass the glowing potato before the protocol changes its mind.",
+  "description": "The potato gives off a different safe color every round. Tap to pass it to the matching bot, but ignore the fake instruction stamped in the corner.",
+  "categories": [
+    "reaction"
+  ],
+  "tags": [
+    "reaction",
+    "party",
+    "timing"
+  ],
+  "orientation": "any",
+  "durationSec": 35,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Pass the potato"
+      },
+      {
+        "key": "Space",
+        "action": "Lock the pass"
+      },
+      {
+        "key": "R",
+        "action": "Restart"
+      }
+    ],
+    "touch": "Pass the potato"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Hot Potato Protocol. The potato gives off a different safe color every round. Tap to pass it to the matching bot, but ignore the fake instruction stamped in the corner.",
+  "changelog": "Initial browser-game build"
+}

@@ -1,0 +1,35 @@
+{
+  "title": "Four Beat Forecast",
+  "tagline": "Read the weather, then play the forecast.",
+  "description": "Clouds, wind, rain, and sun each have a four-beat pattern. Tap the correct lane to move the forecast from stormy to golden hour.",
+  "categories": [
+    "rhythm"
+  ],
+  "tags": [
+    "rhythm",
+    "weather",
+    "music"
+  ],
+  "orientation": "any",
+  "durationSec": 65,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Play weather beat"
+      },
+      {
+        "key": "← →",
+        "action": "Change lane"
+      },
+      {
+        "key": "M",
+        "action": "Mute weather"
+      }
+    ],
+    "touch": "Play weather beat"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Four Beat Forecast. Clouds, wind, rain, and sun each have a four-beat pattern. Tap the correct lane to move the forecast from stormy to golden hour.",
+  "changelog": "Initial browser-game build"
+}

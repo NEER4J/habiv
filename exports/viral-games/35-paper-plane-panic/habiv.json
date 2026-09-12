@@ -1,0 +1,35 @@
+{
+  "title": "Paper Plane Panic",
+  "tagline": "One fold, one breeze, one office full of obstacles.",
+  "description": "Pilot a paper plane through an office after everyone has gone home. Ride fan gusts, avoid the stapler, and collect sticky-note messages on the way to the open window.",
+  "categories": [
+    "arcade"
+  ],
+  "tags": [
+    "arcade",
+    "office",
+    "flight"
+  ],
+  "orientation": "any",
+  "durationSec": 32,
+  "controls": {
+    "keys": [
+      {
+        "key": "← →",
+        "action": "Pitch the plane"
+      },
+      {
+        "key": "Tap",
+        "action": "Catch a gust"
+      },
+      {
+        "key": "R",
+        "action": "Refold"
+      }
+    ],
+    "touch": "Pitch the plane"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Paper Plane Panic. Pilot a paper plane through an office after everyone has gone home. Ride fan gusts, avoid the stapler, and collect sticky-note messages on the way to the open window.",
+  "changelog": "Initial browser-game build"
+}

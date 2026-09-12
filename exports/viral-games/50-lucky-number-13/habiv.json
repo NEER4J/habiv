@@ -1,0 +1,35 @@
+{
+  "title": "Lucky Number 13",
+  "tagline": "Pick the lucky card. The deck has opinions.",
+  "description": "A thirteen-card deck reveals one number at a time. Tap when the running total reaches the lucky range, but beware the card that reverses the count.",
+  "categories": [
+    "reaction"
+  ],
+  "tags": [
+    "reaction",
+    "cards",
+    "luck"
+  ],
+  "orientation": "any",
+  "durationSec": 45,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Draw next card"
+      },
+      {
+        "key": "Space",
+        "action": "Call lucky"
+      },
+      {
+        "key": "R",
+        "action": "Shuffle deck"
+      }
+    ],
+    "touch": "Draw next card"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Lucky Number 13. A thirteen-card deck reveals one number at a time. Tap when the running total reaches the lucky range, but beware the card that reverses the count.",
+  "changelog": "Initial browser-game build"
+}

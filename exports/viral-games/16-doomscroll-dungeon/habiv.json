@@ -1,0 +1,35 @@
+{
+  "title": "Doomscroll Dungeon",
+  "tagline": "Swipe through cursed posts until one of them swipes back.",
+  "description": "A tiny dungeon crawler disguised as a feed. Swipe past traps, save the weirdest creature, and decide which rumor is actually a map.",
+  "categories": [
+    "experimental"
+  ],
+  "tags": [
+    "experimental",
+    "story",
+    "scroll"
+  ],
+  "orientation": "any",
+  "durationSec": 120,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Open a post"
+      },
+      {
+        "key": "1–4",
+        "action": "Choose a post"
+      },
+      {
+        "key": "R",
+        "action": "Regenerate"
+      }
+    ],
+    "touch": "Open a post"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Doomscroll Dungeon. A tiny dungeon crawler disguised as a feed. Swipe past traps, save the weirdest creature, and decide which rumor is actually a map.",
+  "changelog": "Initial browser-game build"
+}

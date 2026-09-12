@@ -11,15 +11,17 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Licence, Orientation } from "@/lib/habiv/game-details";
 import { FEED_TAG, asFeedRow, toFeedGame, getFeed, getBuiltWithCounts, getCategoryCounts, getGameByHandleSlug, getCreatorGames, getOwnGames } from "@/lib/db/games";
-import { getDaily, getRunsToday } from "@/lib/db/feed";
+import { HOME_PICK_SLOTS, getDaily, getHomePicks, getRunsToday } from "@/lib/db/feed";
+import { getActiveGamePlayers } from "@/lib/db/presence";
 import { getLeaderboard, getViewerRank, type LeaderboardView } from "@/lib/db/leaderboards";
 import { listComments, type CommentItem } from "@/lib/db/comments";
 import { getViewerState, getSavedGames, getFollowers } from "@/lib/db/social";
+import { getPlayHistory, type PlayHistoryEntry } from "@/lib/db/history";
 import { getPublicStats, getCreatorTotals } from "@/lib/db/stats";
 import { getOwnProfile, type OwnProfile, type PublicProfile } from "@/lib/db/profiles";
 import { listTokens, type ApiTokenSummary } from "@/lib/db/tokens";
 import { fromFeedGame, fromGameDetail, type CategoryInfo, type Game, type GameFull } from "@/lib/habiv/games";
-import type { CreatorGame } from "@/lib/db/types";
+import type { CreatorGame, FeedGame } from "@/lib/db/types";
 import type { SdkInfo } from "@/lib/contracts/ingest";
 import { readSdk } from "@/lib/habiv/sdk";
 import { CREATOR_QUOTA_BYTES } from "@/lib/contracts/upload";
@@ -40,6 +42,16 @@ export type HomeData = {
 /** The home daily challenge is hidden for now, so its game and board are not fetched. Keep in step with home-view. */
 const SHOW_DAILY = false;
 
+/** Picked games in order, topped up from `fallback` (skipping repeats) to `size`. */
+function withPicks(picked: FeedGame[], fallback: Game[], size: number): Game[] {
+  const out = picked.map(fromFeedGame);
+  for (const g of fallback) {
+    if (out.length >= size) break;
+    if (!out.some((x) => x.id === g.id)) out.push(g);
+  }
+  return out.slice(0, size);
+}
+
 /**
  * Public data only, so it is cached like the feed it reads. The cache scope is also what lets
  * relativeTime() call Date.now() while "/" is prerendered.
@@ -48,24 +60,29 @@ export async function loadHome(): Promise<HomeData> {
   "use cache";
   cacheTag(FEED_TAG);
   cacheLife({ stale: 60, revalidate: 60, expire: 300 });
-  const [featured, trending, quick, plays, remixes, newest, daily, runsToday, categories, feed] = await Promise.all([
+  const [picks, featured, trending, quick, plays, remixes, newest, daily, runsToday, categories, feed] = await Promise.all([
+    getHomePicks(),
     getFeed({ sort: "featured", limit: 6 }),
-    getFeed({ sort: "trending", limit: 5 }),
-    getFeed({ sort: "quick", limit: 5 }),
-    getFeed({ sort: "plays", limit: 5 }),
-    getFeed({ sort: "remixes", limit: 5 }),
-    getFeed({ sort: "new", limit: 5 }),
+    // 8 per shelf: two full rows of four on desktop (a row holds about four cards), four rows of two on phones.
+    getFeed({ sort: "trending", limit: 8 }),
+    getFeed({ sort: "quick", limit: 8 }),
+    getFeed({ sort: "plays", limit: 8 }),
+    getFeed({ sort: "remixes", limit: 8 }),
+    getFeed({ sort: "new", limit: 8 }),
     SHOW_DAILY ? getDaily() : Promise.resolve(null),
     getRunsToday(),
     getCategoryCounts(),
     getFeed({ sort: "new", limit: 12 }),
   ]);
   const featuredGames = featured.items.map(fromFeedGame);
-  const hero = featuredGames[0] ?? trending.items.map(fromFeedGame)[0] ?? feed.items.map(fromFeedGame)[0] ?? null;
+  // Admin picks (Admin → Home) come first; slots left empty fill from the automatic choice.
+  const heroQueue = withPicks(picks.featured, featuredGames.length ? featuredGames : trending.items.map(fromFeedGame), HOME_PICK_SLOTS);
+  const quickPlay = withPicks(picks.quick, quick.items.map(fromFeedGame), Math.max(HOME_PICK_SLOTS, quick.items.length));
+  const hero = heroQueue[0] ?? feed.items.map(fromFeedGame)[0] ?? null;
   const board = daily ? await getLeaderboard(daily.game.id, "daily", "daily", 5) : null;
   const sections: Section[] = [
     { key: "trending", title: "Trending right now", note: "activity in the last 24 hours", games: trending.items.map(fromFeedGame) },
-    { key: "quick", title: "Quick play", note: "finish a run in under 45 seconds", games: quick.items.map(fromFeedGame) },
+    { key: "quick", title: "Quick play", note: "finish a run in under 45 seconds", games: quickPlay },
     { key: "plays", title: "Most played", note: "by lifetime runs", games: plays.items.map(fromFeedGame) },
     { key: "remixes", title: "Most remixed", note: "originals and their forks", games: remixes.items.map(fromFeedGame) },
     { key: "new", title: "New this week", note: "fresh builds", games: newest.items.map(fromFeedGame) },
@@ -73,7 +90,7 @@ export async function loadHome(): Promise<HomeData> {
   ].filter((s) => s.games.length > 0);
   return {
     hero,
-    featured: featuredGames.length ? featuredGames.slice(0, 4) : trending.items.slice(0, 4).map(fromFeedGame),
+    featured: heroQueue,
     daily: daily ? { game: fromFeedGame(daily.game), resetsAt: daily.resetsAt, runsToday: daily.runsToday, board } : null,
     runsToday,
     categories,
@@ -126,6 +143,7 @@ export type WatchData = {
   viewer: WatchViewer;
   queue: Game[];
   runsToday: number;
+  nowPlaying: number;
 };
 
 /** `versionNo` (from ?v=N) plays an older ready version instead of the live one. */
@@ -138,15 +156,16 @@ export async function loadWatch(handle: string, slug: string, versionNo?: number
   const ownP = getOwnProfile(supabase);
   // The rank only needs the viewer's id, so it starts as soon as that resolves, not after everything else.
   const rankP = detail.leaderboardEnabled ? ownP.then((own) => getViewerRank(detail.id, playerId, own?.id ?? null, "main", "daily")) : Promise.resolve(null);
-  const [own, viewerState, leaderboard, comments, queue, stats, runsToday, rank] = await Promise.all([
+  const [own, viewerState, leaderboard, comments, queue, stats, runsToday, rank, nowPlaying] = await Promise.all([
     ownP,
     getViewerState(supabase, [detail.id], [detail.creator.id]),
-    detail.leaderboardEnabled ? getLeaderboard(detail.id, "main", "daily", 10) : Promise.resolve(null),
+    detail.leaderboardEnabled ? getLeaderboard(detail.id, "main", "daily", 50) : Promise.resolve(null),
     listComments(supabase, detail.id, { sort: "top", limit: 20 }),
     getFeed({ sort: "hot", limit: 13 }),
     getPublicStats(detail.id),
     getRunsToday(),
     rankP,
+    getActiveGamePlayers(detail.id),
   ]);
   const game = fromGameDetail(detail, versionNo);
   if (stats) {
@@ -171,6 +190,7 @@ export async function loadWatch(handle: string, slug: string, versionNo?: number
     },
     queue: queue.items.filter((g) => g.id !== detail.id).slice(0, 12).map(fromFeedGame),
     runsToday,
+    nowPlaying,
   };
 }
 
@@ -243,6 +263,17 @@ export async function loadSettings(supabase: SupabaseClient<Database>): Promise<
 export async function loadSaved(supabase: SupabaseClient<Database>): Promise<Game[]> {
   const games = await getSavedGames(supabase, 60);
   return games.map(fromFeedGame);
+}
+
+export type HistoryRow = Omit<PlayHistoryEntry, "game"> & { game: Game };
+export type HistoryData = { rows: HistoryRow[]; signedIn: boolean };
+
+/** The viewer's play history: by account when signed in, and by this browser's hv_pid either way. */
+export async function loadHistory(supabase: SupabaseClient<Database>): Promise<HistoryData> {
+  const [{ data }, cookieStore] = await Promise.all([supabase.auth.getClaims(), cookies()]);
+  const userId = data?.claims?.sub ?? null;
+  const entries = await getPlayHistory(userId, cookieStore.get("hv_pid")?.value ?? null);
+  return { signedIn: !!userId, rows: entries.map((e) => ({ ...e, game: fromFeedGame(e.game) })) };
 }
 
 export type GameEditData = {

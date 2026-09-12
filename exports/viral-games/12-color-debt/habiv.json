@@ -1,0 +1,35 @@
+{
+  "title": "Color Debt",
+  "tagline": "Borrow a color now. Pay it back before the board closes.",
+  "description": "Every move borrows one color from the future. Match tiles to pay the debt, but matching too quickly leaves a bigger balance for the final row.",
+  "categories": [
+    "puzzle"
+  ],
+  "tags": [
+    "logic",
+    "small board",
+    "daily"
+  ],
+  "orientation": "any",
+  "durationSec": 100,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Swap two tiles"
+      },
+      {
+        "key": "Z",
+        "action": "Undo"
+      },
+      {
+        "key": "R",
+        "action": "Reset"
+      }
+    ],
+    "touch": "Swap two tiles"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Color Debt. Every move borrows one color from the future. Match tiles to pay the debt, but matching too quickly leaves a bigger balance for the final row.",
+  "changelog": "Initial browser-game build"
+}

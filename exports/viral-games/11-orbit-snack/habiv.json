@@ -1,0 +1,35 @@
+{
+  "title": "Orbit Snack",
+  "tagline": "Feed a hungry moon without breaking the orbit.",
+  "description": "Launch snacks into a circular gravity well and time the release so each one lands on the tiny moon. Miss the window and the snack becomes a comet; hit the streak and the moon gets a ridiculous hat.",
+  "categories": [
+    "arcade"
+  ],
+  "tags": [
+    "arcade",
+    "gravity",
+    "one tap"
+  ],
+  "orientation": "any",
+  "durationSec": 35,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Launch a snack"
+      },
+      {
+        "key": "Space",
+        "action": "Use the boost"
+      },
+      {
+        "key": "R",
+        "action": "Restart"
+      }
+    ],
+    "touch": "Launch a snack"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Orbit Snack. Launch snacks into a circular gravity well and time the release so each one lands on the tiny moon. Miss the window and the snack becomes a comet; hit the streak and the moon gets a ridiculous hat.",
+  "changelog": "Initial browser-game build"
+}

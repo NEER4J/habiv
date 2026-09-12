@@ -1,0 +1,35 @@
+{
+  "title": "Don’t Look Back",
+  "tagline": "Walk toward the exit without checking what is learning your pace.",
+  "description": "Cross a hallway where every sound arrives one beat late. Keep moving, listen for the false footsteps, and resist the sequence that turns the camera around.",
+  "categories": [
+    "horror"
+  ],
+  "tags": [
+    "horror",
+    "tension",
+    "minimal"
+  ],
+  "orientation": "any",
+  "durationSec": 80,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Choose a step"
+      },
+      {
+        "key": "1–4",
+        "action": "Use a key"
+      },
+      {
+        "key": "Space",
+        "action": "Hold breath"
+      }
+    ],
+    "touch": "Choose a step"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Don’t Look Back. Cross a hallway where every sound arrives one beat late. Keep moving, listen for the false footsteps, and resist the sequence that turns the camera around.",
+  "changelog": "Initial browser-game build"
+}

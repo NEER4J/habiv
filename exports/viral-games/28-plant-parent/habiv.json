@@ -1,0 +1,35 @@
+{
+  "title": "Plant Parent",
+  "tagline": "Text your plants, read their mood, and water with restraint.",
+  "description": "Three plants send dramatic messages about light, water, and the neighbor’s cat. Match their mood to the right care action and watch the windowsill change.",
+  "categories": [
+    "cozy"
+  ],
+  "tags": [
+    "cozy",
+    "plants",
+    "idle"
+  ],
+  "orientation": "any",
+  "durationSec": 140,
+  "controls": {
+    "keys": [
+      {
+        "key": "Tap",
+        "action": "Choose plant care"
+      },
+      {
+        "key": "Drag",
+        "action": "Move a plant"
+      },
+      {
+        "key": "R",
+        "action": "New week"
+      }
+    ],
+    "touch": "Choose plant care"
+  },
+  "agent": "Codex",
+  "prompt": "Build a self-contained browser game called Plant Parent. Three plants send dramatic messages about light, water, and the neighbor’s cat. Match their mood to the right care action and watch the windowsill change.",
+  "changelog": "Initial browser-game build"
+}
