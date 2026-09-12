@@ -10,17 +10,20 @@ import { readSdk } from "@/lib/habiv/sdk";
 import { buildDetailsForTools, readBuildDetails } from "@/lib/habiv/build-details";
 import { readControls } from "@/lib/habiv/game-details";
 import { siteUrl } from "@/lib/site";
-import { buckets, completeMultipart, headObject, presignPart, putObject } from "@/lib/storage";
+import { buckets, completeMultipart, getObjectBytes, headObject, presignPart, putObject } from "@/lib/storage";
 import { createVersionForUpload, UploadError } from "@/lib/upload/create";
 import { enqueueIngest } from "@/lib/jobs/trigger";
 import { MAX_UPLOAD_BYTES, PART_SIZE, SINGLE_PUT_THRESHOLD, extensionOf } from "@/lib/contracts/upload";
 import { buildZip } from "@/lib/mcp/zip";
+import { readBundle } from "@/lib/mcp/bundle";
 import type { TokenAuth } from "@/lib/mcp/auth";
 import { assertPublishRate, gameUrls, guarded, handleOf, ok, ownedGame, previewUrl, ToolError } from "@/lib/mcp/tools/shared";
 import { RELAY_MAX_BYTES, relayUrl } from "@/lib/uploads/relay";
 
 const MAX_INLINE_BYTES = 3 * 1024 * 1024;
 const MAX_URL_BYTES = 25 * 1024 * 1024;
+/** Unzipped size of a current version that keep_other_files will rebuild in memory. */
+const MAX_MERGE_BYTES = 60 * 1024 * 1024;
 
 const category = z.enum(["arcade", "puzzle", "reaction", "ambient", "rhythm", "racing", "cozy", "horror", "experimental", "other"]);
 const orientation = z.enum(["portrait", "landscape", "any"]);
@@ -64,12 +67,60 @@ const publishInput = z
       .min(1)
       .max(40)
       .optional()
-      .describe("Inline files, 3 MB in total. Put text files in content as they are; only binary files need content_base64. Use create_upload for bigger bundles."),
+      .describe(
+        "Inline files, 3 MB in total. Put text files in content as they are; only binary files need content_base64. A single .zip (base64) is taken as the whole bundle. " +
+          "Use create_upload for bigger bundles.",
+      ),
+    keep_other_files: z
+      .boolean()
+      .default(false)
+      .describe("With game_id: send only the files you added or changed; every other file is copied from the current version"),
+    delete_paths: z.array(z.string().max(240)).max(100).optional().describe("With keep_other_files: files to remove from the current version"),
     upload_id: z.string().uuid().optional().describe("An upload session from create_upload"),
     upload_parts: z.array(z.object({ part_number: z.number().int().min(1), etag: z.string() })).optional().describe("ETags returned by the multipart PUTs"),
     bundle_url: z.string().url().optional().describe("Public https URL of a .zip or .html (under 25 MB)"),
   })
-  .refine((v) => [v.files, v.upload_id, v.bundle_url].filter(Boolean).length === 1, { message: "Provide exactly one of files, upload_id or bundle_url." });
+  .refine((v) => [v.files, v.upload_id, v.bundle_url].filter(Boolean).length === 1, { message: "Provide exactly one of files, upload_id or bundle_url." })
+  .refine((v) => !v.keep_other_files || (!!v.game_id && !!v.files), { message: "keep_other_files needs game_id and files." });
+
+type InlineFile = { path: string; body: Uint8Array };
+type Bundle = { bytes: Uint8Array; filename: string };
+const isEntry = (p: string) => /(^|\/)index\.html?$/i.test(p);
+
+/** Inline files as an upload: one html file as is, one zip as the bundle, anything else zipped (it needs an index.html). */
+function inlineBundle(files: InlineFile[]): Bundle {
+  if (files.length === 1 && /\.html?$/i.test(files[0].path)) return { bytes: files[0].body, filename: "index.html" };
+  if (files.length === 1 && /\.zip$/i.test(files[0].path)) return { bytes: files[0].body, filename: "bundle.zip" };
+  if (!files.some((f) => isEntry(f.path))) throw new ToolError("Include an index.html in files, or send the whole game as a single .zip.", "no_entry");
+  return { bytes: buildZip(Object.fromEntries(files.map((f) => [f.path, f.body]))), filename: "bundle.zip" };
+}
+
+/**
+ * The game's current version as it was uploaded, with `files` added or replaced and `remove`
+ * deleted, so an update only sends what changed. It goes through ingest like any upload.
+ */
+async function mergedBundle(auth: TokenAuth, gameId: string, files: InlineFile[], remove: string[]): Promise<Bundle> {
+  const g = await ownedGame(auth, gameId);
+  const q = createAdminClient().from("game_versions").select("upload_key").eq("game_id", g.id);
+  const { data: v } = g.current_version_id
+    ? await q.eq("id", g.current_version_id).maybeSingle()
+    : await q.eq("status", "ready").order("version", { ascending: false }).limit(1).maybeSingle();
+  const stored = v?.upload_key ? await getObjectBytes(buckets().uploads, v.upload_key) : null;
+  if (!v?.upload_key || !stored) throw new ToolError("The current version's original files aren't available. Send every file, without keep_other_files.", "no_base");
+  let base: Record<string, Uint8Array>;
+  try {
+    base = readBundle(stored, /\.zip$/i.test(v.upload_key), MAX_MERGE_BYTES);
+  } catch {
+    throw new ToolError("The current version is too big to update file by file. Upload a full zip with create_upload.", "too_large");
+  }
+  for (const p of remove) delete base[p.replace(/^\.?\//, "")];
+  for (const f of files) base[f.path] = f.body;
+  const paths = Object.keys(base);
+  if (!paths.some((p) => /\.html?$/i.test(p))) throw new ToolError("After the changes the game has no html file.", "no_entry");
+  const out = paths.length === 1 ? { bytes: base[paths[0]], filename: "index.html" } : { bytes: buildZip(base), filename: "bundle.zip" };
+  if (out.bytes.length > MAX_UPLOAD_BYTES) throw new ToolError("The updated bundle is over the 50 MB cap.", "too_large");
+  return out;
+}
 
 function sha256(bytes: Uint8Array) {
   return createHash("sha256").update(bytes).digest("hex");
@@ -112,6 +163,7 @@ export function registerPublishTools(server: McpServer, auth: TokenAuth) {
         "It goes public only with publish_when_ready: true, the publish_version tool, or the creator publishing it from My games. " +
         "Inline `files` must total under 3 MB: put html/js/css/json in `content` as plain text (no base64); only images and audio need content_base64. " +
         "For bigger bundles, or a zip already on disk, call create_upload first and pass its upload_id. " +
+        "To update a game, pass game_id with keep_other_files: true and send only the files you changed (delete_paths removes files); the rest are copied from the current version. " +
         "Describe the game for its page: pass tagline, description (the goal, how a round goes, tips) and controls, and also put the same details in a habiv.json " +
         `at the bundle root (or a <script type="application/habiv+json"> block in index.html) so they travel with the code (${siteUrl}/docs/details). ` +
         "Arguments you pass win; habiv.json only fills fields that are still empty. " +
@@ -165,14 +217,7 @@ export function registerPublishTools(server: McpServer, auth: TokenAuth) {
           }));
           const total = decoded.reduce((n, f) => n + f.body.length, 0);
           if (total > MAX_INLINE_BYTES) throw new ToolError("Inline files are capped at 3 MB decoded. Use create_upload for bigger bundles.", "too_large");
-          if (decoded.length === 1 && /\.html?$/i.test(decoded[0].path)) {
-            bytes = decoded[0].body;
-            filename = "index.html";
-          } else {
-            if (!decoded.some((f) => /(^|\/)index\.html?$/i.test(f.path))) throw new ToolError("Include an index.html in files.", "no_entry");
-            bytes = buildZip(Object.fromEntries(decoded.map((f) => [f.path, new Uint8Array(f.body)])));
-            filename = "bundle.zip";
-          }
+          ({ bytes, filename } = args.keep_other_files ? await mergedBundle(auth, args.game_id!, decoded, args.delete_paths ?? []) : inlineBundle(decoded));
         } else {
           const url = args.bundle_url!;
           const head = await fetch(url, { method: "HEAD", redirect: "follow" }).catch(() => null);

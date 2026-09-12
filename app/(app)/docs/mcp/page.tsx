@@ -131,7 +131,7 @@ export default function DocsMcpPage() {
       <Table
         head={["Tool", "What it does"]}
         rows={[
-          [t("publish_game"), "Uploads a game from inline files (text files as plain text, binary files as base64), a public zip/HTML URL or an upload session, and publishes it once it's ready. Pass game_id for a new version."],
+          [t("publish_game"), "Uploads a game from inline files (text files as plain text, binary files as base64), a public zip/HTML URL or an upload session, and publishes it once it's ready. Pass game_id for a new version, with keep_other_files to send only the changed files."],
           [t("create_upload"), "Opens an upload for a zip on disk or a bundle over 3 MB (up to 50 MB). Up to 4 MB the URL is on habiv.com, so sandboxes only need www.habiv.com allowed. Then call publish_game with upload_id."],
           [t("get_publish_status"), "Processing status (processing, ready, rejected), engine, warnings, the details found in the build, which page fields are still empty, a preview link and the game URL."],
         ]}

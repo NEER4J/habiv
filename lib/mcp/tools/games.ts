@@ -263,7 +263,7 @@ export function registerGameTools(server: McpServer, auth: TokenAuth) {
       description:
         "Fetches the code of one of your games so you can keep working on it. Without `paths` it lists every file in the version (live one by default); " +
         "with `paths` it returns the text of those files (up to 512 KB each, 2 MB per call). Images, audio and engine builds come back as URLs. " +
-        "To ship your edits, call publish_game with the same game_id.",
+        "To ship your edits, call publish_game with the same game_id, keep_other_files: true and only the files you changed.",
       inputSchema: z
         .object({
           game_id: z.string().uuid().optional(),

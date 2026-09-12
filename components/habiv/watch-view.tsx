@@ -10,10 +10,12 @@ import { mountBridgeHost, type BridgeHost, type HostEvent } from "@/lib/player/b
 import { getCollector } from "@/lib/analytics/collector";
 import { toggleFollow, toggleLike } from "@/lib/actions/social";
 import { deleteComment, pinComment, postComment, toggleCommentLike } from "@/lib/actions/comments";
+import { refreshLeaderboard } from "@/lib/actions/leaderboard";
+import { createClient } from "@/lib/supabase/client";
 import type { CommentItem } from "@/lib/db/comments";
 import { gameOrigin, siteUrl } from "@/lib/site";
 import { bpanel, chipBtn, chipStyle, ctrlBtn, mono, monoLabel, pill } from "@/lib/habiv/ui";
-import { Maximize, Pause, Play, RectangleHorizontal, Repeat, RotateCcw, Volume2, VolumeX } from "lucide-react";
+import { Maximize, Pause, Play, RectangleHorizontal, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { CreatorAvatar, RailRow } from "./game-card";
 import { useShell } from "./shell-context";
 
@@ -46,6 +48,23 @@ const ctrlIcon = { size: 15, strokeWidth: 1.8, "aria-hidden": true } as const;
 
 // Fullscreen controls fade out after this long without the pointer near them.
 const FS_CONTROLS_IDLE_MS = 2500;
+
+// A guest who closes the "sign in to keep it" prompt isn't asked again this visit.
+const GUEST_PROMPT_OFF_KEY = "hv_guest_score_prompt_off";
+function guestPromptOff() {
+  try {
+    return sessionStorage.getItem(GUEST_PROMPT_OFF_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+function turnGuestPromptOff() {
+  try {
+    sessionStorage.setItem(GUEST_PROMPT_OFF_KEY, "1");
+  } catch {
+    /* ignore */
+  }
+}
 
 const overlayBase: CSSProperties = {
   position: "absolute",
@@ -108,8 +127,11 @@ function Avatar({ name, url, size }: { name: string; url: string | null; size: n
 }
 
 export function WatchView({ data }: { data: WatchData }) {
-  const { game, viewer, leaderboard, runsToday } = data;
-  const { theatre, setTheatre, openModal, setModalGameId, isSaved, toggleSaved, showToast, mobile, light, profile, signedIn, requireAuth } =
+  const { game, viewer, runsToday } = data;
+  // Today's board and the viewer's place on it; kept live after the first render (refreshBoard below).
+  const [leaderboard, setLeaderboard] = useState(data.leaderboard);
+  const [myRank, setMyRank] = useState(viewer.rank);
+  const { theatre, setTheatre, openModal, setModalGameId, isSaved, toggleSaved, showToast, mobile, light, profile, signedIn, requireAuth, openAuth } =
     useShell();
 
   // Player
@@ -118,11 +140,19 @@ export function WatchView({ data }: { data: WatchData }) {
   const [frameKey, setFrameKey] = useState(0);
   // Runs this viewer started since the page loaded, so the count moves on Play without a refresh.
   const [playsBump, setPlaysBump] = useState(0);
+  // Corner note after a scored run: a guest is asked to sign in to keep the score; a signed-in
+  // player hears only about a new personal best in a board's top 3.
+  const [note, setNote] = useState<{ text: string; guest: boolean } | null>(null);
+  const noteTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  // Read by the bridge callback without remounting the game when the session changes.
+  const signedInRef = useRef(signedIn);
+  useEffect(() => {
+    signedInRef.current = signedIn;
+  }, [signedIn]);
   const [fullscreen, setFullscreen] = useState(false);
   const [fsClosing, setFsClosing] = useState(false);
   const [fsControls, setFsControls] = useState(true);
   const [muted, setMuted] = useState(true);
-  const [autoplay, setAutoplay] = useState(false);
 
   // Social
   const [liked, setLiked] = useState(viewer.liked);
@@ -181,6 +211,9 @@ export function WatchView({ data }: { data: WatchData }) {
     setState("cover");
     setFrameOn(false);
     setPlaysBump(0);
+    setNote(null);
+    setLeaderboard(data.leaderboard);
+    setMyRank(viewer.rank);
     setMoreOpen(false);
     setDescOpen(false);
     setCopied(false);
@@ -197,9 +230,46 @@ export function WatchView({ data }: { data: WatchData }) {
     setReplyTo(null);
     setReplyDraft("");
     setRepliesOpen(null);
-  }, [game.id, game.likes, game.followers, game.comments, viewer.liked, viewer.following, data.comments.items]);
+  }, [game.id, game.likes, game.followers, game.comments, viewer.liked, viewer.following, viewer.rank, data.comments.items, data.leaderboard]);
 
-  useEffect(() => () => clearTimeout(loadTimer.current), []);
+  useEffect(
+    () => () => {
+      clearTimeout(loadTimer.current);
+      clearTimeout(noteTimer.current);
+    },
+    [],
+  );
+
+  // Live board: refetch after the viewer's own saved score and whenever any score lands on today's
+  // board. A newer refetch wins over a slower older one.
+  const boardSeq = useRef(0);
+  const refreshBoard = useCallback(() => {
+    const seq = ++boardSeq.current;
+    void refreshLeaderboard(game.id).then((res) => {
+      if (!res || seq !== boardSeq.current) return;
+      setLeaderboard(res.leaderboard);
+      setMyRank(res.rank);
+    });
+  }, [game.id]);
+
+  const boardId = leaderboard?.id ?? null;
+  useEffect(() => {
+    if (!boardId) return;
+    const supabase = createClient();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const channel = supabase
+      .channel(`lb:${boardId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "leaderboard_entries", filter: `leaderboard_id=eq.${boardId}` }, () => {
+        // A burst of scores (or one score's insert + update) becomes one refetch.
+        clearTimeout(timer);
+        timer = setTimeout(refreshBoard, 600);
+      })
+      .subscribe();
+    return () => {
+      clearTimeout(timer);
+      void supabase.removeChannel(channel);
+    };
+  }, [boardId, refreshBoard]);
 
   const onHostEvent = useCallback(
     (e: HostEvent) => {
@@ -212,10 +282,23 @@ export function WatchView({ data }: { data: WatchData }) {
           if (e.counted) setPlaysBump((n) => n + 1);
           setState("playing");
           break;
-        // The game draws its own end screen and restart; the page only notes where the score landed.
+        // The game draws its own end screen; the page only calls out a new personal best that made a
+        // top 3 (naming the longest board it made) and asks guests to sign in to keep their score.
         case "score_result": {
-          const daily = e.boards.find((b) => b.period === "daily") ?? e.boards[0];
-          if (e.accepted && daily) showToast(`#${daily.rank} on today's board${daily.personal_best ? " · personal best" : ""}`);
+          if (!e.accepted) break;
+          refreshBoard();
+          const top = ["alltime", "weekly", "daily"]
+            .map((p) => e.boards.find((b) => b.period === p && b.personal_best && b.rank <= 3))
+            .find((b) => !!b);
+          const rank = top ? `#${top.rank} ${top.period === "alltime" ? "all time" : top.period === "weekly" ? "this week" : "today"}` : null;
+          clearTimeout(noteTimer.current);
+          if (!signedInRef.current && !guestPromptOff()) {
+            setNote({ text: rank ? `${rank} · saved as a guest` : "Score saved as a guest", guest: true });
+            break;
+          }
+          if (!rank) break;
+          setNote({ text: rank, guest: false });
+          noteTimer.current = setTimeout(() => setNote(null), 4000);
           break;
         }
         case "happytime":
@@ -228,7 +311,7 @@ export function WatchView({ data }: { data: WatchData }) {
           break;
       }
     },
-    [showToast],
+    [showToast, refreshBoard],
   );
 
   // One bridge host per mounted iframe; a new frameKey is a fresh iframe.
@@ -584,7 +667,10 @@ export function WatchView({ data }: { data: WatchData }) {
   const howToKeys = controlsFor(game);
   const howToTouch = touchHintFor(game);
   const summary = (game.desc || description).split(".")[0];
-  const highlightedRow = !!viewer.userId && !!leaderboard?.entries.some((e) => e.user?.id === viewer.userId);
+  // The viewer's row: by account, or by this browser's player id for a guest score not yet linked.
+  const isYou = (e: { user: { id: string } | null; playerId: string }) =>
+    (!!viewer.userId && e.user?.id === viewer.userId) || (!e.user && !!viewer.playerId && e.playerId === viewer.playerId);
+  const highlightedRow = !!leaderboard?.entries.some(isYou);
 
   const playerBox: CSSProperties = fullscreen
     ? {
@@ -820,6 +906,56 @@ export function WatchView({ data }: { data: WatchData }) {
                 </div>
               ) : null}
 
+              {note && frameOn ? (
+                <div
+                  role="status"
+                  style={{
+                    position: "absolute",
+                    left: "14px",
+                    bottom: "14px",
+                    zIndex: 4,
+                    maxWidth: "calc(100% - 28px)",
+                    display: "flex",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: "10px",
+                    pointerEvents: note.guest ? "auto" : "none",
+                    padding: note.guest ? "7px 7px 7px 12px" : "7px 12px",
+                    borderRadius: "10px",
+                    background: "rgba(0,0,0,0.78)",
+                    color: "#f5f5f7",
+                    fontSize: "13px",
+                    fontWeight: 600,
+                    animation: "hbFade 180ms ease-out both",
+                  }}
+                >
+                  <span>{note.text}</span>
+                  {note.guest ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          setNote(null);
+                          openAuth("signin");
+                        }}
+                        style={{ ...onPlayerPrimary, height: "28px", padding: "0 12px", fontSize: "12.5px" }}
+                      >
+                        Sign in to keep it
+                      </button>
+                      <button
+                        aria-label="Dismiss"
+                        onClick={() => {
+                          turnGuestPromptOff();
+                          setNote(null);
+                        }}
+                        style={{ background: "transparent", color: "rgba(255,255,255,0.7)", fontSize: "17px", lineHeight: 1, padding: "0 4px", cursor: "pointer" }}
+                      >
+                        ×
+                      </button>
+                    </>
+                  ) : null}
+                </div>
+              ) : null}
+
               {theatre && !fullscreen
                 ? controlBar(
                     <>
@@ -892,27 +1028,6 @@ export function WatchView({ data }: { data: WatchData }) {
             </button>
             <div style={{ flex: 1, minWidth: "8px" }} />
             <span style={{ fontFamily: mono, fontSize: "11px", color: "var(--ink-5)", marginRight: "6px" }}>{stateLabel}</span>
-            <button
-              onClick={() => setAutoplay((a) => !a)}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "6px",
-                height: "28px",
-                padding: "0 11px",
-                borderRadius: "6px",
-                fontFamily: mono,
-                fontSize: "10.5px",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                cursor: "pointer",
-                background: autoplay ? "var(--ink)" : "var(--chip)",
-                color: autoplay ? "var(--ink-invert)" : "var(--ink-4)",
-              }}
-            >
-              <Repeat size={12} strokeWidth={2} aria-hidden />
-              {autoplay ? "Autoplay on" : "Autoplay off"}
-            </button>
             <button
               onClick={() => {
                 setTheatre(!theatre);
@@ -1156,7 +1271,7 @@ export function WatchView({ data }: { data: WatchData }) {
                 <>
                   {leaderboard.entries.length ? (
                     leaderboard.entries.map((r) => {
-                      const you = !!viewer.userId && r.user?.id === viewer.userId;
+                      const you = isYou(r);
                       return (
                         <div
                           key={`${r.rank}-${r.playerId}`}
@@ -1172,7 +1287,7 @@ export function WatchView({ data }: { data: WatchData }) {
                         >
                           <span style={{ fontFamily: mono, fontSize: "12px", color: "var(--ink-5)", width: "26px" }}>{String(r.rank).padStart(2, "0")}</span>
                           <span style={{ flex: 1, fontSize: "13.5px", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            {r.user?.handle ?? (r.isBot && r.botLabel ? r.botLabel : "anonymous")}
+                            {r.user?.handle ?? (r.isBot && r.botLabel ? r.botLabel : "guest")}
                             {you ? <span style={{ fontFamily: mono, fontSize: "10.5px", color: "var(--ink-5)", marginLeft: "8px" }}>you</span> : null}
                           </span>
                           <span style={{ fontFamily: mono, fontSize: "11px", color: "var(--ink-5)" }}>{r.isBot ? "BOT" : "HUMAN"}</span>
@@ -1183,7 +1298,7 @@ export function WatchView({ data }: { data: WatchData }) {
                   ) : (
                     <div style={{ padding: "9px 10px", fontSize: "13px", color: "var(--ink-5)" }}>Nobody has scored today. Yours would be first.</div>
                   )}
-                  {viewer.rank && !highlightedRow ? (
+                  {myRank && !highlightedRow ? (
                     <div
                       style={{
                         display: "flex",
@@ -1196,10 +1311,10 @@ export function WatchView({ data }: { data: WatchData }) {
                         marginTop: "8px",
                       }}
                     >
-                      <span style={{ fontFamily: mono, fontSize: "12px", color: "var(--ink-5)", width: "26px" }}>{String(viewer.rank.rank).padStart(2, "0")}</span>
-                      <span style={{ flex: 1, fontSize: "13.5px", fontWeight: 500 }}>you · #{viewer.rank.rank} of {viewer.rank.total.toLocaleString()}</span>
+                      <span style={{ fontFamily: mono, fontSize: "12px", color: "var(--ink-5)", width: "26px" }}>{String(myRank.rank).padStart(2, "0")}</span>
+                      <span style={{ flex: 1, fontSize: "13.5px", fontWeight: 500 }}>you · #{myRank.rank} of {myRank.total.toLocaleString()}</span>
                       <span style={{ fontFamily: mono, fontSize: "11px", color: "var(--ink-5)" }}>HUMAN</span>
-                      <span style={{ fontFamily: mono, fontSize: "13px", minWidth: "64px", textAlign: "right" }}>{viewer.rank.score.toLocaleString()}</span>
+                      <span style={{ fontFamily: mono, fontSize: "13px", minWidth: "64px", textAlign: "right" }}>{myRank.score.toLocaleString()}</span>
                     </div>
                   ) : null}
                 </>

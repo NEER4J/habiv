@@ -16,7 +16,7 @@ export type LeaderboardEntry = {
   at: string;
 };
 
-export type LeaderboardView = { key: string; period: BoardPeriod; sort: "asc" | "desc"; periodStart: string; entries: LeaderboardEntry[]; total: number };
+export type LeaderboardView = { id: string; key: string; period: BoardPeriod; sort: "asc" | "desc"; periodStart: string; entries: LeaderboardEntry[]; total: number };
 
 function periodStart(period: BoardPeriod): string {
   const now = new Date();
@@ -35,6 +35,11 @@ export async function getLeaderboard(gameId: string, key = "main", period: Board
   "use cache";
   cacheTag(leaderboardTag(gameId));
   cacheLife({ stale: 30, revalidate: 30, expire: 300 });
+  return readLeaderboard(gameId, key, period, limit);
+}
+
+/** Top entries for a board, read fresh (the watch page's live refresh). */
+export async function readLeaderboard(gameId: string, key = "main", period: BoardPeriod = "daily", limit = 10): Promise<LeaderboardView | null> {
   const supabase = createAnonClient();
   const { data: board } = await supabase.from("leaderboards").select("id, key, period, sort").eq("game_id", gameId).eq("key", key).eq("period", period).maybeSingle();
   if (!board) return null;
@@ -52,6 +57,7 @@ export async function getLeaderboard(gameId: string, key = "main", period: Board
   const { data: users } = userIds.length ? await supabase.from("profiles").select("id, handle, display_name, avatar_path").in("id", userIds) : { data: [] as { id: string; handle: string; display_name: string | null; avatar_path: string | null }[] };
   const userMap = new Map((users ?? []).map((u) => [u.id, u]));
   return {
+    id: board.id,
     key: board.key,
     period: board.period as BoardPeriod,
     sort: board.sort as "asc" | "desc",

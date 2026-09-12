@@ -145,7 +145,7 @@ export default function DocsSdkPage() {
         </li>
         <li>
           <strong>Your own end screen.</strong> Habiv draws nothing over your game when a run ends, so keep your game-over screen and its
-          way to play again. A score sent with <code>scoreSubmit</code> goes on the leaderboard and the player gets a short note with their rank.
+          way to play again. A score sent with <code>scoreSubmit</code> goes on the leaderboard, and a new personal best in the top 3 gets a short note in the corner.
         </li>
         <li>
           <strong>Starting again.</strong> Calling <code>runStart()</code> while a run is going ends the old one as a quit first.

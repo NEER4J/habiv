@@ -32,7 +32,7 @@ export const publishSteps = `Getting it onto Habiv. First check whether you have
 
 If you have the Habiv tools:
 - Call publish_game with the files (index.html at the root). Put text files (html, js, css, json) in content exactly as written; only images and audio need content_base64. For bundles over 3 MB, use create_upload first.
-- If the game is already on Habiv, pass its game_id (find it with list_my_games) and a one-line changelog, so it becomes a new version and keeps its page, stats and leaderboard. If it's new, also pass a title, a short tagline, a description, the categories, the controls, duration_sec, the model and agent you are, and the prompt I gave you: the same details as in habiv.json.
+- If the game is already on Habiv, pass its game_id (find it with list_my_games), keep_other_files: true with only the files you changed, and a one-line changelog, so it becomes a new version and keeps its page, stats and leaderboard. If it's new, also pass a title, a short tagline, a description, the categories, the controls, duration_sec, the model and agent you are, and the prompt I gave you: the same details as in habiv.json.
 - Poll get_publish_status until it says ready, then give me the link. Keep it a draft unless I asked for it to go live.
 - Give it store art: call list_thumbnail_designs, pick a design that suits the game and call make_thumbnail (or make your own image and upload it with create_art_upload and set_game_art). Tell me which design you picked.
 
@@ -131,12 +131,12 @@ ${habivRules}`,
     id: "leaderboard",
     group: "improve",
     title: "Add a leaderboard",
-    when: "Daily, weekly and all-time boards, with the player's rank shown after every scored round.",
+    when: "Daily, weekly and all-time boards, with a note when a player sets a personal best in the top 3.",
     text: `Add a Habiv leaderboard to this game.
 
 - Decide whether a higher score or a lower time is better. For times, submit milliseconds as a whole number.
 - Call window.Habiv?.runStart() when a round begins. When it ends, call window.Habiv?.scoreSubmit({ value }) once, then window.Habiv?.runEnd({ outcome, score }). Round scores to whole numbers.
-- Habiv doesn't show a results screen, so keep the game's own game-over screen with the score and a way to play again. Habiv adds a short note with the player's rank.
+- Habiv doesn't show a results screen, so keep the game's own game-over screen with the score and a way to play again. Habiv adds a short note when the player sets a personal best in the top 3.
 - Keep everything working when window.Habiv is missing.
 - The leaderboard also has to be switched on. If you have the Habiv MCP tools, call update_game for this game with leaderboard: { enabled: true, sort: "desc" } (use "asc" when the lowest time wins). If you don't, tell me where to switch it on: in the Details step while uploading, or for a game already on Habiv in My games → Edit, choosing Highest wins or Lowest wins.
 

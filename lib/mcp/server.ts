@@ -14,7 +14,9 @@ export function buildHabivServer(auth: TokenAuth): McpServer {
       instructions:
         "Habiv hosts tiny browser games made with AI. Publish with publish_game (inline files under 3 MB, or create_upload for bigger zips; " +
         "pass game_id to add a new version of an existing game), then poll get_publish_status until it is 'ready' and share the url. " +
-        "Find games with list_my_games and get_game. To keep working on a game, read its code with get_game_files, edit it, and publish_game with its game_id. " +
+        "Put text files in files[].content as plain text; only images and audio need base64. " +
+        "Find games with list_my_games and get_game. To keep working on a game, read its code with get_game_files, edit it, and publish_game with its game_id, " +
+        "keep_other_files: true and only the changed files. " +
         "Manage releases with list_versions, publish_version (switch the live version or roll back), update_version (changelog, prompt) and delete_version. " +
         "Edit details with update_game; hide a game with unpublish_game. " +
         "Give every game store art, a cover (16:9) and a card (3:4): make_thumbnail renders one of Habiv's ready-made designs (list_thumbnail_designs) " +
