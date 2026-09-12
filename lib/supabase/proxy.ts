@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { hasEnvVars } from "../utils";
 
 /** Creator surfaces need a session. Browsing and playing never do. */
-const PROTECTED_PREFIXES = ["/publish", "/my-games", "/settings", "/onboarding", "/admin", "/profile", "/saved"];
+const PROTECTED_PREFIXES = ["/publish", "/my-games", "/settings", "/onboarding", "/admin", "/profile", "/saved", "/mcp/"];
 
 /** First-party anonymous player id; read by the player and stamped server-side on events. */
 export const PLAYER_COOKIE = "hv_pid";

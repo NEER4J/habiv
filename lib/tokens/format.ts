@@ -2,12 +2,12 @@ import "server-only";
 import { createHash, randomInt } from "node:crypto";
 
 export const TOKEN_PREFIX = "hbv_live_";
-const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+export const TOKEN_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
 /** hbv_live_ + 32 unbiased base62 characters (randomInt avoids modulo bias). */
 export function generateToken(): string {
   let s = "";
-  for (let i = 0; i < 32; i++) s += ALPHABET[randomInt(0, ALPHABET.length)];
+  for (let i = 0; i < 32; i++) s += TOKEN_ALPHABET[randomInt(0, TOKEN_ALPHABET.length)];
   return TOKEN_PREFIX + s;
 }
 

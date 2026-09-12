@@ -22,6 +22,7 @@ import {
   pill,
   primaryBtn,
 } from "@/lib/habiv/ui";
+import { siteUrl } from "@/lib/site";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "./avatar";
 import { BentoAutoGrid, PageHead } from "./game-card";
@@ -57,11 +58,8 @@ const safetyItems = [
   { label: "Every publish stored as a version", value: "rollback" },
 ];
 
-const mcpConfig = JSON.stringify(
-  { mcpServers: { habiv: { type: "http", url: "https://habiv.com/api/mcp", headers: { Authorization: "Bearer hbv_live_…" } } } },
-  null,
-  2,
-);
+const mcpUrl = `${siteUrl}/api/mcp`;
+const mcpConfig = JSON.stringify({ mcpServers: { habiv: { type: "http", url: mcpUrl } } }, null, 2);
 
 const mcpTools = ["publish_game", "create_upload", "get_publish_status", "get_game", "list_my_games", "update_game", "unpublish_game"];
 
@@ -387,7 +385,9 @@ function ApiPanel({ initialTokens }: { initialTokens: ApiTokenSummary[] }) {
     <div style={panel}>
       <div style={{ fontSize: "16px", fontWeight: 600 }}>Publish from Codex or Claude Code</div>
       <div style={{ marginTop: "8px", fontSize: "14px", lineHeight: 1.6, color: "var(--ink-4)", maxWidth: "64ch" }}>
-        Add the habiv MCP server to your agent, then ask it to publish. Tools available: {mcpTools.join(", ")}.
+        Add the habiv MCP server to your agent (in Claude Code: <code style={{ fontFamily: mono, fontSize: "12.5px" }}>claude mcp add --transport http habiv {mcpUrl}</code>). The first
+        time it connects, Habiv opens in your browser so you can approve it; the connection then shows up in the list below. Tokens are only
+        needed for CI and scripts. Tools available: {mcpTools.join(", ")}.
       </div>
       <div style={{ position: "relative" }}>
         <div style={codeWell}>{mcpConfig}</div>

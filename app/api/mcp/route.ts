@@ -1,6 +1,7 @@
 import { createMcpHandler } from "@modelcontextprotocol/server";
 import { authenticateToken, toAuthInfo, type TokenAuth } from "@/lib/mcp/auth";
 import { buildHabivServer } from "@/lib/mcp/server";
+import { requestOrigin, resourceMetadataUrl } from "@/lib/oauth/core";
 
 
 /**
@@ -16,15 +17,22 @@ const handler = createMcpHandler(
   { responseMode: "json", legacy: "stateless", onerror: (e) => console.error("mcp", e) },
 );
 
-const unauthorized = () =>
+/** The challenge points MCP clients at the OAuth metadata, which starts the browser approval flow. */
+const unauthorized = (request: Request) =>
   Response.json(
-    { error: "unauthorized", message: "Pass a Habiv API token: Authorization: Bearer hbv_live_..." },
-    { status: 401, headers: { "WWW-Authenticate": 'Bearer realm="habiv"', "cache-control": "no-store" } },
+    { error: "unauthorized", message: "Connect with OAuth (your MCP client opens Habiv to approve) or pass a personal token: Authorization: Bearer hbv_live_..." },
+    {
+      status: 401,
+      headers: {
+        "WWW-Authenticate": `Bearer realm="habiv", resource_metadata="${resourceMetadataUrl(requestOrigin(request))}"`,
+        "cache-control": "no-store",
+      },
+    },
   );
 
 export async function POST(request: Request) {
   const auth = await authenticateToken(request.headers.get("authorization"));
-  if (!auth) return unauthorized();
+  if (!auth) return unauthorized(request);
   return handler.fetch(request, { authInfo: toAuthInfo(auth) });
 }
 

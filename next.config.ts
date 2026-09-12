@@ -11,6 +11,18 @@ const nextConfig: NextConfig = {
       ...(supabaseHost ? [{ protocol: "https" as const, hostname: supabaseHost, pathname: "/storage/v1/object/public/**" }] : []),
     ],
   },
+  async headers() {
+    // The MCP consent page grants publish access, so it must never be framed (clickjacking).
+    return [
+      {
+        source: "/mcp/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "DENY" },
+          { key: "Content-Security-Policy", value: "frame-ancestors 'none'" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
