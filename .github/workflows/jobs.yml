@@ -38,7 +38,7 @@ jobs:
       STORAGE_S3_REGION: ${{ secrets.STORAGE_S3_REGION }}
       STORAGE_S3_ACCESS_KEY_ID: ${{ secrets.STORAGE_S3_ACCESS_KEY_ID }}
       STORAGE_S3_SECRET_ACCESS_KEY: ${{ secrets.STORAGE_S3_SECRET_ACCESS_KEY }}
-      GAME_ORIGIN: ${{ vars.GAME_ORIGIN || 'https://www.habiv.com' }}
+      GAME_ORIGIN: ${{ vars.GAME_ORIGIN || 'https://habiv-play.vercel.app' }}
     steps:
       - name: Validate input
         working-directory: .
