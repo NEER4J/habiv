@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#050505">
+<title>Offline · Habiv</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #050505; color: #f1f1f1; font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { min-height: 100svh; display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box; }
+  .box { max-width: 440px; text-align: center; }
+  svg { width: 40px; height: 40px; }
+  h1 { margin: 20px 0 0; font-size: 30px; font-weight: 600; letter-spacing: -0.03em; }
+  p { margin: 12px 0 0; font-size: 15px; line-height: 1.6; color: #9a9a9a; }
+  button { margin-top: 22px; height: 38px; padding: 0 16px; border: 0; border-radius: 19px; background: #f1f1f1; color: #050505; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+</style>
+</head>
+<body>
+<main>
+  <div class="box">
+    <svg viewBox="0 0 773 764" fill="#f1f1f1" aria-hidden="true"><path d="M0.769531 600L266.27 0.5H589.77L447.27 326H771.77L578.27 763H253.77L447.27 326H286.27L166.77 600H0.769531Z"/></svg>
+    <h1>You&rsquo;re offline.</h1>
+    <p>Habiv needs a connection to load games. Check your network and try again.</p>
+    <button type="button" onclick="location.reload()">Try again</button>
+  </div>
+</main>
+<script>addEventListener("online", () => location.reload());</script>
+</body>
+</html>

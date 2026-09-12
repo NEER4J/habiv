@@ -14,6 +14,14 @@ const nextConfig: NextConfig = {
   async headers() {
     // The MCP consent page grants publish access, so it must never be framed (clickjacking).
     return [
+      // The service worker must always be revalidated so updates reach installed apps.
+      {
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+        ],
+      },
       {
         source: "/mcp/:path*",
         headers: [

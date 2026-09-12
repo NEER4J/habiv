@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Analytics } from "@vercel/analytics/next";
+import { ServiceWorkerRegister } from "@/components/sw-register";
 import { themeInitScript } from "@/lib/habiv/theme";
 import { defaultOgImage, siteDescription, siteKeywords, siteName, siteTitle } from "@/lib/seo";
 import { siteUrl } from "@/lib/site";
@@ -19,6 +20,7 @@ export const metadata: Metadata = {
   creator: siteName,
   publisher: siteName,
   category: "games",
+  appleWebApp: { capable: true, title: siteName, statusBarStyle: "black-translucent" },
   formatDetection: { telephone: false, email: false, address: false },
   robots: {
     index: true,
@@ -73,6 +75,7 @@ export default function RootLayout({
           {children}
         </ThemeProvider>
         <Analytics />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );
