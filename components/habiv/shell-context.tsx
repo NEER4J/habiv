@@ -56,6 +56,8 @@ export type ShellSession = {
   pinned: Game[];
   /** Games published in the last 7 days. */
   builtThisWeek: number;
+  /** Lifetime plays across all live games. */
+  totalPlays: number;
 };
 
 type ShellValue = {
@@ -110,6 +112,7 @@ type ShellValue = {
   setAvatarSeed: (seed: string) => void;
   pinned: Game[];
   builtThisWeek: number;
+  totalPlays: number;
 };
 
 const ShellContext = createContext<ShellValue | null>(null);
@@ -143,6 +146,7 @@ export function ShellProvider({ children }: { children: ReactNode }) {
   const [avatarSeed, setAvatarSeed] = useState("hv-start");
   const [pinned, setPinned] = useState<Game[]>([]);
   const [builtThisWeek, setBuiltThisWeek] = useState(0);
+  const [totalPlays, setTotalPlays] = useState(0);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
@@ -226,6 +230,7 @@ export function ShellProvider({ children }: { children: ReactNode }) {
     setUnread(s.unread);
     setPinned(s.pinned);
     setBuiltThisWeek(s.builtThisWeek);
+    setTotalPlays(s.totalPlays);
     if (s.profile?.handle) setAvatarSeed(s.profile.handle);
     setSessionReady(true);
   }, []);
@@ -314,8 +319,9 @@ export function ShellProvider({ children }: { children: ReactNode }) {
       setAvatarSeed,
       pinned,
       builtThisWeek,
+      totalPlays,
     }),
-    [vw, mobile, tablet, drawerMode, collapsed, sidebarOpen, theme, theatre, searchOpen, closeSearch, query, modal, modalGameId, toast, showToast, savedIds, toggleSaved, profile, signedIn, sessionReady, setSession, requireAuth, openAuth, authIntent, unread, avatarSeed, pinned, builtThisWeek],
+    [vw, mobile, tablet, drawerMode, collapsed, sidebarOpen, theme, theatre, searchOpen, closeSearch, query, modal, modalGameId, toast, showToast, savedIds, toggleSaved, profile, signedIn, sessionReady, setSession, requireAuth, openAuth, authIntent, unread, avatarSeed, pinned, builtThisWeek, totalPlays],
   );
 
   return <ShellContext.Provider value={value}>{children}</ShellContext.Provider>;

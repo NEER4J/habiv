@@ -478,7 +478,7 @@ function Header() {
 }
 
 function Sidebar() {
-  const { drawerMode, collapsed, sidebarOpen, toggleSidebar, closeSidebar, theatre, mobile, light, pinned, builtThisWeek, profile } = useShell();
+  const { drawerMode, collapsed, sidebarOpen, toggleSidebar, closeSidebar, theatre, mobile, light, pinned, builtThisWeek, totalPlays, profile } = useShell();
   const pathname = usePathname() ?? "";
   const tab = useSearchParams().get("tab");
   const active = (href: string) => isNavActive(href, pathname, tab, profile.handleSet ? profile.handle : null);
@@ -622,6 +622,14 @@ function Sidebar() {
                 </span>
                 <span style={{ fontFamily: mono, fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--ink-5)" }}>
                   built this week
+                </span>
+              </div>
+              <div style={{ display: "flex", alignItems: "baseline", gap: "6px", marginTop: "6px" }}>
+                <span style={{ fontSize: "19px", fontWeight: 600, letterSpacing: "-0.02em", color: "var(--ink)" }}>
+                  {totalPlays.toLocaleString()}
+                </span>
+                <span style={{ fontFamily: mono, fontSize: "10px", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--ink-5)" }}>
+                  total runs
                 </span>
               </div>
               <div style={{ marginTop: "8px", fontFamily: mono, fontSize: "10px", lineHeight: 1.7, color: "var(--ink-6)" }}>

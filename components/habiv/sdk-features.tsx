@@ -153,8 +153,11 @@ export function LeaderboardSettings({
 /** Scanned features plus pause and sound, which the scan does not report on. Game details are always part of the prompt. */
 type PromptPart = SdkFeature | "controls";
 
+/** SDK features the card offers to add. Saves and highlights are left out of the prompt on purpose. */
+const OFFERED = SDK_FEATURES.filter((f) => f.id !== "saves" && f.id !== "happytime");
+
 const PROMPT_PARTS: { id: PromptPart; label: string; unlocks: string }[] = [
-  ...SDK_FEATURES,
+  ...OFFERED,
   { id: "controls", label: "Pause & sound", unlocks: "the player page's pause and sound buttons" },
 ];
 
@@ -218,10 +221,6 @@ export function buildSdkPrompt(parts: Set<PromptPart>, title: string, sort: "des
     lines.push('- Levels: `window.Habiv?.levelStart({ level: "3" })` when a level begins, then `levelComplete({ level: "3", score })` or `levelFail({ level: "3", score })`. The level is text, up to 64 characters.');
   }
   if (parts.has("beat")) lines.push("- Beat the game: `window.Habiv?.beatGame()` once, when the player finishes the whole game (final level or ending).");
-  if (parts.has("saves")) {
-    lines.push('- Saves: store progress with `window.Habiv?.save({ key: "progress", value })` (any JSON value) and read it on start with `const saved = (await window.Habiv?.load({ key: "progress" })) ?? defaults`. load gives null when nothing is saved. Keep any existing localStorage saving as the fallback for when window.Habiv is missing.');
-  }
-  if (parts.has("happytime")) lines.push("- Highlights: `window.Habiv?.happytime()` at great moments, like a new best or a big combo. A few times per run at most.");
   if (parts.has("controls")) {
     lines.push('- Pause and sound: `window.Habiv?.on("pause", pauseGame)`, `window.Habiv?.on("resume", resumeGame)` and `window.Habiv?.on("mute", (msg) => setMuted(msg.on))`. The game starts muted.');
   }
@@ -291,7 +290,7 @@ export function SdkUpgradePrompt({
   // Scores and runs first: they are what most games are missing and what the game page shows.
   const [picked, setPicked] = useState<Set<PromptPart>>(() => {
     const core = (["scores", "runs"] as PromptPart[]).filter((id) => !has(id));
-    return new Set(core.length ? core : SDK_FEATURES.map((f) => f.id).filter((id) => !has(id)));
+    return new Set(core.length ? core : OFFERED.map((f) => f.id).filter((id) => !has(id)));
   });
   const [copied, setCopied] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
@@ -301,7 +300,7 @@ export function SdkUpgradePrompt({
     if (open) boxRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [open]);
 
-  if (!sdk || (SDK_FEATURES.every((f) => sdk.features.includes(f.id)) && hasDetails !== false)) return null;
+  if (!sdk || (OFFERED.every((f) => sdk.features.includes(f.id)) && hasDetails !== false)) return null;
 
   const text = buildSdkPrompt(picked, title, sort, hasDetails);
   const toggle = (id: PromptPart) =>
@@ -336,7 +335,7 @@ export function SdkUpgradePrompt({
     <div ref={boxRef} style={{ marginTop: "14px", padding: "14px 16px", borderRadius: "12px", background: "var(--chip)" }}>
       <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
         <div style={{ flex: "1 1 220px", minWidth: 0 }}>
-          <div style={{ fontSize: "14px", fontWeight: 600 }}>{SDK_FEATURES.every((f) => sdk.features.includes(f.id)) ? "Add game details" : hasScores(sdk) ? "Add levels, saves and more" : "Add scores and a leaderboard"}</div>
+          <div style={{ fontSize: "14px", fontWeight: 600 }}>{OFFERED.every((f) => sdk.features.includes(f.id)) ? "Add game details" : hasScores(sdk) ? "Add levels and more" : "Add scores and a leaderboard"}</div>
           <div style={{ marginTop: "4px", fontSize: "12.5px", lineHeight: 1.5, color: "var(--ink-4)" }}>
             Your game works as it is. Ask the AI that built it to add Habiv calls and write the game&apos;s details (controls, description, categories), then
             upload the new build. The upload form fills itself in.

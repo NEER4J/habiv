@@ -1777,6 +1777,7 @@ export type Database = {
         Returns: number
       }
       runs_today: { Args: never; Returns: number }
+      total_plays: { Args: never; Returns: number }
       search_games: {
         Args: { max_rows?: number; q: string }
         Returns: {
@@ -1901,7 +1902,7 @@ export type Database = {
           p_user_id: string
           p_version_id: string
         }
-        Returns: undefined
+        Returns: boolean
       }
       submit_score: {
         Args: { p_flag: string; p_key: string; p_run: string; p_score: number }

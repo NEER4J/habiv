@@ -55,3 +55,12 @@ export async function getBuiltThisWeek(): Promise<number> {
   const { count } = await createAnonClient().from("game_feed_v").select("id", { count: "exact", head: true }).gte("published_at", since);
   return count ?? 0;
 }
+
+/** Lifetime plays across all live games (sidebar stat). */
+export async function getTotalPlays(): Promise<number> {
+  "use cache";
+  cacheTag(FEED_TAG);
+  cacheLife("minutes");
+  const { data } = await createAnonClient().rpc("total_plays");
+  return Number(data ?? 0);
+}

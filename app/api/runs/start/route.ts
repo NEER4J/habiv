@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
   const runId = crypto.randomUUID();
   const startedAt = isoNow();
   const token = mintRunToken({ runId, gameId: game.id, playerId, startedAt });
-  const { error } = await admin.rpc("start_run", {
+  const { data: counted, error } = await admin.rpc("start_run", {
     p_id: runId,
     p_started_at: startedAt,
     p_game_id: game.id,
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     console.error("start_run", error.message);
     return NextResponse.json({ error: "store_failed" }, { status: 500, headers: noStore });
   }
-  // start_run bumped game_stats.plays; let the watch page pick up the new count on its next load.
-  if (!preview) revalidateTag(gameTag(game.id), "max");
-  return NextResponse.json({ run_id: runId, run_token: token, started_at: startedAt, preview }, { headers: noStore });
+  // Only the session's first run of a game is a play; when it counted, let the watch page pick up the new count.
+  if (counted) revalidateTag(gameTag(game.id), "max");
+  return NextResponse.json({ run_id: runId, run_token: token, started_at: startedAt, preview, counted: !!counted }, { headers: noStore });
 }

@@ -74,6 +74,8 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
   let gameUsesBridgeRuns = false;
   let autoTimer: ReturnType<typeof setTimeout> | null = null;
   let starting: Promise<void> | null = null;
+  /** Bumped when a round starts, so a late /api/runs/end reply can tell a newer round is already running. */
+  let runSeq = 0;
   // The run minted on mount is taken over by the game's first SDK run_start instead of counting twice.
   let adoptLaunchRun = false;
   const designKeys = new Set<string>();
@@ -99,15 +101,17 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
     if (starting) await starting;
     if (destroyed) return;
     if (current) await endRun("quit", {}, false);
+    runSeq += 1;
     starting = (async () => {
       let counted = false;
       if (preview) {
         current = { id: crypto.randomUUID(), token: "", auto, startedAt: Date.now() };
       } else {
-        const res = await postJson<{ run_id: string | null; run_token: string | null; preview?: boolean }>("/api/runs/start", { ...base, session_id: collector.sessionId, level, auto });
+        const res = await postJson<{ run_id: string | null; run_token: string | null; counted?: boolean }>("/api/runs/start", { ...base, session_id: collector.sessionId, level, auto });
         if (res?.run_id && res.run_token) current = { id: res.run_id, token: res.run_token, auto, startedAt: Date.now() };
         else current = null;
-        counted = !!current && !res?.preview;
+        // The server counts only the session's first run of this game; restarts come back uncounted.
+        counted = !!current && !!res?.counted;
       }
       frame.post(initMessage());
       track({ ...base, name: "run_start", level });
@@ -121,24 +125,40 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
     const run = current;
     current = null;
     adoptLaunchRun = false;
-    if (!run) return;
+    if (!run) {
+      // No server run (minting failed or was refused): the round still ended in the game, so the
+      // page shows its result the same way every time. Quits come only from the host, never here.
+      if (outcome !== "quit") emit({ type: "run_end", outcome, score: extra.score ?? null, durationMs: null, beatPct: null });
+      return;
+    }
     track({ ...base, name: "run_end", outcome, score: extra.score, level: extra.level, run_id: run.id });
     if (preview || !run.token) {
       emit({ type: "run_end", outcome, score: extra.score ?? null, durationMs: Date.now() - run.startedAt, beatPct: null });
       return;
     }
+    const seq = runSeq;
     const res = await postJson<{ duration_ms: number; beat_pct: number | null }>("/api/runs/end", { run_id: run.id, run_token: run.token, outcome, ...extra }, keepalive);
+    // The player retried inside the game before this reply came back: a results screen now would land
+    // in the middle of the new round. The run is closed on the server either way.
+    if (seq !== runSeq) return;
     emit({ type: "run_end", outcome, score: extra.score ?? null, durationMs: res?.duration_ms ?? Date.now() - run.startedAt, beatPct: res?.beat_pct ?? null });
   };
 
   const submitScore = async (board: string, value: number | undefined) => {
     track({ ...base, name: "score_submit", value, props: { board } });
-    if (preview || !current?.token || value === undefined) return;
+    // A score sent right after runStart would otherwise find no run while /api/runs/start is still answering.
+    if (starting) await starting;
+    // Held here because the game's runEnd usually follows at once and clears `current` mid-loop.
+    const run = current;
+    if (preview || !run?.token || value === undefined) {
+      if (!preview && value !== undefined) console.warn("[habiv] score dropped: no server run to attach it to");
+      return;
+    }
     const boards = [board, opts.extraBoard].filter((b): b is string => !!b);
     for (const key of boards) {
       const res = await postJson<{ accepted: boolean; flagged: string | null; boards: { period: string; rank: number; personal_best: boolean }[] }>(
         "/api/runs/score",
-        { run_id: current.id, run_token: current.token, board: key, value },
+        { run_id: run.id, run_token: run.token, board: key, value },
       );
       if (res) emit({ type: "score_result", accepted: res.accepted, flagged: res.flagged, boards: res.boards ?? [] });
     }
@@ -164,9 +184,14 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
         }
         void startRun(msg.level, false);
         break;
-      case "run_end":
-        void endRun(msg.outcome, { score: msg.score, level: msg.level, progress_pct: msg.progress_pct }, false);
+      case "run_end": {
+        // A round that ends while its run is still being minted (a crash within a second of a retry)
+        // waits for the run, so it is closed and its result shown instead of the end being lost.
+        // A score sent just before is handled first: it awaited the same promise earlier.
+        const end = () => endRun(msg.outcome, { score: msg.score, level: msg.level, progress_pct: msg.progress_pct }, false);
+        void (starting ? starting.then(end) : end());
         break;
+      }
       case "level_start":
       case "level_complete":
       case "level_fail": {

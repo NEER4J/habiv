@@ -13,6 +13,7 @@ import { deleteComment, pinComment, postComment, toggleCommentLike } from "@/lib
 import type { CommentItem } from "@/lib/db/comments";
 import { gameOrigin, siteUrl } from "@/lib/site";
 import { bpanel, chipBtn, chipStyle, ctrlBtn, mono, monoLabel, pill } from "@/lib/habiv/ui";
+import { Maximize, Pause, Play, RectangleHorizontal, Repeat, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { CreatorAvatar, RailRow } from "./game-card";
 import { useShell } from "./shell-context";
 
@@ -38,6 +39,13 @@ const playButtonStyle: CSSProperties = {
 /** Buttons that sit on the always-dark player, whatever the page theme. */
 const onPlayerChip: CSSProperties = { ...pill(), background: "rgba(255,255,255,0.14)", color: "#f5f5f7" };
 const onPlayerPrimary: CSSProperties = { ...pill("primary"), background: "#ffffff", color: "#0c0c0e" };
+
+// Player control bar: icon + label buttons.
+const ctrlIconBtn: CSSProperties = { ...ctrlBtn, display: "inline-flex", alignItems: "center", gap: "7px" };
+const ctrlIcon = { size: 15, strokeWidth: 1.8, "aria-hidden": true } as const;
+
+// Fullscreen controls fade out after this long without the pointer near them.
+const FS_CONTROLS_IDLE_MS = 2500;
 
 const overlayBase: CSSProperties = {
   position: "absolute",
@@ -114,7 +122,6 @@ export function WatchView({ data }: { data: WatchData }) {
   const [state, setState] = useState<PlayerState>("cover");
   const [frameOn, setFrameOn] = useState(false);
   const [frameKey, setFrameKey] = useState(0);
-  const [interacted, setInteracted] = useState(false);
   const [score, setScore] = useState<number | null>(null);
   const [beatPct, setBeatPct] = useState<number | null>(null);
   const [durationMs, setDurationMs] = useState<number | null>(null);
@@ -123,6 +130,7 @@ export function WatchView({ data }: { data: WatchData }) {
   const [playsBump, setPlaysBump] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
   const [fsClosing, setFsClosing] = useState(false);
+  const [fsControls, setFsControls] = useState(true);
   const [muted, setMuted] = useState(true);
   const [autoplay, setAutoplay] = useState(false);
 
@@ -151,7 +159,8 @@ export function WatchView({ data }: { data: WatchData }) {
   const [repliesOpen, setRepliesOpen] = useState<string | null>(null);
 
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const overlayRef = useRef<HTMLDivElement>(null);
+  const playerBoxRef = useRef<HTMLDivElement>(null);
+  const fsHideTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const hostRef = useRef<BridgeHost | null>(null);
   const mutedRef = useRef(muted);
   const loadTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -181,7 +190,6 @@ export function WatchView({ data }: { data: WatchData }) {
     clearTimeout(loadTimer.current);
     setState("cover");
     setFrameOn(false);
-    setInteracted(false);
     setScore(null);
     setBeatPct(null);
     setDurationMs(null);
@@ -259,7 +267,6 @@ export function WatchView({ data }: { data: WatchData }) {
       playerId: viewer.playerId,
       handle: viewer.handle,
       muted: mutedRef.current,
-      overlay: overlayRef.current,
       onEvent: onHostEvent,
       startOnMount: true,
     });
@@ -284,7 +291,6 @@ export function WatchView({ data }: { data: WatchData }) {
       setBeatPct(null);
       setDurationMs(null);
       setRankResult(null);
-      setInteracted(false);
       setFrameKey((k) => k + 1);
       setFrameOn(true);
       setState("loading");
@@ -322,18 +328,36 @@ export function WatchView({ data }: { data: WatchData }) {
 
   // Keys only reach the game while its iframe has focus. Take it when play starts or resumes,
   // and again after a player control (mute, theatre, fullscreen) pulls it back to the page.
+  // Nothing sits over the iframe: a click goes straight to the game and focuses it natively
+  // (a transparent click layer used to swallow the first click and hand focus back to the page).
+  // The play itself is counted by the run minted on Play (startOnMount).
   useEffect(() => {
     if (state === "playing") iframeRef.current?.focus({ preventScroll: true });
   }, [state, muted, theatre, fullscreen]);
 
-  const onOverlayPointerDown = () => {
-    setInteracted(true);
-    iframeRef.current?.focus({ preventScroll: true });
-  };
-
   const nextGame = data.queue[0] ?? null;
 
+  // Real fullscreen (browser chrome hidden) where the Fullscreen API exists; elsewhere (iPhone Safari)
+  // the player box stays a fixed full-window layer.
+  const enterFullscreen = () => {
+    setFullscreen(true);
+    const el = playerBoxRef.current as (HTMLDivElement & { webkitRequestFullscreen?: () => void }) | null;
+    if (!el) return;
+    if (el.requestFullscreen) el.requestFullscreen({ navigationUI: "hide" }).catch(() => {});
+    else el.webkitRequestFullscreen?.();
+  };
+
   const exitFullscreen = () => {
+    const doc = document as Document & { webkitFullscreenElement?: Element | null; webkitExitFullscreen?: () => void };
+    // The fullscreenchange listener below drops the fullscreen state once the browser has left it.
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+      return;
+    }
+    if (doc.webkitFullscreenElement) {
+      doc.webkitExitFullscreen?.();
+      return;
+    }
     if (fsClosing) return;
     setFsClosing(true);
     setTimeout(() => {
@@ -342,6 +366,20 @@ export function WatchView({ data }: { data: WatchData }) {
     }, 190);
   };
 
+  // The browser's own Esc (or a swipe) leaves real fullscreen without a keydown reaching the page.
+  useEffect(() => {
+    const onChange = () => {
+      const doc = document as Document & { webkitFullscreenElement?: Element | null };
+      if (!(document.fullscreenElement ?? doc.webkitFullscreenElement)) setFullscreen(false);
+    };
+    document.addEventListener("fullscreenchange", onChange);
+    document.addEventListener("webkitfullscreenchange", onChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      document.removeEventListener("webkitfullscreenchange", onChange);
+    };
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && fullscreen) exitFullscreen();
@@ -349,6 +387,26 @@ export function WatchView({ data }: { data: WatchData }) {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   });
+
+  // Fullscreen controls show on entry and when the pointer comes near them, then fade so they never
+  // sit over the game. Pointer moves over the iframe never reach this page, hence the edge strip.
+  const pokeFsControls = useCallback(() => {
+    setFsControls(true);
+    clearTimeout(fsHideTimer.current);
+    fsHideTimer.current = setTimeout(() => setFsControls(false), FS_CONTROLS_IDLE_MS);
+  }, []);
+
+  const holdFsControls = () => {
+    clearTimeout(fsHideTimer.current);
+    setFsControls(true);
+  };
+
+  useEffect(() => {
+    if (fullscreen) pokeFsControls();
+    else clearTimeout(fsHideTimer.current);
+  }, [fullscreen, pokeFsControls]);
+
+  useEffect(() => () => clearTimeout(fsHideTimer.current), []);
 
   // Actions
   const copyLink = () => {
@@ -591,13 +649,26 @@ export function WatchView({ data }: { data: WatchData }) {
         transition: "border-radius 300ms ease, box-shadow 340ms ease",
       };
 
-  const controlBar = (items: ReactNode, bottom: string, bg: string) => (
+  // Paused, finished and loading keep the fullscreen controls up; only active play hides them.
+  const fsControlsShown = fsControls || state !== "playing";
+
+  const controlBar = (
+    items: ReactNode,
+    bottom: string,
+    bg: string,
+    shown = true,
+    hover?: { onPointerEnter: () => void; onPointerLeave: () => void },
+  ) => (
     <div
+      {...hover}
       style={{
         position: "absolute",
         left: "50%",
         bottom,
-        transform: "translateX(-50%)",
+        transform: shown ? "translateX(-50%)" : "translate(-50%, 12px)",
+        opacity: shown ? 1 : 0,
+        pointerEvents: shown ? "auto" : "none",
+        transition: "opacity 200ms ease, transform 200ms ease",
         display: "flex",
         gap: "6px",
         padding: "6px",
@@ -651,7 +722,7 @@ export function WatchView({ data }: { data: WatchData }) {
               zIndex: theatre ? 50 : 1,
             }}
           >
-            <div style={playerBox}>
+            <div ref={playerBoxRef} style={playerBox} onPointerMove={fullscreen ? pokeFsControls : undefined}>
               {frameOn && game.versionId ? (
                 <iframe
                   key={frameKey}
@@ -667,12 +738,6 @@ export function WatchView({ data }: { data: WatchData }) {
                 />
               ) : null}
 
-              {/* First-interaction layer for the bridge's auto-instrumentation. */}
-              <div
-                ref={overlayRef}
-                onPointerDown={onOverlayPointerDown}
-                style={{ position: "absolute", inset: 0, zIndex: 2, background: "transparent", pointerEvents: frameOn && !interacted ? "auto" : "none" }}
-              />
 
               <div
                 style={{
@@ -680,6 +745,8 @@ export function WatchView({ data }: { data: WatchData }) {
                   right: "14px",
                   top: "14px",
                   zIndex: 6,
+                  opacity: fullscreen && !fsControlsShown ? 0 : 1,
+                  transition: "opacity 200ms ease",
                   display: "flex",
                   alignItems: "center",
                   gap: "7px",
@@ -841,7 +908,7 @@ export function WatchView({ data }: { data: WatchData }) {
                       <button onClick={() => setMuted((m) => !m)} style={onPlayerChip}>
                         {soundLabel}
                       </button>
-                      <button onClick={() => setFullscreen(true)} style={onPlayerChip}>
+                      <button onClick={enterFullscreen} style={onPlayerChip}>
                         Fullscreen
                       </button>
                     </>,
@@ -849,6 +916,16 @@ export function WatchView({ data }: { data: WatchData }) {
                     "rgba(0,0,0,0.72)",
                   )
                 : null}
+
+              {fullscreen ? (
+                <div
+                  aria-hidden
+                  onPointerEnter={pokeFsControls}
+                  onPointerMove={pokeFsControls}
+                  onPointerDown={pokeFsControls}
+                  style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: "28px", zIndex: 4 }}
+                />
+              ) : null}
 
               {fullscreen
                 ? controlBar(
@@ -868,6 +945,8 @@ export function WatchView({ data }: { data: WatchData }) {
                     </>,
                     "22px",
                     "rgba(0,0,0,0.66)",
+                    fsControlsShown,
+                    { onPointerEnter: holdFsControls, onPointerLeave: pokeFsControls },
                   )
                 : null}
             </div>
@@ -875,13 +954,16 @@ export function WatchView({ data }: { data: WatchData }) {
 
           {/* Controls */}
           <div style={{ ...bpanel, display: "flex", alignItems: "center", flexWrap: "wrap", gap: "4px", padding: "7px 10px" }}>
-            <button onClick={restart} disabled={!canPlay} style={{ ...ctrlBtn, opacity: canPlay ? 1 : 0.5 }}>
+            <button onClick={restart} disabled={!canPlay} style={{ ...ctrlIconBtn, opacity: canPlay ? 1 : 0.5 }}>
+              <RotateCcw {...ctrlIcon} />
               Restart
             </button>
-            <button onClick={togglePause} disabled={!canPlay} style={{ ...ctrlBtn, opacity: canPlay ? 1 : 0.5 }}>
+            <button onClick={togglePause} disabled={!canPlay} style={{ ...ctrlIconBtn, opacity: canPlay ? 1 : 0.5 }}>
+              {state === "playing" ? <Pause {...ctrlIcon} /> : <Play {...ctrlIcon} />}
               {pauseLabel}
             </button>
-            <button onClick={() => setMuted((m) => !m)} style={ctrlBtn}>
+            <button onClick={() => setMuted((m) => !m)} style={ctrlIconBtn}>
+              {muted ? <VolumeX {...ctrlIcon} /> : <Volume2 {...ctrlIcon} />}
               {soundLabel}
             </button>
             <div style={{ flex: 1, minWidth: "8px" }} />
@@ -889,6 +971,9 @@ export function WatchView({ data }: { data: WatchData }) {
             <button
               onClick={() => setAutoplay((a) => !a)}
               style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "6px",
                 height: "28px",
                 padding: "0 11px",
                 borderRadius: "6px",
@@ -901,6 +986,7 @@ export function WatchView({ data }: { data: WatchData }) {
                 color: autoplay ? "var(--ink-invert)" : "var(--ink-4)",
               }}
             >
+              <Repeat size={12} strokeWidth={2} aria-hidden />
               {autoplay ? "Autoplay on" : "Autoplay off"}
             </button>
             <button
@@ -908,11 +994,13 @@ export function WatchView({ data }: { data: WatchData }) {
                 setTheatre(!theatre);
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
-              style={ctrlBtn}
+              style={ctrlIconBtn}
             >
+              <RectangleHorizontal {...ctrlIcon} />
               Theatre
             </button>
-            <button onClick={() => setFullscreen(true)} style={ctrlBtn}>
+            <button onClick={enterFullscreen} style={ctrlIconBtn}>
+              <Maximize {...ctrlIcon} />
               Fullscreen
             </button>
           </div>
