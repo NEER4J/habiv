@@ -26,10 +26,10 @@ export const siteKeywords = [
 
 /** Social card used when a page has no image of its own. */
 export const defaultOgImage = {
-  url: "/assets/tiny-game-hero.png",
-  width: 1536,
-  height: 1024,
-  alt: "A tiny astronaut jumping between floating game platforms toward a glowing star",
+  url: "/assets/habiv-share.png",
+  width: 800,
+  height: 528,
+  alt: "The Habiv home page featuring the game Dusk Patrol, with a queue of games and categories, on a pink swirl background",
 };
 
 /** Base Open Graph fields. A page's openGraph replaces the root one wholesale, so pages that set their own spread this first. */

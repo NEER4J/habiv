@@ -53,4 +53,4 @@ See [docs/platform-plan.md](docs/platform-plan.md) for the full platform plan: i
 
 ## Assets
 
-Static files live in `public/assets/` — `tiny-game-hero.png` (social image), the brand marks in `public/assets/brand/`, 24 primary generated game covers in `public/assets/games/`, and 14 alternate covers in `public/assets/games/variants/`.
+Static files live in `public/assets/` — `habiv-share.png` (social image), `tiny-game-hero.png` (coming-soon art), the brand marks in `public/assets/brand/`, 24 primary generated game covers in `public/assets/games/`, and 14 alternate covers in `public/assets/games/variants/`.
