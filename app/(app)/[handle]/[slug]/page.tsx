@@ -38,28 +38,33 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   };
 }
 
-export default function GamePage({ params }: { params: Params }) {
+/** `?v=3` plays version 3 instead of the live one (the canonical URL stays the bare game page). */
+type SearchParams = Promise<{ v?: string | string[] }>;
+
+export default function GamePage({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
   return (
     <Suspense fallback={<WatchSkeleton />}>
-      <GameContent params={params} />
+      <GameContent params={params} searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function GameContent({ params }: { params: Params }) {
-  const { handle: raw, slug } = await params;
+async function GameContent({ params, searchParams }: { params: Params; searchParams: SearchParams }) {
+  const [{ handle: raw, slug }, { v }] = await Promise.all([params, searchParams]);
   const handle = handleFromRouteParam(raw);
   if (!handle) notFound();
-  const data = await loadWatch(handle, slug);
+  const versionNo = typeof v === "string" && /^\d{1,6}$/.test(v) ? Number(v) : null;
+  const data = await loadWatch(handle, slug, versionNo);
   if (!data) {
     const resolved = await resolveHandle(handle);
-    if (resolved.kind === "redirect") redirect(`/@${resolved.handle}/${slug}`);
+    if (resolved.kind === "redirect") redirect(`/@${resolved.handle}/${slug}${versionNo ? `?v=${versionNo}` : ""}`);
     notFound();
   }
   return (
     <>
       <JsonLd data={gameLd(data.game)} />
-      <WatchView data={data} />
+      {/* Keyed by version so switching versions starts the player fresh. */}
+      <WatchView key={data.game.versionId ?? "none"} data={data} />
     </>
   );
 }

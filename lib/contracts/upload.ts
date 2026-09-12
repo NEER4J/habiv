@@ -8,7 +8,8 @@ export const SINGLE_PUT_THRESHOLD = 20 * MiB;
 export const PART_SIZE = 8 * MiB;
 export const MAX_PARTS = Math.ceil(MAX_UPLOAD_BYTES / PART_SIZE);
 export const CREATOR_QUOTA_BYTES = 250 * MiB;
-export const KEEP_VERSIONS_PER_GAME = 3;
+/** 0 keeps every version (players can open older ones); see jobs/src/lib/prune.ts. */
+export const KEEP_VERSIONS_PER_GAME = 0;
 export const ACCEPTED_UPLOAD_EXT = [".zip", ".html", ".htm"] as const;
 export const UPLOAD_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 

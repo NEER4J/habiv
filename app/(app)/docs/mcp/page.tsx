@@ -155,6 +155,7 @@ export default function DocsMcpPage() {
           [t("list_versions"), "Every version, newest first, with status, changelog and which one is live."],
           [t("publish_version"), "Makes a specific ready version live. Use it to roll back."],
           [t("update_version"), "Edits a version's changelog, prompt, model or tool."],
+          [t("delete_version"), "Deletes a version that isn't live, with its files. Players open older versions from the game page until then."],
         ]}
       />
 

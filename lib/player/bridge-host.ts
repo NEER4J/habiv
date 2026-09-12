@@ -7,7 +7,7 @@ import { gameOrigin as defaultGameOrigin } from "@/lib/site";
 
 export type HostEvent =
   | { type: "ready" }
-  | { type: "run_start"; runId: string | null; auto: boolean }
+  | { type: "run_start"; runId: string | null; auto: boolean; counted: boolean }
   | { type: "run_end"; outcome: RunOutcome; score: number | null; durationMs: number | null; beatPct: number | null }
   | { type: "score_result"; accepted: boolean; flagged: string | null; boards: { period: string; rank: number; personal_best: boolean }[] }
   | { type: "happytime" }
@@ -32,6 +32,8 @@ export type BridgeHostOptions = {
   onEvent?: (e: HostEvent) => void;
   /** Board key to submit scores to in addition to "main" (e.g. "daily"). */
   extraBoard?: string | null;
+  /** Mint a run as soon as the host mounts (the Play click), so the play counts right away. */
+  startOnMount?: boolean;
 };
 
 export type BridgeHost = {
@@ -72,6 +74,8 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
   let gameUsesBridgeRuns = false;
   let autoTimer: ReturnType<typeof setTimeout> | null = null;
   let starting: Promise<void> | null = null;
+  // The run minted on mount is taken over by the game's first SDK run_start instead of counting twice.
+  let adoptLaunchRun = false;
   const designKeys = new Set<string>();
   let destroyed = false;
 
@@ -96,16 +100,18 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
     if (destroyed) return;
     if (current) await endRun("quit", {}, false);
     starting = (async () => {
+      let counted = false;
       if (preview) {
         current = { id: crypto.randomUUID(), token: "", auto, startedAt: Date.now() };
       } else {
-        const res = await postJson<{ run_id: string | null; run_token: string | null }>("/api/runs/start", { ...base, session_id: collector.sessionId, level, auto });
+        const res = await postJson<{ run_id: string | null; run_token: string | null; preview?: boolean }>("/api/runs/start", { ...base, session_id: collector.sessionId, level, auto });
         if (res?.run_id && res.run_token) current = { id: res.run_id, token: res.run_token, auto, startedAt: Date.now() };
         else current = null;
+        counted = !!current && !res?.preview;
       }
       frame.post(initMessage());
       track({ ...base, name: "run_start", level });
-      emit({ type: "run_start", runId: current?.id ?? null, auto });
+      emit({ type: "run_start", runId: current?.id ?? null, auto, counted });
     })();
     await starting;
     starting = null;
@@ -114,6 +120,7 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
   const endRun = async (outcome: RunOutcome, extra: { score?: number; level?: string; progress_pct?: number }, keepalive: boolean) => {
     const run = current;
     current = null;
+    adoptLaunchRun = false;
     if (!run) return;
     track({ ...base, name: "run_end", outcome, score: extra.score, level: extra.level, run_id: run.id });
     if (preview || !run.token) {
@@ -147,6 +154,14 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
       case "run_start":
         gameUsesBridgeRuns = true;
         if (autoTimer) clearTimeout(autoTimer);
+        if (adoptLaunchRun) {
+          adoptLaunchRun = false;
+          void (async () => {
+            if (starting) await starting;
+            if (!current) await startRun(msg.level, false);
+          })();
+          break;
+        }
         void startRun(msg.level, false);
         break;
       case "run_end":
@@ -229,6 +244,11 @@ export function mountBridgeHost(opts: BridgeHostOptions): BridgeHost {
   };
   document.addEventListener("visibilitychange", onHide);
   window.addEventListener("pagehide", onHide);
+
+  if (opts.startOnMount) {
+    adoptLaunchRun = true;
+    void startRun(undefined, true);
+  }
 
   return {
     destroy() {

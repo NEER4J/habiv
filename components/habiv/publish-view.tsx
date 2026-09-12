@@ -37,7 +37,7 @@ import { BentoAutoGrid, EmptyCell, PageHead } from "./game-card";
 import { CatalogField } from "./catalog-picker";
 import { CategoryChips } from "./category-chips";
 import { LeaderboardSettings, SdkFeatureTags, SdkUpgradePrompt } from "./sdk-features";
-import { GameArtFields, type GameArt } from "./game-art-fields";
+import { ArtPreview, GameArtFields, type GameArt } from "./game-art-fields";
 import { GameExtraFields } from "./game-extra-fields";
 import { useShell } from "./shell-context";
 
@@ -982,13 +982,13 @@ export function PublishView({
     { k: "Title", v: title || "—" },
     { k: "One line", v: desc || "—" },
     { k: "About", v: details.description ? `${details.description.length.toLocaleString()} characters` : "—" },
-    { k: "How to play", v: details.controls.keys.map((c) => `${c.key} · ${c.action}`).join(", ") || "category defaults" },
+    { k: "How to play", v: details.controls.keys.map((c) => `${c.key} · ${c.action}`).join(", ") || (details.controls.touch ? `Touch: ${details.controls.touch}` : "— hidden on the game page") },
     { k: "Tags", v: details.tags.join(", ") || "—" },
     { k: "Run length", v: details.durationSec ? durationLabel(details.durationSec) : "—" },
     { k: cats.length > 1 ? "Categories" : "Category", v: categoryLabel },
     { k: "Orientation", v: orientLabel },
     { k: "Licence", v: licenceLabel },
-    { k: "Art", v: [art.coverUrl ? "your cover" : "automatic cover", art.cardUrl ? "your card" : "automatic card"].join(" · ") },
+    { k: "Art", v: <ArtPreview value={art} onEdit={() => goto(3)} /> },
     { k: "Bundle", v: `${formatBytes(status?.sizeBytes ?? fileSize)} · v${session?.version ?? 1}` },
     { k: "Built with", v: [model, agent].filter(Boolean).join(" · ") || "—" },
     { k: "Leaderboard", v: lbEnabled ? `On · ${lbSort === "desc" ? "highest wins" : "lowest wins"}` : "Off" },
@@ -1548,8 +1548,6 @@ export function PublishView({
                 <div style={{ fontFamily: mono, fontSize: "10.5px", color: "var(--ink-5)" }}>Upload a build first to add art.</div>
               )}
             </div>
-            <div style={fieldLabelStyle}>Live preview · 16:9 · no runs or scores are recorded</div>
-            {previewBox}
             <div style={{ display: "flex", gap: "8px", marginTop: "22px", flexWrap: "wrap" }}>
               <button onClick={() => goto(4)} style={primaryBtn}>
                 Continue to review

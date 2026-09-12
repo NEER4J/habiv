@@ -70,6 +70,10 @@ export type GameFull = Game & {
   controls: GameControls;
   remixedFrom: { id: string; shortId: string; slug: string; title: string; handle: string } | null;
   versionList: GameVersionSummary[];
+  /** The version players get by default. */
+  liveVersionId: string | null;
+  /** Set when the page plays an older version (?v=N); versionId then points at it. */
+  playing: { version: number; changelog: string | null; createdAt: string } | null;
 };
 
 export type CategoryInfo = { slug: string; name: string; icon: string | null; games: number };
@@ -157,13 +161,7 @@ export function fromFeedGame(f: FeedGame): Game {
   };
 }
 
-const DEFAULT_TOUCH: Record<string, string> = {
-  puzzle: "tap a tile, swipe to undo",
-  ambient: "drag anywhere to steer",
-  reaction: "tap on the cue",
-};
-
-function parseControls(raw: Record<string, unknown>, category: string): GameControls {
+function parseControls(raw: Record<string, unknown>): GameControls {
   const keys = Array.isArray(raw.keys)
     ? (raw.keys as unknown[])
         .map((k) => (k && typeof k === "object" ? (k as { key?: unknown; action?: unknown }) : null))
@@ -172,20 +170,26 @@ function parseControls(raw: Record<string, unknown>, category: string): GameCont
         .filter((k) => k.key && k.action)
         .slice(0, 6)
     : [];
-  const touch = typeof raw.touch === "string" ? raw.touch.slice(0, 80) : DEFAULT_TOUCH[category] ?? "tap and hold, release to act";
+  const touch = typeof raw.touch === "string" && raw.touch.trim() ? raw.touch.slice(0, 80) : null;
   return { keys, touch };
 }
 
-export function fromGameDetail(d: GameDetail): GameFull {
+/** `versionNo` picks an older ready version to play (?v=N); the live one or an unknown number plays as normal. */
+export function fromGameDetail(d: GameDetail, versionNo?: number | null): GameFull {
   const base = fromFeedGame(d);
-  const current = d.versions.find((v) => v.id === d.currentVersion?.id) ?? d.versions[0];
+  const live = d.versions.find((v) => v.id === d.currentVersion?.id) ?? d.versions[0];
+  const picked = versionNo != null && versionNo !== live?.version ? d.versions.find((v) => v.version === versionNo && v.status === "ready") : undefined;
+  const current = picked ?? live;
   return {
     ...base,
+    versionId: picked ? picked.id : base.versionId,
     prompt: current?.prompt ?? "",
     description: d.description ?? "",
-    controls: parseControls(d.controls, d.category),
+    controls: parseControls(d.controls),
     remixedFrom: d.remixedFrom,
     versionList: d.versions,
+    liveVersionId: d.currentVersion?.id ?? null,
+    playing: picked ? { version: picked.version, changelog: picked.changelog, createdAt: picked.createdAt } : null,
   };
 }
 
@@ -266,37 +270,14 @@ export function sortGames(list: Game[], sort: string) {
   return c;
 }
 
-const DEFAULT_KEYS: Record<string, { key: string; action: string }[]> = {
-  puzzle: [
-    { key: "Click", action: "Select a tile" },
-    { key: "Z", action: "Undo last move" },
-    { key: "R", action: "Reset the board" },
-  ],
-  reaction: [
-    { key: "Space", action: "Act on the cue" },
-    { key: "Enter", action: "Next round" },
-    { key: "Esc", action: "Forfeit" },
-  ],
-  ambient: [
-    { key: "Move", action: "Steer with the pointer" },
-    { key: "M", action: "Mute" },
-    { key: "Esc", action: "Leave anytime" },
-  ],
-};
-
+/** The keys the creator listed; empty when they gave none (the game page then hides How to play). */
 export function controlsFor(g: Game | GameFull) {
-  const fromGame = "controls" in g ? g.controls.keys : [];
-  if (fromGame.length) return fromGame;
-  return DEFAULT_KEYS[g.category] ?? [
-    { key: "Space", action: "Jump / act" },
-    { key: "← →", action: "Move" },
-    { key: "R", action: "Restart the run" },
-  ];
+  return "controls" in g ? g.controls.keys : [];
 }
 
-export function touchHintFor(g: Game | GameFull) {
-  if ("controls" in g && g.controls.touch) return g.controls.touch;
-  return DEFAULT_TOUCH[g.category] ?? "tap and hold, release to act";
+/** The creator's touch hint, or null. */
+export function touchHintFor(g: Game | GameFull): string | null {
+  return "controls" in g ? g.controls.touch : null;
 }
 
 /** Default chips shown before the category list has loaded. */

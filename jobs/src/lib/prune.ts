@@ -6,8 +6,13 @@ import { jobEnv } from "./env";
  * Keeps the last N ready versions per game (plus the current one); older bundles leave storage
  * and their rows become `archived` (history stays, bundle does not). Runs from the daily cron
  * route (app/api/jobs/cron).
+ *
+ * Off by default (KEEP_VERSIONS_PER_GAME unset or 0): players can open any older version from the
+ * game page, so creators decide what goes by deleting versions themselves; the per-creator storage
+ * quota bounds the total. Set KEEP_VERSIONS_PER_GAME to a number to prune again.
  */
-export async function pruneVersions(keepPerGame = Number(process.env.KEEP_VERSIONS_PER_GAME ?? 3)): Promise<{ archived: number }> {
+export async function pruneVersions(keepPerGame = Number(process.env.KEEP_VERSIONS_PER_GAME ?? 0)): Promise<{ archived: number }> {
+  if (!(keepPerGame > 0)) return { archived: 0 };
   const db = admin();
   const { data: versions, error } = await db
     .from("game_versions")

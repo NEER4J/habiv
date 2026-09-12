@@ -1,13 +1,15 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   CARD,
   COVER,
   THUMB_MODES,
   THUMB_STYLES,
   THUMB_THEMES,
+  hexToThumbColor,
   renderThumb,
+  thumbHueToHex,
   type ThumbInput,
   type ThumbMode,
   type ThumbOptions,
@@ -18,6 +20,8 @@ import { chipBtn, chipStyle, fieldLabelStyle, mono, primaryBtn } from "@/lib/hab
 import { ThemeSwatch, ThumbFrame } from "./thumb-frame";
 
 const PICKABLE = THUMB_STYLES.filter((s) => s.group !== "baseline");
+// "Game colour" is replaced here by the custom colour, which starts at the game's hue.
+const PRESETS = THUMB_THEMES.filter((t) => t.id !== "auto");
 const MODE_LABEL: Record<ThumbMode, string> = { light: "Light", dark: "Dark", vivid: "Vivid" };
 type Group = "all" | "modern" | "retro";
 
@@ -48,13 +52,21 @@ export function ThumbPicker({
   onCancel: () => void;
 }) {
   const [style, setStyle] = useState<ThumbStyleId>(PICKABLE[0].id);
-  const [theme, setTheme] = useState("auto");
+  const [theme, setTheme] = useState("custom");
+  const [color, setColor] = useState(() => thumbHueToHex(input.hue));
+  // Previews follow the colour input after a short pause, so dragging doesn't reload every tile per tick.
+  const [appliedColor, setAppliedColor] = useState(color);
   const [mode, setMode] = useState<ThumbMode>("light");
   const [group, setGroup] = useState<Group>("all");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const opts = useMemo<ThumbOptions>(() => ({ theme, mode }), [theme, mode]);
+  useEffect(() => {
+    const t = setTimeout(() => setAppliedColor(color), 150);
+    return () => clearTimeout(t);
+  }, [color]);
+
+  const opts = useMemo<ThumbOptions>(() => ({ theme, mode, custom: hexToThumbColor(appliedColor) }), [theme, mode, appliedColor]);
   const cover = useMemo(() => renderThumb(style, input, COVER, opts), [style, input, opts]);
   const card = useMemo(() => renderThumb(style, input, CARD, opts), [style, input, opts]);
   const list = PICKABLE.filter((s) => group === "all" || s.group === group);
@@ -82,7 +94,23 @@ export function ThumbPicker({
 
       <div style={fieldLabelStyle}>Colours</div>
       <div className="hb-no-scrollbar" style={{ display: "flex", gap: "6px", overflowX: "auto" }}>
-        {THUMB_THEMES.map((t) => (
+        <label style={{ ...chipStyle(theme === "custom"), position: "relative", display: "inline-flex", alignItems: "center", gap: "8px", flex: "none", cursor: "pointer" }}>
+          <span aria-hidden="true" style={{ width: "12px", height: "12px", borderRadius: "50%", background: color, boxShadow: "inset 0 0 0 1px rgba(0,0,0,.18)", flex: "none" }} />
+          Custom
+          <span style={{ fontFamily: mono, fontSize: "10.5px", opacity: 0.7 }}>{color.toUpperCase()}</span>
+          <input
+            type="color"
+            value={color}
+            aria-label="Custom colour"
+            onClick={() => setTheme("custom")}
+            onChange={(e) => {
+              setColor(e.target.value);
+              setTheme("custom");
+            }}
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", border: 0, padding: 0 }}
+          />
+        </label>
+        {PRESETS.map((t) => (
           <button key={t.id} type="button" onClick={() => setTheme(t.id)} style={{ ...chipStyle(theme === t.id), display: "inline-flex", alignItems: "center", gap: "8px", flex: "none" }}>
             <ThemeSwatch theme={t} />
             {t.name}

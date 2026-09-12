@@ -1,4 +1,4 @@
-import { applySecurityHeaders, contentEncodingFor, guessContentType, sdkHeaders } from "./headers";
+import { ONE_YEAR, SHORT, applySecurityHeaders, contentEncodingFor, guessContentType, sdkHeaders } from "./headers";
 import { readObject } from "./storage";
 import { applyHook, getVersion, isGameBlocked, isUuid, type Env, type HookPayload } from "./versions";
 
@@ -66,8 +66,14 @@ export default {
 
     const cache = caches.default;
     const cacheKey = new Request(`${url.origin}/v/${versionId}/${path}`, { method: "GET" });
-    if (!isHtml && !request.headers.has("range")) {
+    // A version's files never change, so HTML is edge-cached too (the checks above still run first).
+    if (!request.headers.has("range")) {
       const hit = await cache.match(cacheKey);
+      if (hit && isHtml) {
+        const res = new Response(request.method === "HEAD" ? null : hit.body, hit);
+        res.headers.set("cache-control", SHORT);
+        return res;
+      }
       if (hit) return request.method === "HEAD" ? new Response(null, { status: hit.status, headers: hit.headers }) : hit;
     }
 
@@ -105,8 +111,11 @@ export default {
       encodeBody: enc ? "manual" : "automatic",
     });
 
-    if (status === 200 && !isHtml && request.method === "GET") {
-      ctx.waitUntil(cache.put(cacheKey, response.clone()));
+    if (status === 200 && request.method === "GET") {
+      // The edge keeps HTML long; browsers still get SHORT (restored on the cache hit above).
+      const stored = isHtml ? new Response(response.clone().body, response) : response.clone();
+      if (isHtml) stored.headers.set("cache-control", ONE_YEAR);
+      ctx.waitUntil(cache.put(cacheKey, stored));
     }
     return response;
   },

@@ -128,7 +128,7 @@ export async function getGameByHandleSlug(handle: string, slug: string): Promise
       .eq("game_id", feedRow.id)
       .eq("status", "ready")
       .order("version", { ascending: false })
-      .limit(20),
+      .limit(50),
     row.remixed_from_game_id
       ? supabase.from("game_feed_v").select("id, short_id, slug, title, creator_handle").eq("id", row.remixed_from_game_id).maybeSingle()
       : Promise.resolve({ data: null }),

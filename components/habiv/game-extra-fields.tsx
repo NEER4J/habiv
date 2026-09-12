@@ -100,7 +100,7 @@ export function GameExtraFields({ value, onChange }: { value: ExtraDetails; onCh
           Add a control
         </button>
       ) : null}
-      <div style={hint}>A key or gesture and what it does, like “← →” and “Move”. Left empty, the game page shows defaults for the category.</div>
+      <div style={hint}>A key or gesture and what it does, like “← →” and “Move”. Left empty (with no touch hint either), the game page leaves out How to play.</div>
 
       <div style={fieldLabelStyle}>On touch screens</div>
       <input

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { preconnect } from "react-dom";
 import { art, best, controlsFor, fmt, initialsOf, relativeTime, touchHintFor } from "@/lib/habiv/games";
 import type { WatchData } from "@/lib/habiv/page-data";
 import { gameFrameSrc } from "@/lib/bridge/parent";
@@ -10,14 +11,14 @@ import { getCollector } from "@/lib/analytics/collector";
 import { toggleFollow, toggleLike } from "@/lib/actions/social";
 import { deleteComment, pinComment, postComment, toggleCommentLike } from "@/lib/actions/comments";
 import type { CommentItem } from "@/lib/db/comments";
-import { siteUrl } from "@/lib/site";
+import { gameOrigin, siteUrl } from "@/lib/site";
 import { bpanel, chipBtn, chipStyle, ctrlBtn, mono, monoLabel, pill } from "@/lib/habiv/ui";
 import { CreatorAvatar, RailRow } from "./game-card";
 import { useShell } from "./shell-context";
 
 type PlayerState = "cover" | "loading" | "playing" | "paused" | "finished";
 
-const READY_TIMEOUT_MS = 12000;
+const READY_TIMEOUT_MS = 5000;
 
 const playButtonStyle: CSSProperties = {
   display: "inline-flex",
@@ -118,6 +119,8 @@ export function WatchView({ data }: { data: WatchData }) {
   const [beatPct, setBeatPct] = useState<number | null>(null);
   const [durationMs, setDurationMs] = useState<number | null>(null);
   const [rankResult, setRankResult] = useState<{ rank: number; personalBest: boolean } | null>(null);
+  // Runs this viewer started since the page loaded, so the count moves on Play without a refresh.
+  const [playsBump, setPlaysBump] = useState(0);
   const [fullscreen, setFullscreen] = useState(false);
   const [fsClosing, setFsClosing] = useState(false);
   const [muted, setMuted] = useState(true);
@@ -129,7 +132,8 @@ export function WatchView({ data }: { data: WatchData }) {
   const [following, setFollowing] = useState(viewer.following);
   const [followers, setFollowers] = useState(game.followers);
   const [moreOpen, setMoreOpen] = useState(false);
-  const [descOpen, setDescOpen] = useState(false);
+  // Opened when playing an older version, so the version list is right there.
+  const [descOpen, setDescOpen] = useState(!!game.playing);
   const [copied, setCopied] = useState(false);
 
   // Rail
@@ -152,8 +156,18 @@ export function WatchView({ data }: { data: WatchData }) {
   const mutedRef = useRef(muted);
   const loadTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const seenGame = useRef(game.id);
+  const warmedVersion = useRef<string | null>(null);
 
   const canPlay = !!game.versionId;
+
+  if (gameOrigin) preconnect(gameOrigin);
+
+  // Hovering Play wakes the game origin and fills its edge cache, so the click has less to wait on.
+  const warmBuild = () => {
+    if (!gameOrigin || !game.versionId || warmedVersion.current === game.versionId) return;
+    warmedVersion.current = game.versionId;
+    fetch(gameFrameSrc({ versionId: game.versionId }), { mode: "no-cors", credentials: "omit" }).catch(() => {});
+  };
 
   // Page view, once per game.
   useEffect(() => {
@@ -172,6 +186,7 @@ export function WatchView({ data }: { data: WatchData }) {
     setBeatPct(null);
     setDurationMs(null);
     setRankResult(null);
+    setPlaysBump(0);
     setMoreOpen(false);
     setDescOpen(false);
     setCopied(false);
@@ -200,6 +215,7 @@ export function WatchView({ data }: { data: WatchData }) {
           setState((s) => (s === "loading" ? "playing" : s));
           break;
         case "run_start":
+          if (e.counted) setPlaysBump((n) => n + 1);
           setScore(null);
           setBeatPct(null);
           setDurationMs(null);
@@ -245,6 +261,7 @@ export function WatchView({ data }: { data: WatchData }) {
       muted: mutedRef.current,
       overlay: overlayRef.current,
       onEvent: onHostEvent,
+      startOnMount: true,
     });
     hostRef.current = host;
     return () => {
@@ -542,6 +559,8 @@ export function WatchView({ data }: { data: WatchData }) {
 
   const versionRows = game.versionList.slice().sort((a, b) => b.version - a.version);
   const description = game.description || game.desc;
+  const howToKeys = controlsFor(game);
+  const howToTouch = touchHintFor(game);
   const summary = (game.desc || description).split(".")[0];
   const highlightedRow = !!viewer.userId && !!leaderboard?.entries.some((e) => e.user?.id === viewer.userId);
 
@@ -595,6 +614,32 @@ export function WatchView({ data }: { data: WatchData }) {
     <>
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", gap: theatre ? "0px" : "12px" }}>
         <section style={{ flex: "1 1 600px", minWidth: 0, display: "flex", flexDirection: "column", gap: "12px" }}>
+          {game.playing && !theatre ? (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                flexWrap: "wrap",
+                padding: "10px 14px",
+                borderRadius: "12px",
+                background: "var(--chip)",
+                fontSize: "13px",
+                lineHeight: 1.45,
+              }}
+            >
+              <span style={{ fontFamily: mono, fontSize: "10.5px", letterSpacing: "0.08em", textTransform: "uppercase", color: "var(--ink-4)" }}>
+                Older version
+              </span>
+              <span style={{ flex: "1 1 260px", minWidth: 0, color: "var(--ink-2)" }}>
+                You are playing v{game.playing.version} from {relativeTime(game.playing.createdAt)}
+                {game.playing.changelog ? `: ${game.playing.changelog}` : ""}. Scores from older versions don&apos;t go on the leaderboard.
+              </span>
+              <Link href={game.url} style={chipBtn}>
+                Play the latest (v{game.versions})
+              </Link>
+            </div>
+          ) : null}
           {/* Player slot keeps the page layout; the box inside goes fixed for fullscreen. */}
           <div
             style={{
@@ -656,7 +701,7 @@ export function WatchView({ data }: { data: WatchData }) {
                     animation: state === "playing" ? "hbBlink 2s ease-in-out infinite" : "none",
                   }}
                 />
-                {fmt(game.plays)} runs
+                {fmt(game.plays + playsBump)} runs
               </div>
 
               {state === "cover" || state === "loading" ? (
@@ -689,7 +734,7 @@ export function WatchView({ data }: { data: WatchData }) {
                 >
                   <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 0 }}>
                     {canPlay ? (
-                      <button onClick={start} style={playButtonStyle}>
+                      <button onClick={start} onPointerEnter={warmBuild} onFocus={warmBuild} style={playButtonStyle}>
                         <svg width="20" height="22" viewBox="0 0 22 24" fill="currentColor">
                           <path d="M2 1.6 20 12 2 22.4z" />
                         </svg>
@@ -727,8 +772,8 @@ export function WatchView({ data }: { data: WatchData }) {
                     }}
                   />
                   <div style={{ fontFamily: mono, fontSize: "12px", color: "rgba(255,255,255,0.8)" }}>Fetching build · {game.size}</div>
-                  <div style={{ width: "220px", height: "3px", background: "#333" }}>
-                    <div style={{ height: "100%", width: "10%", background: "#ffffff", animation: "hbBar 900ms ease-out forwards" }} />
+                  <div style={{ width: "220px", height: "3px", background: "#333", overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: "30%", background: "#ffffff", animation: "hbSlide 1.1s ease-in-out infinite" }} />
                   </div>
                 </div>
               ) : null}
@@ -971,7 +1016,7 @@ export function WatchView({ data }: { data: WatchData }) {
 
             <div style={{ padding: "14px 16px", borderRadius: "12px", background: "var(--chip)" }}>
               <div style={{ fontFamily: mono, fontSize: "12.5px", letterSpacing: "0.04em", color: "var(--ink-2)" }}>
-                {fmt(game.plays)} runs · best {best(game)} · {fmt(game.remixes)} remixes · {game.age}
+                {fmt(game.plays + playsBump)} runs · best {best(game)} · {fmt(game.remixes)} remixes · {game.age}
               </div>
               {description ? (
                 <div style={{ marginTop: "8px", fontSize: "14px", lineHeight: 1.6, color: "var(--ink-2)", maxWidth: "78ch", whiteSpace: "pre-line" }}>{description}</div>
@@ -1008,13 +1053,30 @@ export function WatchView({ data }: { data: WatchData }) {
                   ) : null}
                   <div style={{ ...monoLabel, fontSize: "11px", letterSpacing: "0.1em", marginTop: game.prompt ? "6px" : 0 }}>Version history</div>
                   {versionRows.length ? (
-                    versionRows.map((v) => (
-                      <div key={v.id} style={{ display: "flex", alignItems: "baseline", gap: "12px", fontSize: "13px", color: "var(--ink-3)" }}>
-                        <span style={{ fontFamily: mono, fontSize: "12px", color: "var(--ink)", minWidth: "34px" }}>v{v.version}</span>
-                        <span style={{ flex: 1 }}>{v.changelog || "No notes"}</span>
-                        <span style={{ fontFamily: mono, fontSize: "11.5px", color: "var(--ink-5)" }}>{relativeTime(v.createdAt)}</span>
-                      </div>
-                    ))
+                    versionRows.map((v) => {
+                      const isLive = v.id === game.liveVersionId;
+                      const isPlaying = v.id === game.versionId;
+                      return (
+                        <div key={v.id} style={{ display: "flex", alignItems: "baseline", gap: "12px", fontSize: "13px", color: "var(--ink-3)" }}>
+                          <span style={{ fontFamily: mono, fontSize: "12px", color: "var(--ink)", minWidth: "34px" }}>v{v.version}</span>
+                          <span style={{ flex: 1 }}>
+                            {v.changelog || "No notes"}
+                            {isLive ? <span style={{ marginLeft: "8px", fontFamily: mono, fontSize: "10.5px", color: "var(--pos-ink)" }}>LATEST</span> : null}
+                          </span>
+                          <span style={{ fontFamily: mono, fontSize: "11.5px", color: "var(--ink-5)" }}>{relativeTime(v.createdAt)}</span>
+                          {isPlaying ? (
+                            <span style={{ minWidth: "52px", textAlign: "right", fontFamily: mono, fontSize: "11px", color: "var(--ink)" }}>playing</span>
+                          ) : (
+                            <Link
+                              href={isLive ? game.url : `${game.url}?v=${v.version}`}
+                              style={{ minWidth: "52px", textAlign: "right", fontSize: "12.5px", fontWeight: 600, color: "var(--link)" }}
+                            >
+                              Play
+                            </Link>
+                          )}
+                        </div>
+                      );
+                    })
                   ) : (
                     <div style={{ fontSize: "13px", color: "var(--ink-5)" }}>No versions pushed yet.</div>
                   )}
@@ -1024,12 +1086,15 @@ export function WatchView({ data }: { data: WatchData }) {
                 onClick={() => setDescOpen((d) => !d)}
                 style={{ marginTop: "10px", padding: 0, background: "transparent", color: "var(--ink)", fontSize: "13.5px", fontWeight: 600, cursor: "pointer" }}
               >
-                {descOpen ? "Show less" : game.prompt ? "Show prompt and version history" : "Show version history"}
+                {descOpen
+                  ? "Show less"
+                  : `${game.prompt ? "Show prompt and " : "Show "}${versionRows.length > 1 ? `all ${versionRows.length} versions` : "version history"}`}
               </button>
             </div>
           </div>
 
-          {/* How to play */}
+          {/* How to play: only when the creator gave instructions */}
+          {howToKeys.length || howToTouch ? (
           <div style={{ ...bpanel, padding: "16px 18px" }}>
             <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
               <div style={monoLabel}>How to play</div>
@@ -1038,8 +1103,9 @@ export function WatchView({ data }: { data: WatchData }) {
               </div>
             </div>
             {summary ? <div style={{ marginTop: "10px", fontSize: "14.5px", lineHeight: 1.5, color: "var(--ink)", maxWidth: "70ch" }}>{summary}.</div> : null}
+            {howToKeys.length ? (
             <div style={{ marginTop: "14px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "8px" }}>
-              {controlsFor(game).map((c) => (
+              {howToKeys.map((c) => (
                 <div key={c.key} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <span
                     style={{
@@ -1062,8 +1128,10 @@ export function WatchView({ data }: { data: WatchData }) {
                 </div>
               ))}
             </div>
-            <div style={{ marginTop: "12px", fontFamily: mono, fontSize: "11px", color: "var(--ink-5)" }}>Touch: {touchHintFor(game)}</div>
+            ) : null}
+            {howToTouch ? <div style={{ marginTop: "12px", fontFamily: mono, fontSize: "11px", color: "var(--ink-5)" }}>Touch: {howToTouch}</div> : null}
           </div>
+          ) : null}
 
           {/* Today's board */}
           <div style={{ ...bpanel, padding: "16px 18px" }}>

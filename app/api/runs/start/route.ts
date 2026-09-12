@@ -1,6 +1,8 @@
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
+import { gameTag } from "@/lib/db/games";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hashRunToken, isoNow, mintRunToken } from "@/lib/runs/token";
@@ -65,5 +67,7 @@ export async function POST(request: NextRequest) {
     console.error("start_run", error.message);
     return NextResponse.json({ error: "store_failed" }, { status: 500, headers: noStore });
   }
+  // start_run bumped game_stats.plays; let the watch page pick up the new count on its next load.
+  if (!preview) revalidateTag(gameTag(game.id), "max");
   return NextResponse.json({ run_id: runId, run_token: token, started_at: startedAt, preview }, { headers: noStore });
 }

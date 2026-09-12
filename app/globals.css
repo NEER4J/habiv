@@ -136,7 +136,7 @@ button {
 @keyframes hbHop { 0%, 100% { transform: translateY(0) rotate(0deg); } 45% { transform: translateY(-62px) rotate(-12deg); } }
 @keyframes hbSlideL { from { transform: translateX(760px); } to { transform: translateX(-160px); } }
 @keyframes hbSpin { to { transform: rotate(360deg); } }
-@keyframes hbBar { 0% { width: 6%; } 60% { width: 72%; } 100% { width: 97%; } }
+@keyframes hbSlide { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
 @keyframes hbRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes hbShimmer { from { background-position: -420px 0; } to { background-position: 420px 0; } }
 @keyframes hbBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }

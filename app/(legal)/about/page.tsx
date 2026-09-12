@@ -33,7 +33,7 @@ export default function AboutPage() {
       <h2>Play</h2>
       <p>
         Browse the <Link href="/">home feed</Link> or <Link href="/explore">explore</Link> by category: arcade, puzzle, reaction, rhythm, racing, cozy,
-        horror and more. Every game has a daily leaderboard, and there&apos;s a daily challenge on the home page. Save the games you love and follow the
+        horror and more. Every game has a daily leaderboard. Save the games you love and follow the
         creators who make them.
       </p>
 

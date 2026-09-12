@@ -22,6 +22,7 @@ import { fromFeedGame, fromGameDetail, type CategoryInfo, type Game, type GameFu
 import type { CreatorGame } from "@/lib/db/types";
 import type { SdkInfo } from "@/lib/contracts/ingest";
 import { readSdk } from "@/lib/habiv/sdk";
+import { CREATOR_QUOTA_BYTES } from "@/lib/contracts/upload";
 import { cdnUrl } from "@/lib/site";
 
 export type Section = { key: string; title: string; note: string; games: Game[] };
@@ -35,6 +36,9 @@ export type HomeData = {
   sections: Section[];
   feed: { items: Game[]; nextOffset: number | null };
 };
+
+/** The home daily challenge is hidden for now, so its game and board are not fetched. Keep in step with home-view. */
+const SHOW_DAILY = false;
 
 /**
  * Public data only, so it is cached like the feed it reads. The cache scope is also what lets
@@ -51,7 +55,7 @@ export async function loadHome(): Promise<HomeData> {
     getFeed({ sort: "plays", limit: 5 }),
     getFeed({ sort: "remixes", limit: 5 }),
     getFeed({ sort: "new", limit: 5 }),
-    getDaily(),
+    SHOW_DAILY ? getDaily() : Promise.resolve(null),
     getRunsToday(),
     getCategoryCounts(),
     getFeed({ sort: "new", limit: 12 }),
@@ -124,7 +128,8 @@ export type WatchData = {
   runsToday: number;
 };
 
-export async function loadWatch(handle: string, slug: string): Promise<WatchData | null> {
+/** `versionNo` (from ?v=N) plays an older ready version instead of the live one. */
+export async function loadWatch(handle: string, slug: string, versionNo?: number | null): Promise<WatchData | null> {
   const detail = await getGameByHandleSlug(handle, slug);
   if (!detail) return null;
   const supabase = await createClient();
@@ -143,7 +148,7 @@ export async function loadWatch(handle: string, slug: string): Promise<WatchData
     getRunsToday(),
     rankP,
   ]);
-  const game = fromGameDetail(detail);
+  const game = fromGameDetail(detail, versionNo);
   if (stats) {
     game.plays = Number(stats.plays); game.likes = stats.likes; game.saves = stats.saves; game.comments = stats.comments;
     game.remixes = stats.remixes; game.runs = Number(stats.runs); game.completions = Number(stats.completions); game.bestScore = stats.best_score;
@@ -267,6 +272,24 @@ export type GameEditData = {
   /** SDK features found in that version's build; null when it predates detection or there is no build. */
   sdk: SdkInfo | null;
   leaderboard: { enabled: boolean; sort: "desc" | "asc" };
+  /** Every version, newest first, for the Versions list. */
+  versions: EditVersion[];
+  /** The version players get (games.current_version_id); live only while the game is published. */
+  currentVersionId: string | null;
+  storage: { usedBytes: number; quotaBytes: number };
+};
+
+export type EditVersion = {
+  id: string;
+  version: number;
+  status: string;
+  changelog: string;
+  model: string;
+  agent: string;
+  prompt: string;
+  rejectReason: string | null;
+  sizeBytes: number | null;
+  createdAt: string;
 };
 
 /** The creator's own game with every editable field: the edit-details page, and prefill for a new version. */
@@ -284,10 +307,16 @@ export async function loadGameEdit(supabase: SupabaseClient<Database>, own: OwnP
     : supabase.from("game_versions").select(versionCols).eq("game_id", g.id).order("version", { ascending: false }).limit(1).maybeSingle();
   // Tag links and the board config are read with the service role, after the ownership check above.
   const admin = createAdminClient();
-  const [{ data: tagRows }, { data: v }, { data: board }] = await Promise.all([
+  const [{ data: tagRows }, { data: v }, { data: board }, { data: allVersions }, { data: usedBytes }] = await Promise.all([
     admin.from("game_tags").select("tags(name)").eq("game_id", g.id),
     versionQuery,
     admin.from("leaderboards").select("sort").eq("game_id", g.id).eq("key", "main").limit(1).maybeSingle(),
+    supabase
+      .from("game_versions")
+      .select("id, version, status, changelog, model, agent, prompt, reject_reason, size_bytes, created_at")
+      .eq("game_id", g.id)
+      .order("version", { ascending: false }),
+    supabase.rpc("creator_storage_bytes", { p_user_id: own.id }),
   ]);
   const tags = (tagRows ?? []).flatMap((r) => {
     const t = (r as { tags: { name: string } | { name: string }[] | null }).tags;
@@ -315,5 +344,19 @@ export async function loadGameEdit(supabase: SupabaseClient<Database>, own: OwnP
     version: v ? { id: v.id, version: v.version, model: v.model ?? "", agent: v.agent ?? "", prompt: v.prompt ?? "" } : null,
     sdk: readSdk(v?.manifest),
     leaderboard: { enabled: g.leaderboard_enabled, sort: board?.sort === "asc" ? "asc" : "desc" },
+    versions: (allVersions ?? []).map((x) => ({
+      id: x.id,
+      version: x.version,
+      status: x.status,
+      changelog: x.changelog ?? "",
+      model: x.model ?? "",
+      agent: x.agent ?? "",
+      prompt: x.prompt ?? "",
+      rejectReason: x.reject_reason,
+      sizeBytes: x.size_bytes,
+      createdAt: x.created_at,
+    })),
+    currentVersionId: g.current_version_id,
+    storage: { usedBytes: Number(usedBytes ?? 0), quotaBytes: CREATOR_QUOTA_BYTES },
   };
 }

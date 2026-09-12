@@ -42,6 +42,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "bad_token" }, { status: 401, headers: noStore });
   }
 
+  // Only the live version ranks. Older versions stay playable (/@handle/slug?v=N), but their scores
+  // were made under different rules, so they are not compared with today's board.
+  if (run.version_id) {
+    const { data: game } = await admin.from("games").select("current_version_id").eq("id", run.game_id).maybeSingle();
+    if (game?.current_version_id && game.current_version_id !== run.version_id) {
+      return NextResponse.json({ accepted: false, flagged: "old_version", boards: [] }, { headers: noStore });
+    }
+  }
+
   const { data: boards } = await admin.from("leaderboards").select("id, period, sort, max_per_second, min_duration_ms").eq("game_id", run.game_id).eq("key", b.board);
   if (!boards?.length) return NextResponse.json({ accepted: false, flagged: "no_board", boards: [] }, { headers: noStore });
 

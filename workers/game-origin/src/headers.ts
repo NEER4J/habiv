@@ -1,7 +1,7 @@
 import type { VersionMeta } from "./versions";
 
-const ONE_YEAR = "public, max-age=31536000, immutable";
-const SHORT = "public, max-age=60";
+export const ONE_YEAR = "public, max-age=31536000, immutable";
+export const SHORT = "public, max-age=60";
 
 /** Content types we set regardless of what storage returns (it serves HTML as text/plain; also .br/.gz). */
 export function guessContentType(path: string): string | null {

@@ -678,14 +678,51 @@ h1{font:900 ${f.fs}px/1.05 'Cinzel Decorative',serif;white-space:nowrap;color:${
   },
 };
 
-export type ThumbOptions = { theme?: string; mode?: ThumbMode };
+/** A user-picked colour: OKLCH hue in degrees and a saturation factor (0 = greyscale, 1 = full palette chroma). */
+export type ThumbColor = { hue: number; chroma: number };
+
+const srgbToLinear = (v: number) => {
+  v /= 255;
+  return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+};
+
+/** `#rrggbb` → the hue and saturation the palettes use (via OKLab). Greys come out with chroma near 0. */
+export function hexToThumbColor(hex: string): ThumbColor {
+  const n = parseInt(hex.replace("#", ""), 16) || 0;
+  const r = srgbToLinear((n >> 16) & 255), g = srgbToLinear((n >> 8) & 255), b = srgbToLinear(n & 255);
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  const A = 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s;
+  const B = 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s;
+  return { hue: Math.round(((Math.atan2(B, A) * 180) / Math.PI + 360) % 360), chroma: Math.min(1, Math.hypot(A, B) / 0.12) };
+}
+
+/** An OKLCH hue as a `#rrggbb` swatch (mid lightness, palette chroma), e.g. to seed a colour input. */
+export function thumbHueToHex(hue: number): string {
+  const h = (hue * Math.PI) / 180, c = 0.17, L = 0.65;
+  const A = c * Math.cos(h), B = c * Math.sin(h);
+  const l = (L + 0.3963377774 * A + 0.2158037573 * B) ** 3;
+  const m = (L - 0.1055613458 * A - 0.0638541728 * B) ** 3;
+  const s = (L - 0.0894841775 * A - 1.291485548 * B) ** 3;
+  const enc = (v: number) => {
+    v = Math.min(1, Math.max(0, v));
+    v = v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055;
+    return Math.round(v * 255).toString(16).padStart(2, "0");
+  };
+  return `#${enc(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s)}${enc(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s)}${enc(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s)}`;
+}
+
+/** `theme: "custom"` uses `custom` instead of a preset. */
+export type ThumbOptions = { theme?: string; mode?: ThumbMode; custom?: ThumbColor };
 
 /** Full HTML document for one style at one size and colour theme. */
 export function renderThumb(id: ThumbStyleId, input: ThumbInput, size: ThumbSize, opts: ThumbOptions = {}): string {
+  const custom = opts.theme === "custom" ? opts.custom : undefined;
   const theme = THUMB_THEMES.find((t) => t.id === opts.theme) ?? THUMB_THEMES[0];
-  const hA = theme.hue ?? input.hue;
-  const hB = theme.hue2 ?? hA + 50;
-  const k = theme.chroma ?? 1;
+  const hA = custom ? custom.hue : theme.hue ?? input.hue;
+  const hB = custom ? hA + 50 : theme.hue2 ?? hA + 50;
+  const k = custom ? custom.chroma : theme.chroma ?? 1;
   const unit = Math.min(size.w, size.h) / 100;
   const u = (n: number) => `${Math.round(n * unit * 100) / 100}px`;
   const o = (l: number, c: number, h: number, a?: number) => ok(l, c * k, h, a);

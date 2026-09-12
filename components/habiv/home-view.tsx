@@ -241,6 +241,9 @@ export function useCountdown(resetsAt: string) {
   ).padStart(2, "0")}s`;
 }
 
+/** The daily challenge and its global board are hidden for now; flip this (and SHOW_DAILY in page-data) to bring them back. */
+const SHOW_DAILY = false;
+
 type Daily = NonNullable<HomeData["daily"]>;
 
 function DailyCells({ daily }: { daily: Daily | null }) {
@@ -608,7 +611,7 @@ export function HomeView({ data }: { data: HomeData }) {
         )}
         <FeaturedQueue featured={data.featured} heroId={hero?.id ?? null} setHeroId={setHeroId} paused={paused} setPaused={setPaused} />
         <CategoryCells categories={data.categories} onPick={pick} />
-        <DailyCells daily={data.daily} />
+        {SHOW_DAILY ? <DailyCells daily={data.daily} /> : null}
         <ChipsCell chips={chipsFor(data.categories)} chip={chip} setChip={pick} />
       </BentoGrid>
 

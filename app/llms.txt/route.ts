@@ -10,7 +10,7 @@ export function GET() {
 Games are tiny HTML5 games (a single HTML file or a zip) that run sandboxed in the browser. Each game lives at ${siteUrl}/@handle/game-slug and each creator at ${siteUrl}/@handle.
 
 ## Browse
-- [Home feed](${siteUrl}/): featured games, the daily challenge, trending, quick play and new games
+- [Home feed](${siteUrl}/): featured games, trending, quick play and new games
 - [Explore](${siteUrl}/explore): every game, filterable by category (?category=arcade) and sort (?sort=trending)
 - [Sitemap](${siteUrl}/sitemap.xml): every published game and creator
 

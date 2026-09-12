@@ -44,6 +44,38 @@ async function cropTo(file: File, w: number, h: number): Promise<Blob> {
   }
 }
 
+/** Read-only cover and card, e.g. on the publish review; empty slots say the screenshot fills them. */
+export function ArtPreview({ value, onEdit }: { value: GameArt; onEdit?: () => void }) {
+  return (
+    <div style={{ display: "flex", alignItems: "flex-end", gap: "10px", flexWrap: "wrap" }}>
+      {slots.map((s) => {
+        const url = s.kind === "cover" ? value.coverUrl : value.cardUrl;
+        return (
+          <div key={s.kind} style={{ width: s.kind === "cover" ? "200px" : "84px", maxWidth: "100%" }}>
+            <div style={{ position: "relative", aspectRatio: `${s.w} / ${s.h}`, borderRadius: "8px", overflow: "hidden", background: "var(--chip)", display: "grid", placeItems: "center" }}>
+              {url ? (
+                // eslint-disable-next-line @next/next/no-img-element -- art URLs come from the storage CDN
+                <img src={url} alt={s.kind === "cover" ? "Cover" : "Card"} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <span style={{ fontFamily: mono, fontSize: "9.5px", color: "var(--ink-5)", textAlign: "center", padding: "4px" }}>Automatic</span>
+              )}
+            </div>
+            <div style={{ marginTop: "4px", fontFamily: mono, fontSize: "10px", color: "var(--ink-5)" }}>
+              {s.kind === "cover" ? "Cover" : "Card"}
+              {url ? "" : " · screenshot"}
+            </div>
+          </div>
+        );
+      })}
+      {onEdit ? (
+        <button type="button" onClick={onEdit} style={{ ...chipBtn, marginBottom: "18px" }}>
+          Change
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 /** Sends one image to the art endpoint and returns its public URL. */
 async function sendArt(gameId: string, kind: Kind, blob: Blob): Promise<string> {
   const form = new FormData();

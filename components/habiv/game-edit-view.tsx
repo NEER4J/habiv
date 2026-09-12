@@ -15,6 +15,7 @@ import { LeaderboardSettings, SdkFeatureTags, SdkUpgradePrompt } from "./sdk-fea
 import { BentoAutoGrid, PageHead } from "./game-card";
 import { GameArtFields, type GameArt } from "./game-art-fields";
 import { GameExtraFields } from "./game-extra-fields";
+import { VersionManager } from "./version-manager";
 import { useShell } from "./shell-context";
 
 const where: { field: string; place: string }[] = [
@@ -232,6 +233,15 @@ export function GameEditView({ data, categories }: { data: GameEditData; categor
           </Link>
         </div>
       </div>
+
+      <VersionManager
+        gameId={game.id}
+        gameUrl={game.url}
+        published={game.status === "published"}
+        currentVersionId={data.currentVersionId}
+        versions={data.versions}
+        storage={data.storage}
+      />
     </BentoAutoGrid>
   );
 }

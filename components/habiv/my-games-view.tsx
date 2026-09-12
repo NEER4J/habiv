@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type CSSProperties } from "react";
 import { publishVersion, unpublishGame } from "@/lib/actions/games";
-import { deleteFailedVersion, deleteUnpublishedGame, retryProcessing, stopUpload } from "@/lib/actions/uploads";
+import { deleteUnpublishedGame, deleteVersion, retryProcessing, stopUpload } from "@/lib/actions/uploads";
 import type { CreatorGame } from "@/lib/db/types";
 import { spanFor } from "@/lib/habiv/bento";
 import { art, categoryName, fmt, relativeTime } from "@/lib/habiv/games";
@@ -202,7 +202,7 @@ export function MyGamesView({ data }: { data: MyGamesData }) {
   const removeVersion = (g: CreatorGame) => {
     const v = g.latestVersion!;
     if (!window.confirm(`Remove v${v.version} of "${g.title}"? The game keeps its other versions.`)) return;
-    return act(g, `v${v.version} removed`, () => deleteFailedVersion(v.id), (x) => ({ ...x, latestVersion: null }));
+    return act(g, `v${v.version} removed`, () => deleteVersion(v.id), (x) => ({ ...x, latestVersion: null }));
   };
 
   const pillBase: CSSProperties = {

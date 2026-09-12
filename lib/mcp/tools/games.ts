@@ -12,6 +12,7 @@ import { buckets, getObjectBytes } from "@/lib/storage";
 import type { TokenAuth } from "@/lib/mcp/auth";
 import { ART_MAX_BYTES, saveGameArt } from "@/lib/art";
 import { cdnUrl } from "@/lib/site";
+import { deleteVersionForCreator } from "@/lib/versions/cleanup";
 import { gameUrls, guarded, handleOf, ok, ownedGame, previewUrl, refreshGame, ToolError, versionBaseUrl } from "@/lib/mcp/tools/shared";
 
 const category = z.enum(["arcade", "puzzle", "reaction", "ambient", "rhythm", "racing", "cozy", "horror", "experimental", "other"]);
@@ -162,11 +163,19 @@ export function registerGameTools(server: McpServer, auth: TokenAuth) {
           .order("version", { ascending: false })
           .limit(args.limit);
         const live = g.status === "published" ? g.current_version_id : null;
+        const pageUrl = gameUrls(await handleOf(auth.userId), g.slug, g.short_id).url;
         return ok({
           game_id: g.id,
           game_status: g.status,
           live_version_id: live,
-          versions: (versions ?? []).map(({ id, ...v }) => ({ version_id: id, ...v, is_live: id === live, preview_url: v.status === "ready" ? previewUrl(id) : null })),
+          versions: (versions ?? []).map(({ id, ...v }) => ({
+            version_id: id,
+            ...v,
+            is_live: id === live,
+            preview_url: v.status === "ready" ? previewUrl(id) : null,
+            // Players open older ready versions on the game page with ?v=N.
+            play_url: v.status === "ready" && live ? (id === live ? pageUrl : `${pageUrl}?v=${v.version}`) : null,
+          })),
         });
       }),
   );
@@ -227,6 +236,24 @@ export function registerGameTools(server: McpServer, auth: TokenAuth) {
         if (error) throw new ToolError(error.message, "update_failed");
         await refreshGame(auth, v.game_id);
         return ok({ version_id: v.id, version: v.version, game_id: v.game_id, updated: Object.keys(patch) });
+      }),
+  );
+
+  server.registerTool(
+    "delete_version",
+    {
+      title: "Delete a version",
+      description:
+        "Deletes one version of your game and its files for good: a failed upload, or an old build players should no longer open. " +
+        "The live version can't be deleted; make another one live first with publish_version.",
+      inputSchema: z.object({ version_id: z.string().uuid() }),
+    },
+    (args) =>
+      guarded(async () => {
+        const res = await deleteVersionForCreator(auth.userId, args.version_id);
+        if (!res.ok) throw new ToolError(res.error, res.code);
+        await refreshGame(auth, res.gameId);
+        return ok({ deleted: true, version_id: args.version_id, version: res.version, game_id: res.gameId });
       }),
   );
 
