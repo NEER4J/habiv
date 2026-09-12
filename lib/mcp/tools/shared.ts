@@ -1,6 +1,9 @@
 import "server-only";
+import { revalidateTag } from "next/cache";
 import type { CallToolResult } from "@modelcontextprotocol/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { FEED_TAG, gameTag } from "@/lib/db/games";
+import { profileTag } from "@/lib/db/profiles";
 import { siteUrl, gameOrigin } from "@/lib/site";
 import type { TokenAuth } from "@/lib/mcp/auth";
 
@@ -51,4 +54,17 @@ export function gameUrls(handle: string, slug: string, shortId: string) {
 
 export function previewUrl(versionId: string) {
   return gameOrigin ? `${gameOrigin}/v/${versionId}/?mode=preview` : null;
+}
+
+export function versionBaseUrl(versionId: string) {
+  return gameOrigin ? `${gameOrigin}/v/${versionId}/` : null;
+}
+
+/** MCP edits bypass the server actions, so they expire the same cache tags the actions do. */
+export async function refreshGame(auth: TokenAuth, gameId: string) {
+  revalidateTag(gameTag(gameId), "max");
+  revalidateTag(FEED_TAG, "max");
+  revalidateTag(`creator-games:${auth.userId}`, "max");
+  const handle = await handleOf(auth.userId);
+  if (handle) revalidateTag(profileTag(handle), "max");
 }

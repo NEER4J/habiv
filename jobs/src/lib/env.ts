@@ -5,10 +5,11 @@ function req(name: string): string {
 }
 
 export const jobEnv = {
-  supabaseUrl: () => req("SUPABASE_URL"),
+  /** SUPABASE_URL in the GitHub Actions workflow; the app (Vercel) only has the NEXT_PUBLIC_ name. */
+  supabaseUrl: () => process.env.SUPABASE_URL || req("NEXT_PUBLIC_SUPABASE_URL"),
   serviceRoleKey: () => req("SUPABASE_SERVICE_ROLE_KEY"),
   /** Supabase Storage's S3 endpoint for the project unless overridden (e.g. to move to R2). */
-  s3Endpoint: () => process.env.STORAGE_S3_ENDPOINT || `https://${new URL(req("SUPABASE_URL")).hostname.split(".")[0]}.storage.supabase.co/storage/v1/s3`,
+  s3Endpoint: () => process.env.STORAGE_S3_ENDPOINT || `https://${new URL(jobEnv.supabaseUrl()).hostname.split(".")[0]}.storage.supabase.co/storage/v1/s3`,
   s3Region: () => req("STORAGE_S3_REGION"),
   s3AccessKeyId: () => req("STORAGE_S3_ACCESS_KEY_ID"),
   s3SecretAccessKey: () => req("STORAGE_S3_SECRET_ACCESS_KEY"),

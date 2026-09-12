@@ -34,7 +34,10 @@ export type FeedGame = {
   slug: string;
   title: string;
   tagline: string | null;
+  /** main category, shown on cards */
   category: GameCategory;
+  /** every category the game is listed in, main first (up to 3) */
+  categories: GameCategory[];
   orientation: Orientation;
   accentHue: number;
   coverUrl: string | null;
@@ -89,7 +92,20 @@ export type CreatorGame = {
   hiddenReason: string | null;
   remixLicence: RemixLicence;
   currentVersionId: string | null;
-  latestVersion: { id: string; version: number; status: VersionStatus; rejectReason: string | null; engine: string | null } | null;
+  latestVersion: {
+    id: string;
+    version: number;
+    status: VersionStatus;
+    rejectReason: string | null;
+    /** The human-readable reason ingest stored with a reject, when there is one. */
+    rejectMessage: string | null;
+    engine: string | null;
+    createdAt: string;
+    /** Last status change: how long a check has been running. */
+    updatedAt: string;
+    /** Set while an "uploaded" version still has an open storage session. */
+    uploadExpiresAt: string | null;
+  } | null;
   stats: GameStatsSummary | null;
   publishedAt: string | null;
   updatedAt: string;

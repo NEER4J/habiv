@@ -1,0 +1,33 @@
+{
+  "title": "Emoji Alibi",
+  "slug": "emoji-alibi",
+  "category": "Puzzle",
+  "orientation": "any",
+  "duration_seconds": 75,
+  "tagline": "Decode the group chat before the typing bubble comes back.",
+  "description": "Four emojis describe a tiny scene, but one clue is lying. Cross-reference the order, the weather, and the suspiciously specific snack to find the impossible alibi.",
+  "objective": "Tap the emoji that breaks the story.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Pick the false clue"
+    },
+    {
+      "key": "1–9",
+      "action": "Pick a clue"
+    },
+    {
+      "key": "H",
+      "action": "Use a hint"
+    }
+  ],
+  "tags": [
+    "daily puzzle",
+    "emoji",
+    "social"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "08-emoji-alibi.zip"
+}

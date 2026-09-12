@@ -1,0 +1,33 @@
+{
+  "title": "Beat Bloom",
+  "slug": "beat-bloom",
+  "category": "Rhythm",
+  "orientation": "any",
+  "duration_seconds": 70,
+  "tagline": "Grow a neon garden by hitting every downbeat.",
+  "description": "Each accurate beat grows a stem, opens a flower, and adds a new layer to the loop. Miss too many and the garden folds itself closed.",
+  "objective": "Tap the glowing garden lane on each beat.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Hit the bloom ring"
+    },
+    {
+      "key": "← →",
+      "action": "Change lanes"
+    },
+    {
+      "key": "M",
+      "action": "Mute"
+    }
+  ],
+  "tags": [
+    "rhythm",
+    "music",
+    "garden"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "21-beat-bloom.zip"
+}

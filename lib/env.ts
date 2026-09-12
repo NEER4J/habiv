@@ -18,9 +18,10 @@ const serverSchema = z.object({
   STORAGE_UPLOADS_BUCKET: z.string().min(1).default("habiv-uploads"),
   STORAGE_GAMES_BUCKET: z.string().min(1).default("habiv-games"),
   STORAGE_PUBLIC_BUCKET: z.string().min(1).default("habiv-public"),
-  // Checked where jobs are enqueued (lib/jobs/trigger.ts), so storage-only routes work without it.
   // Empty values (`KEY=` in .env) count as unset, so a blank optional var does not break env().
-  TRIGGER_SECRET_KEY: z.preprocess((v) => v || undefined, z.string().min(1).optional()),
+  // Read directly where used (app/api/jobs/cron, lib/jobs/trigger.ts); listed here to validate the shape.
+  CRON_SECRET: z.preprocess((v) => v || undefined, z.string().min(16).optional()),
+  GITHUB_DISPATCH_TOKEN: z.preprocess((v) => v || undefined, z.string().min(1).optional()),
   RUN_TOKEN_SECRET: z.string().min(16),
   GAME_ORIGIN_HOOK_SECRET: z.preprocess((v) => v || undefined, z.string().min(16).optional()),
 });

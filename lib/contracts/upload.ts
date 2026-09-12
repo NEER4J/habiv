@@ -1,3 +1,5 @@
+import type { GameMeta, SdkInfo } from "./ingest";
+
 /** Upload limits while on free tiers (platform-plan §4.1). Raise once storage is paid. */
 export const MiB = 1024 * 1024;
 /** Supabase Storage's free plan caps every object at 50 MB. */
@@ -49,6 +51,10 @@ export type VersionStatusResponse =
       fileCount: number | null;
       rejectReason: string | null;
       warnings: string[];
+      /** Habiv SDK features found in the build; null until ready, or for builds processed before detection. */
+      sdk: SdkInfo | null;
+      /** Details the build declares (habiv.json etc.), used to fill the Details step; null when there are none. */
+      meta: GameMeta | null;
       previewUrl: string | null;
     }
   | { ok: false; code: string; error: string };

@@ -1,0 +1,33 @@
+{
+  "title": "Traffic Ghost",
+  "slug": "traffic-ghost",
+  "category": "Racing",
+  "orientation": "any",
+  "duration_seconds": 40,
+  "tagline": "Race your last run through a city that keeps changing lanes.",
+  "description": "Drive a translucent car through a three-lane night route and try to outrun your own ghost. The traffic pattern stays readable for one run, then shuffles.",
+  "objective": "Pick the open lane before the ghost reaches it.",
+  "controls": [
+    {
+      "key": "← →",
+      "action": "Change lanes"
+    },
+    {
+      "key": "Tap",
+      "action": "Steer"
+    },
+    {
+      "key": "R",
+      "action": "Race again"
+    }
+  ],
+  "tags": [
+    "racing",
+    "ghost",
+    "time trial"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "22-traffic-ghost.zip"
+}

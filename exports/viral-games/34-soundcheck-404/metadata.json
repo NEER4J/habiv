@@ -1,0 +1,33 @@
+{
+  "title": "Soundcheck 404",
+  "slug": "soundcheck-404",
+  "category": "Rhythm",
+  "orientation": "any",
+  "duration_seconds": 55,
+  "tagline": "Tune a broken signal until the missing beat comes through.",
+  "description": "A broadcast tower has lost its rhythm. Tap visible pulses to tune the signal, then catch the glitch beat that hides between them.",
+  "objective": "Tap the signal lane exactly on the pulse.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Tune the pulse"
+    },
+    {
+      "key": "← →",
+      "action": "Adjust channel"
+    },
+    {
+      "key": "M",
+      "action": "Mute static"
+    }
+  ],
+  "tags": [
+    "rhythm",
+    "signal",
+    "glitch"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "34-soundcheck-404.zip"
+}

@@ -14,6 +14,7 @@ import {
   type CreateUploadResponse,
 } from "@/lib/contracts/upload";
 import { slugify } from "@/lib/db/games";
+import { normalizeAgent, normalizeModel } from "@/lib/ai/catalog";
 
 export type CreateVersionInput = {
   userId: string;
@@ -85,7 +86,8 @@ export async function createVersionForUpload(input: CreateVersionInput): Promise
   // Dedupe: same bytes already ingested for this creator -> reuse without uploading.
   const { data: dup } = await admin
     .from("game_versions")
-    .select("id, game_id, games!inner(creator_id)")
+    // Named FK: games is also linked through games.current_version_id, which makes a bare embed ambiguous.
+    .select("id, game_id, games!game_versions_game_id_fkey!inner(creator_id)")
     .eq("sha256", input.sha256)
     .eq("status", "ready")
     .eq("games.creator_id", input.userId)
@@ -100,8 +102,8 @@ export async function createVersionForUpload(input: CreateVersionInput): Promise
       version,
       status: "uploaded",
       source: input.source,
-      agent: input.agent ?? null,
-      model: input.model ?? null,
+      agent: normalizeAgent(input.agent),
+      model: normalizeModel(input.model),
       prompt: input.prompt ?? null,
       changelog: input.changelog ?? null,
       sha256: input.sha256,

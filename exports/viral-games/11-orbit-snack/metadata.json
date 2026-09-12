@@ -1,0 +1,33 @@
+{
+  "title": "Orbit Snack",
+  "slug": "orbit-snack",
+  "category": "Arcade",
+  "orientation": "any",
+  "duration_seconds": 35,
+  "tagline": "Feed a hungry moon without breaking the orbit.",
+  "description": "Launch snacks into a circular gravity well and time the release so each one lands on the tiny moon. Miss the window and the snack becomes a comet; hit the streak and the moon gets a ridiculous hat.",
+  "objective": "Tap the snack in the green orbit window.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Launch a snack"
+    },
+    {
+      "key": "Space",
+      "action": "Use the boost"
+    },
+    {
+      "key": "R",
+      "action": "Restart"
+    }
+  ],
+  "tags": [
+    "arcade",
+    "gravity",
+    "one tap"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "11-orbit-snack.zip"
+}

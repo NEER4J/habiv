@@ -1,0 +1,33 @@
+{
+  "title": "Marble Runaway",
+  "slug": "marble-runaway",
+  "category": "Racing",
+  "orientation": "any",
+  "duration_seconds": 45,
+  "tagline": "Tilt the track and get one marble home in record time.",
+  "description": "A marble is already rolling. Rotate ramps, open shortcuts, and use bumpers to keep momentum through a toy-box course.",
+  "objective": "Choose the ramp that keeps the marble on track.",
+  "controls": [
+    {
+      "key": "← →",
+      "action": "Tilt track"
+    },
+    {
+      "key": "Tap",
+      "action": "Flip bumper"
+    },
+    {
+      "key": "R",
+      "action": "Reset course"
+    }
+  ],
+  "tags": [
+    "racing",
+    "marble",
+    "physics"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "37-marble-runaway.zip"
+}

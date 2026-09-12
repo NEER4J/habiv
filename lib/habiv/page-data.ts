@@ -8,7 +8,9 @@ import { cookies } from "next/headers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import { createClient } from "@/lib/supabase/server";
-import { FEED_TAG, getFeed, getCategoryCounts, getGameByHandleSlug, getCreatorGames, getOwnGames } from "@/lib/db/games";
+import { createAdminClient } from "@/lib/supabase/admin";
+import type { Licence, Orientation } from "@/lib/habiv/game-details";
+import { FEED_TAG, asFeedRow, toFeedGame, getFeed, getBuiltWithCounts, getCategoryCounts, getGameByHandleSlug, getCreatorGames, getOwnGames } from "@/lib/db/games";
 import { getDaily, getRunsToday } from "@/lib/db/feed";
 import { getLeaderboard, getViewerRank, type LeaderboardView } from "@/lib/db/leaderboards";
 import { listComments, type CommentItem } from "@/lib/db/comments";
@@ -18,6 +20,9 @@ import { getOwnProfile, type OwnProfile, type PublicProfile } from "@/lib/db/pro
 import { listTokens, type ApiTokenSummary } from "@/lib/db/tokens";
 import { fromFeedGame, fromGameDetail, type CategoryInfo, type Game, type GameFull } from "@/lib/habiv/games";
 import type { CreatorGame } from "@/lib/db/types";
+import type { SdkInfo } from "@/lib/contracts/ingest";
+import { readSdk } from "@/lib/habiv/sdk";
+import { cdnUrl } from "@/lib/site";
 
 export type Section = { key: string; title: string; note: string; games: Game[] };
 
@@ -73,14 +78,28 @@ export async function loadHome(): Promise<HomeData> {
   };
 }
 
-export type ExploreData = { categories: CategoryInfo[]; feed: { items: Game[]; nextOffset: number | null } };
+export type ExploreData = {
+  categories: CategoryInfo[];
+  feed: { items: Game[]; nextOffset: number | null };
+  /** Games per model and per tool, feeding the explore filter chips. */
+  builtWith: { models: [string, number][]; agents: [string, number][] };
+};
 
-export async function loadExplore(sort: "trending" | "new" | "plays" | "quick" = "new", category: string | null = null): Promise<ExploreData> {
+export async function loadExplore(
+  sort: "trending" | "new" | "plays" | "quick" = "new",
+  category: string | null = null,
+  model: string | null = null,
+  agent: string | null = null,
+): Promise<ExploreData> {
   "use cache";
   cacheTag(FEED_TAG);
   cacheLife({ stale: 60, revalidate: 60, expire: 300 });
-  const [categories, feed] = await Promise.all([getCategoryCounts(), getFeed({ sort, category: category as never, limit: 24 })]);
-  return { categories, feed: { items: feed.items.map(fromFeedGame), nextOffset: feed.nextOffset } };
+  const [categories, feed, builtWith] = await Promise.all([
+    getCategoryCounts(),
+    getFeed({ sort, category: category as never, model, agent, limit: 24 }),
+    getBuiltWithCounts(),
+  ]);
+  return { categories, feed: { items: feed.items.map(fromFeedGame), nextOffset: feed.nextOffset }, builtWith };
 }
 
 export type WatchViewer = {
@@ -111,16 +130,19 @@ export async function loadWatch(handle: string, slug: string): Promise<WatchData
   const supabase = await createClient();
   const cookieStore = await cookies();
   const playerId = cookieStore.get("hv_pid")?.value ?? null;
-  const [own, viewerState, leaderboard, comments, queue, stats, runsToday] = await Promise.all([
-    getOwnProfile(supabase),
+  const ownP = getOwnProfile(supabase);
+  // The rank only needs the viewer's id, so it starts as soon as that resolves, not after everything else.
+  const rankP = detail.leaderboardEnabled ? ownP.then((own) => getViewerRank(detail.id, playerId, own?.id ?? null, "main", "daily")) : Promise.resolve(null);
+  const [own, viewerState, leaderboard, comments, queue, stats, runsToday, rank] = await Promise.all([
+    ownP,
     getViewerState(supabase, [detail.id], [detail.creator.id]),
     detail.leaderboardEnabled ? getLeaderboard(detail.id, "main", "daily", 10) : Promise.resolve(null),
     listComments(supabase, detail.id, { sort: "top", limit: 20 }),
     getFeed({ sort: "hot", limit: 13 }),
     getPublicStats(detail.id),
     getRunsToday(),
+    rankP,
   ]);
-  const rank = detail.leaderboardEnabled ? await getViewerRank(detail.id, playerId, own?.id ?? null, "main", "daily") : null;
   const game = fromGameDetail(detail);
   if (stats) {
     game.plays = Number(stats.plays); game.likes = stats.likes; game.saves = stats.saves; game.comments = stats.comments;
@@ -160,28 +182,27 @@ export type ProfileData = {
 
 export async function loadProfile(profile: PublicProfile): Promise<ProfileData> {
   const supabase = await createClient();
-  const [own, games, followers, totals, state] = await Promise.all([
-    getOwnProfile(supabase),
+  const ownP = getOwnProfile(supabase);
+  // Liked games are only shown to the profile's owner; that chain starts once we know who is looking.
+  const likedP = ownP.then(async (own): Promise<Game[]> => {
+    if (own?.id !== profile.id) return [];
+    const { data: likes } = await supabase.from("likes").select("game_id").eq("user_id", profile.id).order("created_at", { ascending: false }).limit(30);
+    const ids = (likes ?? []).map((l) => l.game_id);
+    if (!ids.length) return [];
+    const { data: rows } = await supabase.from("game_feed_v").select("*").in("id", ids);
+    return (rows ?? []).map((r) => fromFeedGame(toFeedGame(asFeedRow(r))));
+  });
+  const [own, games, followers, totals, state, { data: remixRows }, liked] = await Promise.all([
+    ownP,
     getCreatorGames(profile.id),
     getFollowers(profile.id, 30),
     getCreatorTotals(supabase, profile.id),
     getViewerState(supabase, [], [profile.id]),
+    supabase.from("game_feed_v").select("*").eq("creator_id", profile.id).not("remixed_from_game_id", "is", null).limit(30),
+    likedP,
   ]);
   const isSelf = own?.id === profile.id;
-  const remixes = games.filter((g) => !!g.remixLicence && false);
-  const { data: remixRows } = await supabase.from("game_feed_v").select("*").eq("creator_id", profile.id).not("remixed_from_game_id", "is", null).limit(30);
-  const { asFeedRow, toFeedGame } = await import("@/lib/db/games");
   const remixGames = (remixRows ?? []).map((r) => fromFeedGame(toFeedGame(asFeedRow(r))));
-  let liked: Game[] = [];
-  if (isSelf) {
-    const { data: likes } = await supabase.from("likes").select("game_id").eq("user_id", profile.id).order("created_at", { ascending: false }).limit(30);
-    const ids = (likes ?? []).map((l) => l.game_id);
-    if (ids.length) {
-      const { data: rows } = await supabase.from("game_feed_v").select("*").in("id", ids);
-      liked = (rows ?? []).map((r) => fromFeedGame(toFeedGame(asFeedRow(r))));
-    }
-  }
-  void remixes;
   return {
     profile,
     isSelf,
@@ -203,12 +224,96 @@ export async function loadMyGames(supabase: SupabaseClient<Database>, own: OwnPr
 
 export type SettingsData = { profile: OwnProfile; tokens: ApiTokenSummary[]; email: string | null; provider: string | null };
 
-export async function loadSettings(supabase: SupabaseClient<Database>, own: OwnProfile): Promise<SettingsData> {
-  const [{ data: user }, tokens] = await Promise.all([supabase.auth.getUser(), listTokens(supabase)]);
-  return { profile: own, tokens, email: user.user?.email ?? null, provider: (user.user?.app_metadata?.provider as string | undefined) ?? null };
+/**
+ * Null when signed out. Email and provider come from the verified JWT claims rather than
+ * auth.getUser(), which is a network round trip to Supabase Auth on every call.
+ */
+export async function loadSettings(supabase: SupabaseClient<Database>): Promise<SettingsData | null> {
+  const [own, { data: claims }, tokens] = await Promise.all([getOwnProfile(supabase), supabase.auth.getClaims(), listTokens(supabase)]);
+  if (!own) return null;
+  const c = claims?.claims;
+  return { profile: own, tokens, email: c?.email ?? null, provider: (c?.app_metadata?.provider as string | undefined) ?? null };
 }
 
 export async function loadSaved(supabase: SupabaseClient<Database>): Promise<Game[]> {
   const games = await getSavedGames(supabase, 60);
   return games.map(fromFeedGame);
+}
+
+export type GameEditData = {
+  game: {
+    id: string;
+    title: string;
+    tagline: string;
+    description: string | null;
+    category: string;
+    /** every category, main first */
+    categories: string[];
+    orientation: Orientation;
+    remixLicence: Licence;
+    durationSec: number | null;
+    controls: unknown;
+    tags: string[];
+    status: string;
+    /** Game page path while published, else null. */
+    url: string | null;
+    coverUrl: string | null;
+    cardUrl: string | null;
+    /** Accent hue (0–359); ready-made thumbnails use it for the "game colour" theme. */
+    accentHue: number;
+  };
+  /** The live version (or the newest one for drafts); model, tool and prompt live here. */
+  version: { id: string; version: number; model: string; agent: string; prompt: string } | null;
+  /** SDK features found in that version's build; null when it predates detection or there is no build. */
+  sdk: SdkInfo | null;
+  leaderboard: { enabled: boolean; sort: "desc" | "asc" };
+};
+
+/** The creator's own game with every editable field: the edit-details page, and prefill for a new version. */
+export async function loadGameEdit(supabase: SupabaseClient<Database>, own: OwnProfile, gameId: string): Promise<GameEditData | null> {
+  const { data: g } = await supabase
+    .from("games")
+    .select("id, slug, title, tagline, description, category, categories, orientation, remix_licence, duration_sec, controls, status, current_version_id, cover_path, card_path, accent_hue, leaderboard_enabled")
+    .eq("id", gameId)
+    .eq("creator_id", own.id)
+    .maybeSingle();
+  if (!g) return null;
+  const versionCols = "id, version, model, agent, prompt, manifest";
+  const versionQuery = g.current_version_id
+    ? supabase.from("game_versions").select(versionCols).eq("id", g.current_version_id).maybeSingle()
+    : supabase.from("game_versions").select(versionCols).eq("game_id", g.id).order("version", { ascending: false }).limit(1).maybeSingle();
+  // Tag links and the board config are read with the service role, after the ownership check above.
+  const admin = createAdminClient();
+  const [{ data: tagRows }, { data: v }, { data: board }] = await Promise.all([
+    admin.from("game_tags").select("tags(name)").eq("game_id", g.id),
+    versionQuery,
+    admin.from("leaderboards").select("sort").eq("game_id", g.id).eq("key", "main").limit(1).maybeSingle(),
+  ]);
+  const tags = (tagRows ?? []).flatMap((r) => {
+    const t = (r as { tags: { name: string } | { name: string }[] | null }).tags;
+    return (Array.isArray(t) ? t : t ? [t] : []).map((x) => x.name);
+  });
+  return {
+    game: {
+      id: g.id,
+      title: g.title,
+      tagline: g.tagline ?? "",
+      description: g.description,
+      category: g.category,
+      categories: g.categories?.length ? g.categories : [g.category],
+      orientation: g.orientation as Orientation,
+      remixLicence: g.remix_licence as Licence,
+      durationSec: g.duration_sec,
+      controls: g.controls,
+      tags,
+      status: g.status,
+      url: g.status === "published" ? `/@${own.handle}/${g.slug}` : null,
+      coverUrl: cdnUrl(g.cover_path),
+      cardUrl: cdnUrl(g.card_path),
+      accentHue: g.accent_hue,
+    },
+    version: v ? { id: v.id, version: v.version, model: v.model ?? "", agent: v.agent ?? "", prompt: v.prompt ?? "" } : null,
+    sdk: readSdk(v?.manifest),
+    leaderboard: { enabled: g.leaderboard_enabled, sort: board?.sort === "asc" ? "asc" : "desc" },
+  };
 }

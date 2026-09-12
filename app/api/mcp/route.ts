@@ -5,8 +5,8 @@ import { requestOrigin, resourceMetadataUrl } from "@/lib/oauth/core";
 
 
 /**
- * Remote MCP server (Streamable HTTP, stateless, JSON responses). Auth is a personal token:
- * `Authorization: Bearer hbv_live_...` created in Settings > API & MCP.
+ * Remote MCP server (Streamable HTTP, stateless, JSON responses). Auth is `Authorization: Bearer hbv_live_...`,
+ * issued by the OAuth browser approval or created by hand in Settings > Connect AI.
  */
 const handler = createMcpHandler(
   (ctx) => {

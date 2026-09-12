@@ -1,0 +1,33 @@
+{
+  "title": "Quickdraw Postcard",
+  "slug": "quickdraw-postcard",
+  "category": "Reaction",
+  "orientation": "any",
+  "duration_seconds": 28,
+  "tagline": "Draw the shape the postcard asks for before the ink dries.",
+  "description": "A postcard flashes a tiny icon and gives you one breath to trace it with the pointer. Accuracy beats speed until the last round reverses the prompt.",
+  "objective": "Tap the postcard stamp when the signal is green.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Stamp the postcard"
+    },
+    {
+      "key": "Drag",
+      "action": "Trace the shape"
+    },
+    {
+      "key": "R",
+      "action": "Draw another"
+    }
+  ],
+  "tags": [
+    "drawing",
+    "reaction",
+    "shareable"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "30-quickdraw-postcard.zip"
+}

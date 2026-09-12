@@ -1,0 +1,33 @@
+{
+  "title": "Bubble Wrap Boss",
+  "slug": "bubble-wrap-boss",
+  "category": "Arcade",
+  "orientation": "any",
+  "duration_seconds": 25,
+  "tagline": "Pop the perfect line before the boss notices the noise.",
+  "description": "A satisfying bubble-wrap grid hides a boss pattern. Pop only the bubbles in the active row, build a clean streak, and ignore the one extra bubble that looks too tempting.",
+  "objective": "Tap the active bubble and avoid the decoy.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Pop a bubble"
+    },
+    {
+      "key": "Space",
+      "action": "Pop a bonus row"
+    },
+    {
+      "key": "R",
+      "action": "Reset sheet"
+    }
+  ],
+  "tags": [
+    "arcade",
+    "satisfying",
+    "pattern"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "39-bubble-wrap-boss.zip"
+}

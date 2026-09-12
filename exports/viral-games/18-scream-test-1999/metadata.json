@@ -1,0 +1,33 @@
+{
+  "title": "Scream Test 1999",
+  "slug": "scream-test-1999",
+  "category": "Horror",
+  "orientation": "any",
+  "duration_seconds": 100,
+  "tagline": "A forgotten desktop asks one question: did you hear that?",
+  "description": "Run diagnostics on a beige computer, watch the waveform, and keep the volume low enough that the thing behind the monitor does not notice you listening.",
+  "objective": "Repeat the diagnostic sequence before the signal changes.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Run a diagnostic"
+    },
+    {
+      "key": "1–4",
+      "action": "Choose a test"
+    },
+    {
+      "key": "Space",
+      "action": "Mute the room"
+    }
+  ],
+  "tags": [
+    "horror",
+    "retro",
+    "found footage"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "18-scream-test-1999.zip"
+}

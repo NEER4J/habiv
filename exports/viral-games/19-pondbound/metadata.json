@@ -1,0 +1,33 @@
+{
+  "title": "Pondbound",
+  "slug": "pondbound",
+  "category": "Arcade",
+  "orientation": "any",
+  "duration_seconds": 45,
+  "tagline": "Hop lily pads, dodge the ripples, keep the crown dry.",
+  "description": "A tiny frog has one afternoon to cross the pond before the wind reverses. Tap a pad, read the ripple rings, and chain clean landings for a shinier crown.",
+  "objective": "Tap the safe lily pad before the ripple arrives.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Hop to a pad"
+    },
+    {
+      "key": "Hold",
+      "action": "Aim the tongue"
+    },
+    {
+      "key": "R",
+      "action": "Reset"
+    }
+  ],
+  "tags": [
+    "arcade",
+    "frog",
+    "timing"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "19-pondbound.zip"
+}

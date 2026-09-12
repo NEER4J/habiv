@@ -13,8 +13,8 @@ import {
   mono,
   primaryBtn,
 } from "@/lib/habiv/ui";
-import { searchGames } from "@/lib/actions/feed";
-import { markAllRead } from "@/lib/actions/notifications";
+import { loadBuiltWith, searchGames } from "@/lib/actions/feed";
+import { markAllRead, markRead } from "@/lib/actions/notifications";
 import { report } from "@/lib/actions/moderation";
 import { loadGameForModal, loadNotifications } from "@/lib/actions/shell";
 import type { NotificationItem } from "@/lib/db/notifications";
@@ -76,8 +76,6 @@ function pushRecent(term: string): string[] {
   return next;
 }
 
-const modelChips = ["Claude Sonnet 4.5", "GPT-5 Codex", "Gemini 3 Pro", "Local Llama 4"];
-
 function SearchOverlay() {
   const { searchOpen, closeSearch, query, setQuery, mobile, light, pinned } = useShell();
   const router = useRouter();
@@ -92,6 +90,12 @@ function SearchOverlay() {
   useEffect(() => {
     if (searchOpen) setRecent(readRecent());
   }, [searchOpen]);
+
+  // Most used models and tools, fetched the first time search opens.
+  const [builtWith, setBuiltWith] = useState<{ models: [string, number][]; agents: [string, number][] } | null>(null);
+  useEffect(() => {
+    if (searchOpen && !builtWith) loadBuiltWith().then(setBuiltWith).catch(() => setBuiltWith({ models: [], agents: [] }));
+  }, [searchOpen, builtWith]);
 
   useEffect(() => {
     if (!searchOpen) return;
@@ -230,28 +234,42 @@ function SearchOverlay() {
                 ))}
               </div>
             ) : null}
-            <div style={searchCol}>
-              <div style={searchHeadStyle}>Browse by model</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                {modelChips.map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setQuery(m)}
-                    style={{
-                      height: "32px",
-                      padding: "0 12px",
-                      borderRadius: "9px",
-                      background: light ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.1)",
-                      color: "var(--ink-2)",
-                      fontSize: "12.5px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {m}
-                  </button>
-                ))}
+            {builtWith && (builtWith.models.length || builtWith.agents.length) ? (
+              <div style={searchCol}>
+                {[
+                  { head: "Browse by model", param: "model", list: builtWith.models },
+                  { head: "Browse by tool", param: "tool", list: builtWith.agents },
+                ]
+                  .filter((s) => s.list.length)
+                  .map((s, i) => (
+                    <div key={s.param} style={i ? { marginTop: "14px" } : undefined}>
+                      <div style={searchHeadStyle}>{s.head}</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                        {s.list.slice(0, 6).map(([name]) => (
+                          <button
+                            key={name}
+                            onClick={() => {
+                              closeSearch();
+                              router.push(`/explore?${s.param}=${encodeURIComponent(name)}`);
+                            }}
+                            style={{
+                              height: "32px",
+                              padding: "0 12px",
+                              borderRadius: "9px",
+                              background: light ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.1)",
+                              color: "var(--ink-2)",
+                              fontSize: "12.5px",
+                              cursor: "pointer",
+                            }}
+                          >
+                            {name}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
               </div>
-            </div>
+            ) : null}
           </div>
         ) : loading && !results.length ? (
           <div style={{ padding: "38px 22px 34px", textAlign: "center", fontFamily: mono, fontSize: "11.5px", color: "var(--ink-5)" }}>
@@ -797,7 +815,7 @@ function notificationText(n: NotificationItem): string {
 }
 
 function NotificationsPanel() {
-  const { modal, closeModal, setUnread, signedIn, openModal } = useShell();
+  const { modal, closeModal, unread, setUnread, signedIn, openModal, showToast } = useShell();
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [clearing, setClearing] = useState(false);
@@ -827,12 +845,28 @@ function NotificationsPanel() {
 
   const markAll = async () => {
     if (clearing) return;
+    const before = items;
+    const beforeUnread = unread;
     setClearing(true);
-    const res = await markAllRead().catch(() => ({ ok: false, updated: 0 }));
-    setClearing(false);
-    if (!res.ok) return;
     setItems((prev) => prev.map((n) => ({ ...n, read: true })));
     setUnread(0);
+    const res = await markAllRead().catch(() => ({ ok: false, updated: 0 }));
+    setClearing(false);
+    if (res.ok) return;
+    setItems(before);
+    setUnread(beforeUnread);
+    showToast("Couldn't mark notifications read");
+  };
+
+  const markOne = (n: NotificationItem) => {
+    if (n.read) return;
+    setItems((prev) => prev.map((x) => (x.id === n.id ? { ...x, read: true } : x)));
+    setUnread(Math.max(0, unread - 1));
+    void markRead([n.id])
+      .catch(() => ({ ok: false, updated: 0 }))
+      .then((res) => {
+        if (!res.ok) showToast("Couldn't mark notification read");
+      });
   };
 
   const hasUnread = items.some((n) => !n.read);
@@ -909,11 +943,20 @@ function NotificationsPanel() {
               );
               const rowStyle: CSSProperties = { display: "flex", alignItems: "flex-start", gap: "12px", padding: "12px", borderRadius: "10px", color: "inherit" };
               return n.game ? (
-                <Link key={n.id} href={n.game.url} onClick={closeModal} className="hb-row" style={rowStyle}>
+                <Link
+                  key={n.id}
+                  href={n.game.url}
+                  onClick={() => {
+                    markOne(n);
+                    closeModal();
+                  }}
+                  className="hb-row"
+                  style={rowStyle}
+                >
                   {row}
                 </Link>
               ) : (
-                <div key={n.id} style={rowStyle}>
+                <div key={n.id} onClick={() => markOne(n)} className="hb-row" style={{ ...rowStyle, cursor: n.read ? "default" : "pointer" }}>
                   {row}
                 </div>
               );

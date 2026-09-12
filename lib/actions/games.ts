@@ -7,6 +7,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { FEED_TAG, gameTag, slugify } from "@/lib/db/games";
 import { profileTag } from "@/lib/db/profiles";
 import type { Json, TablesUpdate } from "@/lib/supabase/database.types";
+import { controlsSchema, toStoredControls } from "@/lib/contracts/game-details";
+import { normalizeAgent, normalizeModel } from "@/lib/ai/catalog";
+import { MAX_CATEGORIES } from "@/lib/habiv/categories";
 
 const categoryEnum = z.enum(["arcade", "puzzle", "reaction", "ambient", "rhythm", "racing", "cozy", "horror", "experimental", "other"]);
 const orientationEnum = z.enum(["portrait", "landscape", "any"]);
@@ -61,10 +64,12 @@ const metaSchema = z.object({
   tagline: z.string().trim().max(140).nullable().optional(),
   description: z.string().trim().max(4000).nullable().optional(),
   category: categoryEnum.optional(),
+  /** Every category, main first; wins over `category` when both are sent. */
+  categories: z.array(z.string().regex(/^[a-z][a-z0-9_]{1,23}$/)).min(1).max(MAX_CATEGORIES).optional(),
   orientation: orientationEnum.optional(),
   remixLicence: z.enum(["open", "no_remix"]).optional(),
   durationSec: z.number().int().min(1).max(3600).nullable().optional(),
-  controls: z.record(z.string(), z.unknown()).optional(),
+  controls: controlsSchema.optional(),
   slug: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/).max(64).optional(),
   tags: z.array(z.string().trim().toLowerCase().regex(/^[a-z0-9][a-z0-9 -]{0,23}$/)).max(5).optional(),
 });
@@ -84,10 +89,15 @@ export async function updateGameMeta(gameId: string, patch: z.infer<typeof metaS
   if (p.tagline !== undefined) update.tagline = p.tagline;
   if (p.description !== undefined) update.description = p.description;
   if (p.category !== undefined) update.category = p.category;
+  if (p.categories !== undefined) {
+    // The games_sync_categories trigger also sets category from the first entry.
+    update.categories = Array.from(new Set(p.categories));
+    update.category = update.categories[0];
+  }
   if (p.orientation !== undefined) update.orientation = p.orientation;
   if (p.remixLicence !== undefined) update.remix_licence = p.remixLicence;
   if (p.durationSec !== undefined) update.duration_sec = p.durationSec;
-  if (p.controls !== undefined) update.controls = p.controls as Json;
+  if (p.controls !== undefined) update.controls = toStoredControls(p.controls) as Json;
   if (p.slug !== undefined) update.slug = p.slug;
 
   if (Object.keys(update).length) {
@@ -105,6 +115,7 @@ export async function updateGameMeta(gameId: string, patch: z.infer<typeof metaS
 
   updateTag(gameTag(gameId));
   revalidateTag(FEED_TAG, "max");
+  revalidateTag(`creator-games:${uid}`, "max");
   return { ok: true };
 }
 
@@ -121,13 +132,20 @@ export async function setVersionMeta(versionId: string, patch: z.infer<typeof ve
   if (!parsed.success) return { ok: false, code: "invalid", error: "Invalid fields." };
   const { supabase, uid } = await requireUser();
   if (!uid) return { ok: false, code: "auth", error: "Sign in first." };
-  const { data: v } = await supabase.from("game_versions").select("id, game_id, games!inner(creator_id)").eq("id", versionId).maybeSingle();
+  // games is linked twice (game_versions.game_id and games.current_version_id), so the embed names its FK.
+  const { data: v } = await supabase.from("game_versions").select("id, game_id, games!game_versions_game_id_fkey!inner(creator_id)").eq("id", versionId).maybeSingle();
   const owner = (v as unknown as { games?: { creator_id: string } } | null)?.games?.creator_id;
   if (!v || owner !== uid) return { ok: false, code: "not_found", error: "Version not found." };
+  // Known models and tools are stored under their catalog name so filters match (lib/ai/catalog.ts).
+  const row = { ...parsed.data };
+  if (row.model !== undefined) row.model = normalizeModel(row.model);
+  if (row.agent !== undefined) row.agent = normalizeAgent(row.agent);
   const admin = createAdminClient();
-  const { error } = await admin.from("game_versions").update(parsed.data).eq("id", versionId);
+  const { error } = await admin.from("game_versions").update(row).eq("id", versionId);
   if (error) return { ok: false, code: "unknown", error: error.message };
   updateTag(gameTag(v.game_id));
+  // Feed tiles and the explore filter counts show the model and tool.
+  if (row.model !== undefined || row.agent !== undefined) revalidateTag(FEED_TAG, "max");
   return { ok: true };
 }
 

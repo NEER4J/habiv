@@ -1,0 +1,1882 @@
+{
+ "source": "https://models.dev",
+ "syncedAt": "2026-09-12",
+ "labs": [
+  {
+   "id": "anthropic",
+   "name": "Anthropic"
+  },
+  {
+   "id": "openai",
+   "name": "OpenAI"
+  },
+  {
+   "id": "google",
+   "name": "Google"
+  },
+  {
+   "id": "xai",
+   "name": "xAI"
+  },
+  {
+   "id": "deepseek",
+   "name": "DeepSeek"
+  },
+  {
+   "id": "alibaba",
+   "name": "Qwen"
+  },
+  {
+   "id": "moonshotai",
+   "name": "Moonshot AI"
+  },
+  {
+   "id": "zai",
+   "name": "Z.ai"
+  },
+  {
+   "id": "mistral",
+   "name": "Mistral"
+  },
+  {
+   "id": "minimax",
+   "name": "MiniMax"
+  },
+  {
+   "id": "meta",
+   "name": "Meta"
+  }
+ ],
+ "models": [
+  {
+   "id": "claude-fable-5-1",
+   "name": "Claude Fable 5.1",
+   "lab": "anthropic",
+   "family": "claude-fable",
+   "released": "2026-09-01",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "claude-fable-5-1"
+   ]
+  },
+  {
+   "id": "claude-opus-5",
+   "name": "Claude Opus 5",
+   "lab": "anthropic",
+   "family": "claude-opus",
+   "released": "2026-07-24",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "claude-opus-5"
+   ]
+  },
+  {
+   "id": "claude-sonnet-5",
+   "name": "Claude Sonnet 5",
+   "lab": "anthropic",
+   "family": "claude-sonnet",
+   "released": "2026-06-29",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "claude-sonnet-5"
+   ]
+  },
+  {
+   "id": "claude-fable-5",
+   "name": "Claude Fable 5",
+   "lab": "anthropic",
+   "family": "claude-fable",
+   "released": "2026-06-07",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "claude-fable-5"
+   ]
+  },
+  {
+   "id": "claude-opus-4-8",
+   "name": "Claude Opus 4.8",
+   "lab": "anthropic",
+   "family": "claude-opus",
+   "released": "2026-05-28",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "claude-opus-4-8"
+   ]
+  },
+  {
+   "id": "claude-opus-4-7",
+   "name": "Claude Opus 4.7",
+   "lab": "anthropic",
+   "family": "claude-opus",
+   "released": "2026-04-14",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "claude-opus-4-7"
+   ]
+  },
+  {
+   "id": "claude-sonnet-4-6",
+   "name": "Claude Sonnet 4.6",
+   "lab": "anthropic",
+   "family": "claude-sonnet",
+   "released": "2026-02-17",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "claude-sonnet-4-6"
+   ]
+  },
+  {
+   "id": "claude-opus-4-6",
+   "name": "Claude Opus 4.6",
+   "lab": "anthropic",
+   "family": "claude-opus",
+   "released": "2026-02-04",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "claude-opus-4-6"
+   ]
+  },
+  {
+   "id": "claude-opus-4-5",
+   "name": "Claude Opus 4.5",
+   "lab": "anthropic",
+   "family": "claude-opus",
+   "released": "2025-11-24",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "claude-opus-4-5",
+    "claude-opus-4-5-20251101"
+   ]
+  },
+  {
+   "id": "claude-haiku-4-5-20251001",
+   "name": "Claude Haiku 4.5",
+   "lab": "anthropic",
+   "family": "claude-haiku",
+   "released": "2025-10-15",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "claude-haiku-4-5-20251001",
+    "claude-haiku-4-5"
+   ]
+  },
+  {
+   "id": "claude-sonnet-4-5-20250929",
+   "name": "Claude Sonnet 4.5",
+   "lab": "anthropic",
+   "family": "claude-sonnet",
+   "released": "2025-09-29",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "claude-sonnet-4-5-20250929",
+    "claude-sonnet-4-5"
+   ]
+  },
+  {
+   "id": "gpt-6-astra",
+   "name": "GPT-6 Astra",
+   "lab": "openai",
+   "family": "gpt-astra",
+   "released": "2026-09-04",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-6-astra"
+   ]
+  },
+  {
+   "id": "gpt-5.6",
+   "name": "GPT-5.6",
+   "lab": "openai",
+   "family": "gpt-sol",
+   "released": "2026-07-09",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5.6"
+   ]
+  },
+  {
+   "id": "gpt-5.6-luna",
+   "name": "GPT-5.6 Luna",
+   "lab": "openai",
+   "family": "gpt-luna",
+   "released": "2026-07-09",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5.6-luna"
+   ]
+  },
+  {
+   "id": "gpt-5.6-sol",
+   "name": "GPT-5.6 Sol",
+   "lab": "openai",
+   "family": "gpt-sol",
+   "released": "2026-07-09",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5.6-sol"
+   ]
+  },
+  {
+   "id": "gpt-5.6-terra",
+   "name": "GPT-5.6 Terra",
+   "lab": "openai",
+   "family": "gpt-terra",
+   "released": "2026-07-09",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5.6-terra"
+   ]
+  },
+  {
+   "id": "gpt-5.5",
+   "name": "GPT-5.5",
+   "lab": "openai",
+   "family": "gpt",
+   "released": "2026-04-23",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5.5"
+   ]
+  },
+  {
+   "id": "gpt-5.5-pro",
+   "name": "GPT-5.5 Pro",
+   "lab": "openai",
+   "family": "gpt-pro",
+   "released": "2026-04-23",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5.5-pro"
+   ]
+  },
+  {
+   "id": "gpt-5.4-mini",
+   "name": "GPT-5.4 mini",
+   "lab": "openai",
+   "family": "gpt-mini",
+   "released": "2026-03-17",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5.4-mini"
+   ]
+  },
+  {
+   "id": "gpt-5.4-nano",
+   "name": "GPT-5.4 nano",
+   "lab": "openai",
+   "family": "gpt-nano",
+   "released": "2026-03-17",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5.4-nano"
+   ]
+  },
+  {
+   "id": "gpt-5.4",
+   "name": "GPT-5.4",
+   "lab": "openai",
+   "family": "gpt",
+   "released": "2026-03-05",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5.4"
+   ]
+  },
+  {
+   "id": "gpt-5.4-pro",
+   "name": "GPT-5.4 Pro",
+   "lab": "openai",
+   "family": "gpt-pro",
+   "released": "2026-03-05",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5.4-pro"
+   ]
+  },
+  {
+   "id": "gpt-5.3-codex",
+   "name": "GPT-5.3 Codex",
+   "lab": "openai",
+   "family": "gpt-codex",
+   "released": "2026-02-05",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5.3-codex"
+   ]
+  },
+  {
+   "id": "gpt-5.3-codex-spark",
+   "name": "GPT-5.3 Codex Spark",
+   "lab": "openai",
+   "family": "gpt-codex-spark",
+   "released": "2026-02-05",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5.3-codex-spark"
+   ]
+  },
+  {
+   "id": "gpt-5.2",
+   "name": "GPT-5.2",
+   "lab": "openai",
+   "family": "gpt",
+   "released": "2025-12-11",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5.2"
+   ]
+  },
+  {
+   "id": "gpt-5.2-pro",
+   "name": "GPT-5.2 Pro",
+   "lab": "openai",
+   "family": "gpt-pro",
+   "released": "2025-12-11",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5.2-pro"
+   ]
+  },
+  {
+   "id": "gpt-5.1",
+   "name": "GPT-5.1",
+   "lab": "openai",
+   "family": "gpt",
+   "released": "2025-11-13",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5.1"
+   ]
+  },
+  {
+   "id": "gpt-5-pro",
+   "name": "GPT-5 Pro",
+   "lab": "openai",
+   "family": "gpt-pro",
+   "released": "2025-10-06",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5-pro"
+   ]
+  },
+  {
+   "id": "gpt-5",
+   "name": "GPT-5",
+   "lab": "openai",
+   "family": "gpt",
+   "released": "2025-08-07",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5"
+   ]
+  },
+  {
+   "id": "gpt-5-mini",
+   "name": "GPT-5 Mini",
+   "lab": "openai",
+   "family": "gpt-mini",
+   "released": "2025-08-07",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5-mini"
+   ]
+  },
+  {
+   "id": "gpt-5-nano",
+   "name": "GPT-5 Nano",
+   "lab": "openai",
+   "family": "gpt-nano",
+   "released": "2025-08-07",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-5-nano"
+   ]
+  },
+  {
+   "id": "gpt-oss-120b",
+   "name": "GPT-OSS-120B",
+   "lab": "openai",
+   "family": "gpt-oss",
+   "released": "2025-08-04",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "gpt-oss-120b"
+   ]
+  },
+  {
+   "id": "o3-pro",
+   "name": "o3-pro",
+   "lab": "openai",
+   "family": "o-pro",
+   "released": "2025-06-10",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "o3-pro"
+   ]
+  },
+  {
+   "id": "o3",
+   "name": "o3",
+   "lab": "openai",
+   "family": "o",
+   "released": "2025-04-16",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "o3"
+   ]
+  },
+  {
+   "id": "o4-mini",
+   "name": "o4-mini",
+   "lab": "openai",
+   "family": "o-mini",
+   "released": "2025-04-16",
+   "openWeights": false,
+   "deprecated": true,
+   "aliases": [
+    "o4-mini"
+   ]
+  },
+  {
+   "id": "gpt-4.1",
+   "name": "GPT-4.1",
+   "lab": "openai",
+   "family": "gpt",
+   "released": "2025-04-14",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-4.1"
+   ]
+  },
+  {
+   "id": "gpt-4.1-mini",
+   "name": "GPT-4.1 mini",
+   "lab": "openai",
+   "family": "gpt-mini",
+   "released": "2025-04-14",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-4.1-mini"
+   ]
+  },
+  {
+   "id": "gpt-4.1-nano",
+   "name": "GPT-4.1 nano",
+   "lab": "openai",
+   "family": "gpt-nano",
+   "released": "2025-04-14",
+   "openWeights": false,
+   "deprecated": true,
+   "aliases": [
+    "gpt-4.1-nano"
+   ]
+  },
+  {
+   "id": "o1-pro",
+   "name": "o1-pro",
+   "lab": "openai",
+   "family": "o-pro",
+   "released": "2025-03-19",
+   "openWeights": false,
+   "deprecated": true,
+   "aliases": [
+    "o1-pro"
+   ]
+  },
+  {
+   "id": "o3-mini",
+   "name": "o3-mini",
+   "lab": "openai",
+   "family": "o-mini",
+   "released": "2024-12-20",
+   "openWeights": false,
+   "deprecated": true,
+   "aliases": [
+    "o3-mini"
+   ]
+  },
+  {
+   "id": "o1",
+   "name": "o1",
+   "lab": "openai",
+   "family": "o",
+   "released": "2024-12-05",
+   "openWeights": false,
+   "deprecated": true,
+   "aliases": [
+    "o1"
+   ]
+  },
+  {
+   "id": "gpt-4o-mini",
+   "name": "GPT-4o mini",
+   "lab": "openai",
+   "family": "gpt-mini",
+   "released": "2024-07-18",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gpt-4o-mini"
+   ]
+  },
+  {
+   "id": "gpt-4o-2024-05-13",
+   "name": "GPT-4o",
+   "lab": "openai",
+   "family": "gpt",
+   "released": "2024-05-13",
+   "openWeights": false,
+   "deprecated": true,
+   "aliases": [
+    "gpt-4o-2024-05-13",
+    "gpt-4o-2024-08-06",
+    "gpt-4o",
+    "gpt-4o-2024-11-20"
+   ]
+  },
+  {
+   "id": "gemini-3.8-flash",
+   "name": "Gemini 3.8 Flash",
+   "lab": "google",
+   "family": "gemini-flash",
+   "released": "2026-09-02",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gemini-3.8-flash"
+   ]
+  },
+  {
+   "id": "gemini-3.7-flash",
+   "name": "Gemini 3.7 Flash",
+   "lab": "google",
+   "family": "gemini-flash",
+   "released": "2026-08-13",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gemini-3.7-flash"
+   ]
+  },
+  {
+   "id": "gemini-3.5-flash-lite",
+   "name": "Gemini 3.5 Flash Lite",
+   "lab": "google",
+   "family": "gemini-flash-lite",
+   "released": "2026-07-21",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gemini-3.5-flash-lite"
+   ]
+  },
+  {
+   "id": "gemini-3.6-flash",
+   "name": "Gemini 3.6 Flash",
+   "lab": "google",
+   "family": "gemini-flash",
+   "released": "2026-07-21",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gemini-3.6-flash"
+   ]
+  },
+  {
+   "id": "gemini-3.5-flash",
+   "name": "Gemini 3.5 Flash",
+   "lab": "google",
+   "family": "gemini-flash",
+   "released": "2026-05-19",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gemini-3.5-flash"
+   ]
+  },
+  {
+   "id": "gemini-3.1-flash-lite",
+   "name": "Gemini 3.1 Flash Lite",
+   "lab": "google",
+   "family": "gemini-flash-lite",
+   "released": "2026-05-07",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gemini-3.1-flash-lite"
+   ]
+  },
+  {
+   "id": "gemma-4-26b-a4b-it",
+   "name": "Gemma 4 26B A4B",
+   "lab": "google",
+   "family": "gemma",
+   "released": "2026-04-02",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "gemma-4-26b-a4b-it"
+   ]
+  },
+  {
+   "id": "gemma-4-31b-it",
+   "name": "Gemma 4 31B",
+   "lab": "google",
+   "family": "gemma",
+   "released": "2026-04-02",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "gemma-4-31b-it"
+   ]
+  },
+  {
+   "id": "gemini-3.1-flash-lite-preview",
+   "name": "Gemini 3.1 Flash Lite Preview",
+   "lab": "google",
+   "family": "gemini-flash-lite",
+   "released": "2026-03-03",
+   "openWeights": false,
+   "deprecated": true,
+   "aliases": [
+    "gemini-3.1-flash-lite-preview"
+   ]
+  },
+  {
+   "id": "gemini-3.1-pro-preview",
+   "name": "Gemini 3.1 Pro Preview",
+   "lab": "google",
+   "family": "gemini-pro",
+   "released": "2026-02-19",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gemini-3.1-pro-preview"
+   ]
+  },
+  {
+   "id": "gemini-3-flash-preview",
+   "name": "Gemini 3 Flash Preview",
+   "lab": "google",
+   "family": "gemini-flash",
+   "released": "2025-12-17",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gemini-3-flash-preview"
+   ]
+  },
+  {
+   "id": "gemini-2.5-flash",
+   "name": "Gemini 2.5 Flash",
+   "lab": "google",
+   "family": "gemini-flash",
+   "released": "2025-06-17",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gemini-2.5-flash"
+   ]
+  },
+  {
+   "id": "gemini-2.5-flash-lite",
+   "name": "Gemini 2.5 Flash-Lite",
+   "lab": "google",
+   "family": "gemini-flash-lite",
+   "released": "2025-06-17",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gemini-2.5-flash-lite"
+   ]
+  },
+  {
+   "id": "gemini-2.5-pro",
+   "name": "Gemini 2.5 Pro",
+   "lab": "google",
+   "family": "gemini-pro",
+   "released": "2025-06-17",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "gemini-2.5-pro"
+   ]
+  },
+  {
+   "id": "gemma-3-12b-it",
+   "name": "Gemma 3 12B",
+   "lab": "google",
+   "family": "gemma",
+   "released": "2025-03-12",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "gemma-3-12b-it"
+   ]
+  },
+  {
+   "id": "gemma-3-27b-it",
+   "name": "Gemma 3 27B",
+   "lab": "google",
+   "family": "gemma",
+   "released": "2025-03-12",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "gemma-3-27b-it"
+   ]
+  },
+  {
+   "id": "gemma-3-4b-it",
+   "name": "Gemma 3 4B",
+   "lab": "google",
+   "family": "gemma",
+   "released": "2025-03-12",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "gemma-3-4b-it"
+   ]
+  },
+  {
+   "id": "gemma-2-27b-it",
+   "name": "Gemma 2 27B",
+   "lab": "google",
+   "family": "gemma",
+   "released": "2024-07-13",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "gemma-2-27b-it"
+   ]
+  },
+  {
+   "id": "grok-4.6",
+   "name": "Grok 4.6",
+   "lab": "xai",
+   "family": "grok",
+   "released": "2026-08-12",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "grok-4.6"
+   ]
+  },
+  {
+   "id": "grok-4.5",
+   "name": "Grok 4.5",
+   "lab": "xai",
+   "family": "grok",
+   "released": "2026-07-08",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "grok-4.5"
+   ]
+  },
+  {
+   "id": "grok-4.3",
+   "name": "Grok 4.3",
+   "lab": "xai",
+   "family": "grok",
+   "released": "2026-04-17",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "grok-4.3"
+   ]
+  },
+  {
+   "id": "grok-build-0.1",
+   "name": "Grok Build 0.1",
+   "lab": "xai",
+   "family": "grok-build",
+   "released": "2026-04-16",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "grok-build-0.1"
+   ]
+  },
+  {
+   "id": "grok-4.20-0309-non-reasoning",
+   "name": "Grok 4.20 (Non-Reasoning)",
+   "lab": "xai",
+   "family": "grok",
+   "released": "2026-03-09",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "grok-4.20-0309-non-reasoning"
+   ]
+  },
+  {
+   "id": "grok-4.20-0309-reasoning",
+   "name": "Grok 4.20 (Reasoning)",
+   "lab": "xai",
+   "family": "grok",
+   "released": "2026-03-09",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "grok-4.20-0309-reasoning"
+   ]
+  },
+  {
+   "id": "grok-4.20-multi-agent-0309",
+   "name": "Grok 4.20 Multi-Agent",
+   "lab": "xai",
+   "family": "grok",
+   "released": "2026-03-09",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "grok-4.20-multi-agent-0309"
+   ]
+  },
+  {
+   "id": "deepseek-v4-flash",
+   "name": "DeepSeek V4 Flash",
+   "lab": "deepseek",
+   "family": "deepseek-flash",
+   "released": "2026-09-10",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "deepseek-v4-flash"
+   ]
+  },
+  {
+   "id": "deepseek-flash",
+   "name": "DeepSeek V4.1 Flash",
+   "lab": "deepseek",
+   "family": "deepseek-flash",
+   "released": "2026-09-10",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "deepseek-flash"
+   ]
+  },
+  {
+   "id": "deepseek-v4-pro",
+   "name": "DeepSeek V4 Pro",
+   "lab": "deepseek",
+   "family": "deepseek-thinking",
+   "released": "2026-08-12",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "deepseek-v4-pro"
+   ]
+  },
+  {
+   "id": "qwen3.8-flash",
+   "name": "Qwen3.8 Flash",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2026-08-26",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "qwen3.8-flash"
+   ]
+  },
+  {
+   "id": "qwen3.8-max",
+   "name": "Qwen3.8 Max",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2026-08-03",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "qwen3.8-max"
+   ]
+  },
+  {
+   "id": "qwen3.7-plus",
+   "name": "Qwen3.7 Plus",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2026-06-02",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "qwen3.7-plus"
+   ]
+  },
+  {
+   "id": "qwen3.7-max",
+   "name": "Qwen3.7 Max",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2026-05-21",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "qwen3.7-max"
+   ]
+  },
+  {
+   "id": "qwen3.6-flash",
+   "name": "Qwen3.6 Flash",
+   "lab": "alibaba",
+   "family": "qwen3.6",
+   "released": "2026-04-27",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "qwen3.6-flash"
+   ]
+  },
+  {
+   "id": "qwen3.6-27b",
+   "name": "Qwen3.6 27B",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2026-04-22",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen3.6-27b"
+   ]
+  },
+  {
+   "id": "qwen3.6-max-preview",
+   "name": "Qwen3.6 Max Preview",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2026-04-20",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "qwen3.6-max-preview"
+   ]
+  },
+  {
+   "id": "qwen3.6-35b-a3b",
+   "name": "Qwen3.6 35B-A3B",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2026-04-17",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen3.6-35b-a3b"
+   ]
+  },
+  {
+   "id": "qwen3.6-plus",
+   "name": "Qwen3.6 Plus",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2026-04-02",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "qwen3.6-plus"
+   ]
+  },
+  {
+   "id": "qwen3.5-122b-a10b",
+   "name": "Qwen3.5 122B-A10B",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2026-02-23",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen3.5-122b-a10b"
+   ]
+  },
+  {
+   "id": "qwen3.5-27b",
+   "name": "Qwen3.5 27B",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2026-02-23",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen3.5-27b"
+   ]
+  },
+  {
+   "id": "qwen3.5-35b-a3b",
+   "name": "Qwen3.5 35B-A3B",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2026-02-23",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen3.5-35b-a3b"
+   ]
+  },
+  {
+   "id": "qwen3.5-plus",
+   "name": "Qwen3.5 Plus",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2026-02-16",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "qwen3.5-plus"
+   ]
+  },
+  {
+   "id": "qwen3.5-397b-a17b",
+   "name": "Qwen3.5 397B-A17B",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2026-02-15",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen3.5-397b-a17b"
+   ]
+  },
+  {
+   "id": "qwen3-max",
+   "name": "Qwen3 Max",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2025-09-23",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "qwen3-max"
+   ]
+  },
+  {
+   "id": "qwen3-next-80b-a3b-instruct",
+   "name": "Qwen3-Next 80B-A3B",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2025-09",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen3-next-80b-a3b-instruct"
+   ]
+  },
+  {
+   "id": "qwen3-next-80b-a3b-thinking",
+   "name": "Qwen3-Next 80B-A3B (Thinking)",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2025-09",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen3-next-80b-a3b-thinking"
+   ]
+  },
+  {
+   "id": "qwen-flash",
+   "name": "Qwen Flash",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2025-07-28",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "qwen-flash"
+   ]
+  },
+  {
+   "id": "qwen3-coder-flash",
+   "name": "Qwen3 Coder Flash",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2025-07-28",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "qwen3-coder-flash"
+   ]
+  },
+  {
+   "id": "qwen3-coder-plus",
+   "name": "Qwen3 Coder Plus",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2025-07-23",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen3-coder-plus"
+   ]
+  },
+  {
+   "id": "qwen3-14b",
+   "name": "Qwen3 14B",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2025-04",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen3-14b"
+   ]
+  },
+  {
+   "id": "qwen3-235b-a22b",
+   "name": "Qwen3 235B-A22B",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2025-04",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen3-235b-a22b"
+   ]
+  },
+  {
+   "id": "qwen3-32b",
+   "name": "Qwen3 32B",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2025-04",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen3-32b"
+   ]
+  },
+  {
+   "id": "qwen3-8b",
+   "name": "Qwen3 8B",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2025-04",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen3-8b"
+   ]
+  },
+  {
+   "id": "qwen3-coder-30b-a3b-instruct",
+   "name": "Qwen3-Coder 30B-A3B",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2025-04",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen3-coder-30b-a3b-instruct"
+   ]
+  },
+  {
+   "id": "qwen3-coder-480b-a35b-instruct",
+   "name": "Qwen3-Coder 480B-A35B",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2025-04",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen3-coder-480b-a35b-instruct"
+   ]
+  },
+  {
+   "id": "qwq-plus",
+   "name": "QwQ Plus",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2025-03-05",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "qwq-plus"
+   ]
+  },
+  {
+   "id": "qwen-turbo",
+   "name": "Qwen Turbo",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2024-11-01",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "qwen-turbo"
+   ]
+  },
+  {
+   "id": "qwen2-5-14b-instruct",
+   "name": "Qwen2.5 14B",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2024-09",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen2-5-14b-instruct"
+   ]
+  },
+  {
+   "id": "qwen2-5-32b-instruct",
+   "name": "Qwen2.5 32B",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2024-09",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen2-5-32b-instruct"
+   ]
+  },
+  {
+   "id": "qwen2-5-72b-instruct",
+   "name": "Qwen2.5 72B",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2024-09",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen2-5-72b-instruct"
+   ]
+  },
+  {
+   "id": "qwen2-5-7b-instruct",
+   "name": "Qwen2.5 7B",
+   "lab": "alibaba",
+   "family": "qwen",
+   "released": "2024-09",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "qwen2-5-7b-instruct"
+   ]
+  },
+  {
+   "id": "kimi-k3",
+   "name": "Kimi K3",
+   "lab": "moonshotai",
+   "family": "kimi-k3",
+   "released": "2026-07-16",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "kimi-k3"
+   ]
+  },
+  {
+   "id": "kimi-k2.7-code",
+   "name": "Kimi K2.7 Code",
+   "lab": "moonshotai",
+   "family": "kimi-k2",
+   "released": "2026-06-12",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "kimi-k2.7-code"
+   ]
+  },
+  {
+   "id": "kimi-k2.6",
+   "name": "Kimi K2.6",
+   "lab": "moonshotai",
+   "family": "kimi-k2",
+   "released": "2026-04-21",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "kimi-k2.6"
+   ]
+  },
+  {
+   "id": "glm-5.3-flash",
+   "name": "GLM-5.3-Flash",
+   "lab": "zai",
+   "family": "glm",
+   "released": "2026-08-26",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "glm-5.3-flash"
+   ]
+  },
+  {
+   "id": "glm-5.3",
+   "name": "GLM-5.3",
+   "lab": "zai",
+   "family": "glm",
+   "released": "2026-08-14",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "glm-5.3"
+   ]
+  },
+  {
+   "id": "glm-5.2",
+   "name": "GLM-5.2",
+   "lab": "zai",
+   "family": "glm",
+   "released": "2026-06-13",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "glm-5.2"
+   ]
+  },
+  {
+   "id": "glm-5.1",
+   "name": "GLM-5.1",
+   "lab": "zai",
+   "family": "glm",
+   "released": "2026-04-07",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "glm-5.1"
+   ]
+  },
+  {
+   "id": "glm-5v-turbo",
+   "name": "GLM-5V-Turbo",
+   "lab": "zai",
+   "family": "glm",
+   "released": "2026-04-01",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "glm-5v-turbo"
+   ]
+  },
+  {
+   "id": "glm-5-turbo",
+   "name": "GLM-5-Turbo",
+   "lab": "zai",
+   "family": "glm",
+   "released": "2026-03-16",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "glm-5-turbo"
+   ]
+  },
+  {
+   "id": "glm-5",
+   "name": "GLM-5",
+   "lab": "zai",
+   "family": "glm",
+   "released": "2026-02-12",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "glm-5"
+   ]
+  },
+  {
+   "id": "glm-4.7-flash",
+   "name": "GLM-4.7-Flash",
+   "lab": "zai",
+   "family": "glm-flash",
+   "released": "2026-01-19",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "glm-4.7-flash"
+   ]
+  },
+  {
+   "id": "glm-4.7-flashx",
+   "name": "GLM-4.7-FlashX",
+   "lab": "zai",
+   "family": "glm-flash",
+   "released": "2026-01-19",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "glm-4.7-flashx"
+   ]
+  },
+  {
+   "id": "glm-4.7",
+   "name": "GLM-4.7",
+   "lab": "zai",
+   "family": "glm",
+   "released": "2025-12-22",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "glm-4.7"
+   ]
+  },
+  {
+   "id": "glm-4.6v",
+   "name": "GLM-4.6V",
+   "lab": "zai",
+   "family": "glm",
+   "released": "2025-12-08",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "glm-4.6v"
+   ]
+  },
+  {
+   "id": "glm-4.6",
+   "name": "GLM-4.6",
+   "lab": "zai",
+   "family": "glm",
+   "released": "2025-09-30",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "glm-4.6"
+   ]
+  },
+  {
+   "id": "glm-4.5v",
+   "name": "GLM-4.5V",
+   "lab": "zai",
+   "family": "glm",
+   "released": "2025-08-11",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "glm-4.5v"
+   ]
+  },
+  {
+   "id": "glm-4.5",
+   "name": "GLM-4.5",
+   "lab": "zai",
+   "family": "glm",
+   "released": "2025-07-28",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "glm-4.5"
+   ]
+  },
+  {
+   "id": "glm-4.5-air",
+   "name": "GLM-4.5-Air",
+   "lab": "zai",
+   "family": "glm-air",
+   "released": "2025-07-28",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "glm-4.5-air"
+   ]
+  },
+  {
+   "id": "glm-4.5-flash",
+   "name": "GLM-4.5-Flash",
+   "lab": "zai",
+   "family": "glm-flash",
+   "released": "2025-07-28",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "glm-4.5-flash"
+   ]
+  },
+  {
+   "id": "mistral-medium-2604",
+   "name": "Mistral Medium 3.5",
+   "lab": "mistral",
+   "family": "mistral-medium",
+   "released": "2026-04-29",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "mistral-medium-2604"
+   ]
+  },
+  {
+   "id": "mistral-small-2603",
+   "name": "Mistral Small 4",
+   "lab": "mistral",
+   "family": "mistral-small",
+   "released": "2026-03-16",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "mistral-small-2603"
+   ]
+  },
+  {
+   "id": "devstral-2512",
+   "name": "Devstral 2",
+   "lab": "mistral",
+   "family": "devstral",
+   "released": "2025-12-09",
+   "openWeights": true,
+   "deprecated": true,
+   "aliases": [
+    "devstral-2512"
+   ]
+  },
+  {
+   "id": "labs-devstral-small-2512",
+   "name": "Devstral Small 2",
+   "lab": "mistral",
+   "family": "devstral",
+   "released": "2025-12-09",
+   "openWeights": true,
+   "deprecated": true,
+   "aliases": [
+    "labs-devstral-small-2512"
+   ]
+  },
+  {
+   "id": "mistral-medium-2508",
+   "name": "Mistral Medium 3.1",
+   "lab": "mistral",
+   "family": "mistral-medium",
+   "released": "2025-08-12",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "mistral-medium-2508"
+   ]
+  },
+  {
+   "id": "devstral-medium-2507",
+   "name": "Devstral Medium",
+   "lab": "mistral",
+   "family": "devstral",
+   "released": "2025-07-10",
+   "openWeights": true,
+   "deprecated": true,
+   "aliases": [
+    "devstral-medium-2507"
+   ]
+  },
+  {
+   "id": "devstral-small-2507",
+   "name": "Devstral Small",
+   "lab": "mistral",
+   "family": "devstral",
+   "released": "2025-07-10",
+   "openWeights": true,
+   "deprecated": true,
+   "aliases": [
+    "devstral-small-2507"
+   ]
+  },
+  {
+   "id": "mistral-small-2506",
+   "name": "Mistral Small 3.2",
+   "lab": "mistral",
+   "family": "mistral-small",
+   "released": "2025-06-20",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "mistral-small-2506"
+   ]
+  },
+  {
+   "id": "devstral-small-2505",
+   "name": "Devstral Small 2505",
+   "lab": "mistral",
+   "family": "devstral",
+   "released": "2025-05-07",
+   "openWeights": true,
+   "deprecated": true,
+   "aliases": [
+    "devstral-small-2505"
+   ]
+  },
+  {
+   "id": "mistral-medium-2505",
+   "name": "Mistral Medium 3",
+   "lab": "mistral",
+   "family": "mistral-medium",
+   "released": "2025-05-07",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "mistral-medium-2505"
+   ]
+  },
+  {
+   "id": "magistral-small",
+   "name": "Magistral Small",
+   "lab": "mistral",
+   "family": "magistral-small",
+   "released": "2025-03-17",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "magistral-small"
+   ]
+  },
+  {
+   "id": "mistral-large-2411",
+   "name": "Mistral Large 2.1",
+   "lab": "mistral",
+   "family": "mistral-large",
+   "released": "2024-11-18",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "mistral-large-2411"
+   ]
+  },
+  {
+   "id": "mistral-large-2512",
+   "name": "Mistral Large 3",
+   "lab": "mistral",
+   "family": "mistral-large",
+   "released": "2024-11-01",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "mistral-large-2512"
+   ]
+  },
+  {
+   "id": "pixtral-12b",
+   "name": "Pixtral 12B",
+   "lab": "mistral",
+   "family": "pixtral",
+   "released": "2024-09-01",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "pixtral-12b"
+   ]
+  },
+  {
+   "id": "mistral-nemo",
+   "name": "Mistral Nemo",
+   "lab": "mistral",
+   "family": "mistral-nemo",
+   "released": "2024-07-01",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "mistral-nemo"
+   ]
+  },
+  {
+   "id": "minimax-m3",
+   "name": "MiniMax-M3",
+   "lab": "minimax",
+   "family": "minimax",
+   "released": "2026-06-01",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "minimax-m3"
+   ]
+  },
+  {
+   "id": "minimax-m2.7",
+   "name": "MiniMax-M2.7",
+   "lab": "minimax",
+   "family": "minimax",
+   "released": "2026-03-18",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "minimax-m2.7"
+   ]
+  },
+  {
+   "id": "minimax-m2.5",
+   "name": "MiniMax-M2.5",
+   "lab": "minimax",
+   "family": "minimax",
+   "released": "2026-02-12",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "minimax-m2.5"
+   ]
+  },
+  {
+   "id": "minimax-m2.1",
+   "name": "MiniMax-M2.1",
+   "lab": "minimax",
+   "family": "minimax",
+   "released": "2025-12-23",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "minimax-m2.1"
+   ]
+  },
+  {
+   "id": "minimax-m2",
+   "name": "MiniMax-M2",
+   "lab": "minimax",
+   "family": "minimax",
+   "released": "2025-10-27",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "minimax-m2"
+   ]
+  },
+  {
+   "id": "muse-spark-1.3",
+   "name": "Muse Spark 1.3",
+   "lab": "meta",
+   "family": "muse",
+   "released": "2026-09-02",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "muse-spark-1.3"
+   ]
+  },
+  {
+   "id": "muse-spark-1.2",
+   "name": "Muse Spark 1.2",
+   "lab": "meta",
+   "family": "muse",
+   "released": "2026-08-05",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "muse-spark-1.2"
+   ]
+  },
+  {
+   "id": "muse-spark-1.1",
+   "name": "Muse Spark 1.1",
+   "lab": "meta",
+   "family": "muse",
+   "released": "2026-04-08",
+   "openWeights": false,
+   "deprecated": false,
+   "aliases": [
+    "muse-spark-1.1"
+   ]
+  },
+  {
+   "id": "llama-4-maverick",
+   "name": "Llama 4 Maverick",
+   "lab": "meta",
+   "family": "llama",
+   "released": "2025-04-05",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "llama-4-maverick"
+   ]
+  },
+  {
+   "id": "llama-4-scout",
+   "name": "Llama 4 Scout",
+   "lab": "meta",
+   "family": "llama",
+   "released": "2025-04-05",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "llama-4-scout"
+   ]
+  },
+  {
+   "id": "llama-3.3-70b-instruct",
+   "name": "Llama 3.3 70B",
+   "lab": "meta",
+   "family": "llama",
+   "released": "2024-12-06",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "llama-3.3-70b-instruct"
+   ]
+  },
+  {
+   "id": "llama-3.2-1b-instruct",
+   "name": "Llama 3.2 1B",
+   "lab": "meta",
+   "family": "llama",
+   "released": "2024-09-25",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "llama-3.2-1b-instruct"
+   ]
+  },
+  {
+   "id": "llama-3.2-3b-instruct",
+   "name": "Llama 3.2 3B",
+   "lab": "meta",
+   "family": "llama",
+   "released": "2024-09-25",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "llama-3.2-3b-instruct"
+   ]
+  },
+  {
+   "id": "llama-3.1-70b-instruct",
+   "name": "Llama 3.1 70B",
+   "lab": "meta",
+   "family": "llama",
+   "released": "2024-07-23",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "llama-3.1-70b-instruct"
+   ]
+  },
+  {
+   "id": "llama-3.1-8b-instruct",
+   "name": "Llama 3.1 8B",
+   "lab": "meta",
+   "family": "llama",
+   "released": "2024-07-23",
+   "openWeights": true,
+   "deprecated": false,
+   "aliases": [
+    "llama-3.1-8b-instruct"
+   ]
+  }
+ ]
+}

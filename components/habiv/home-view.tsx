@@ -3,20 +3,22 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { loadFeedPage } from "@/lib/actions/feed";
-import { packTiles, spanFor } from "@/lib/habiv/bento";
+import { spanFor } from "@/lib/habiv/bento";
 import { accentOf, art, best, chipsFor, fmt, matchesChip, shortModel, type Game } from "@/lib/habiv/games";
 import type { HomeData } from "@/lib/habiv/page-data";
 import { bpanel, chipStyle, mono, monoLabel, onArtBtn, pill, primaryBtn } from "@/lib/habiv/ui";
-import { ArtFrame, BentoGrid, BentoTile, CategoryCells, SkeletonTile } from "./game-card";
+import { ArtFrame, BentoGrid, BentoStack, CategoryCells, GameCard, GameCards, SkeletonCard } from "./game-card";
 import { useShell } from "./shell-context";
 
-function HeroCell({ hero }: { hero: Game }) {
+function HeroCell({ hero, onHover }: { hero: Game; onHover: (on: boolean) => void }) {
   const { cols, isSaved, toggleSaved, openModal, setModalGameId } = useShell();
   return (
     <div
+      onMouseEnter={() => onHover(true)}
+      onMouseLeave={() => onHover(false)}
       style={{
         position: "relative",
-        gridColumn: `span ${spanFor(cols, [2, 6, 5, 8])}`,
+        gridColumn: `span ${spanFor(cols, [2, 6, 6, 9])}`,
         gridRow: `span ${cols === 2 ? 7 : 9}`,
         borderRadius: "18px",
         overflow: "hidden",
@@ -88,15 +90,41 @@ function HeroCell({ hero }: { hero: Game }) {
   );
 }
 
-function FeaturedQueue({ featured, heroId, setHeroId }: { featured: Game[]; heroId: string | null; setHeroId: (id: string) => void }) {
+/** How long each featured game holds the hero before the next one takes over. */
+const ROTATE_MS = 6000;
+
+function FeaturedQueue({
+  featured,
+  heroId,
+  setHeroId,
+  paused,
+  setPaused,
+}: {
+  featured: Game[];
+  heroId: string | null;
+  setHeroId: (id: string) => void;
+  paused: boolean;
+  setPaused: (on: boolean) => void;
+}) {
   const { cols } = useShell();
+  // Reduced motion collapses every animation to ~0ms, which would flip slides every frame, so it gets no rotation.
+  const [still, setStill] = useState(true);
+  useEffect(() => {
+    setStill(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  }, []);
   if (!featured.length) return null;
+
+  const advance = () => {
+    const i = featured.findIndex((g) => g.id === heroId);
+    setHeroId(featured[(i + 1) % featured.length].id);
+  };
+
   return (
     <>
       <div
         style={{
           ...bpanel,
-          gridColumn: `span ${spanFor(cols, [2, 6, 3, 4])}`,
+          gridColumn: `span ${spanFor(cols, [2, 6, 2, 3])}`,
           gridRow: "span 1",
           display: "flex",
           alignItems: "center",
@@ -109,29 +137,53 @@ function FeaturedQueue({ featured, heroId, setHeroId }: { featured: Game[]; hero
         <span style={{ fontFamily: mono, fontSize: "10.5px", color: "var(--ink-6)" }}>{String(featured.length).padStart(2, "0")}</span>
       </div>
       {featured.map((x) => (
-        <button
+        <Link
           key={x.id}
-          onMouseEnter={() => setHeroId(x.id)}
+          href={x.url}
+          onMouseEnter={() => {
+            setHeroId(x.id);
+            setPaused(true);
+          }}
+          onMouseLeave={() => setPaused(false)}
           onFocus={() => setHeroId(x.id)}
-          onClick={() => setHeroId(x.id)}
           className="hb-lift-sm"
           style={{
             ...bpanel,
-            gridColumn: `span ${spanFor(cols, [1, 2, 3, 4])}`,
+            position: "relative",
+            // Keeps the progress fill (z-index -1) above the card background but under its content.
+            isolation: "isolate",
+            gridColumn: `span ${spanFor(cols, [1, 2, 2, 3])}`,
             gridRow: "span 2",
             alignSelf: "stretch",
             display: "flex",
             alignItems: "center",
-            gap: "14px",
+            gap: "10px",
             padding: "10px",
             border: x.id === heroId ? "1px solid var(--chip-2)" : "1px solid transparent",
             color: "var(--ink)",
-            cursor: "pointer",
+            textDecoration: "none",
             textAlign: "left",
             overflow: "hidden",
           }}
         >
-          <ArtFrame src={art(x, 300)} style={{ width: "84px", height: "100%", flex: "0 0 auto", borderRadius: "8px" }}>
+          {x.id === heroId && !still && featured.length > 1 ? (
+            // Doubles as the rotation timer: when the fill reaches the right edge, the next game takes the hero.
+            <span
+              aria-hidden
+              onAnimationEnd={advance}
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: -1,
+                background: "var(--chip)",
+                pointerEvents: "none",
+                transformOrigin: "left",
+                animation: `hbProgress ${ROTATE_MS}ms linear forwards`,
+                animationPlayState: paused ? "paused" : "running",
+              }}
+            />
+          ) : null}
+          <ArtFrame src={art(x, 300)} style={{ height: "100%", aspectRatio: "1 / 1", flex: "0 0 auto", borderRadius: "8px" }}>
             <span
               style={{
                 position: "absolute",
@@ -148,8 +200,8 @@ function FeaturedQueue({ featured, heroId, setHeroId }: { featured: Game[]; hero
               {x.duration}
             </span>
           </ArtFrame>
-          <div style={{ minWidth: 0, flex: 1, paddingRight: "12px" }}>
-            <div style={{ fontSize: "14px", fontWeight: 600, letterSpacing: "-0.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          <div style={{ minWidth: 0, flex: 1, paddingRight: "4px" }}>
+            <div style={{ fontSize: "13.5px", fontWeight: 600, letterSpacing: "-0.01em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {x.title}
             </div>
             <div
@@ -168,7 +220,7 @@ function FeaturedQueue({ featured, heroId, setHeroId }: { featured: Game[]; hero
               {x.type} · {x.duration}
             </div>
           </div>
-        </button>
+        </Link>
       ))}
     </>
   );
@@ -428,17 +480,14 @@ function SectionHeader({ title, note }: { title: string; note: string }) {
 
 const FEED_PAGE = 12;
 
-/** Grid slots for `n` tiles that have not arrived yet; only the spans are read. */
-function skeletonSlots(n: number, cols: number, startRow: number) {
-  return packTiles(Array.from({ length: n }, () => null as unknown as Game), cols, startRow).tiles;
-}
-
 /** Chips that are not categories are applied on the client after the page arrives. */
 const feedCategory = (chip: string) => (chip === "All" || chip === "Under 50 KB" ? null : chip);
 
 export function HomeView({ data }: { data: HomeData }) {
   const { cols } = useShell();
   const [heroId, setHeroId] = useState<string | null>(data.hero?.id ?? null);
+  // Rotation holds while the pointer rests on the hero or the queue.
+  const [paused, setPaused] = useState(false);
   const [chip, setChip] = useState("All");
   const [items, setItems] = useState<Game[]>(data.feed.items);
   const [nextOffset, setNextOffset] = useState<number | null>(data.feed.nextOffset);
@@ -523,94 +572,95 @@ export function HomeView({ data }: { data: HomeData }) {
       });
   };
 
-  // Sections and the feed share one running row index so the rhythm never repeats back to back.
-  let row = 0;
-  const sections = data.sections
-    .filter((sec) => sec.games.length > 0)
-    .map((sec) => {
-      const packed = packTiles(sec.games, cols, row);
-      row = packed.next;
-      return { key: sec.key, title: sec.title, note: sec.note, tiles: packed.tiles };
-    });
   const visible = items.filter((g) => matchesChip(g, chip));
-  const packedFeed = packTiles(visible, cols, row);
-  // While a page loads, pack its slots too: they render as skeletons, then the real tiles fill the same spots.
-  const skeletons = loadingMore ? skeletonSlots(FEED_PAGE, cols, packedFeed.next) : [];
   const done = nextOffset == null && !loadingMore;
 
   return (
-    <BentoGrid>
-      {hero ? (
-        <HeroCell hero={hero} />
-      ) : (
-        <div
-          style={{
-            ...bpanel,
-            gridColumn: `span ${spanFor(cols, [2, 6, 5, 8])}`,
-            gridRow: `span ${cols === 2 ? 4 : 5}`,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "flex-end",
-            padding: "clamp(18px, 3.2%, 34px)",
-          }}
-        >
-          <div style={{ ...monoLabel, letterSpacing: "0.16em" }}>Featured today</div>
-          <div style={{ marginTop: "10px", fontSize: "clamp(22px, 3vw, 34px)", fontWeight: 600, letterSpacing: "-0.03em", lineHeight: 1.05 }}>
-            Nothing published yet
+    <BentoStack>
+      <BentoGrid>
+        {hero ? (
+          <HeroCell hero={hero} onHover={setPaused} />
+        ) : (
+          <div
+            style={{
+              ...bpanel,
+              gridColumn: `span ${spanFor(cols, [2, 6, 6, 9])}`,
+              gridRow: `span ${cols === 2 ? 4 : 5}`,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "flex-end",
+              padding: "clamp(18px, 3.2%, 34px)",
+            }}
+          >
+            <div style={{ ...monoLabel, letterSpacing: "0.16em" }}>Featured today</div>
+            <div style={{ marginTop: "10px", fontSize: "clamp(22px, 3vw, 34px)", fontWeight: 600, letterSpacing: "-0.03em", lineHeight: 1.05 }}>
+              Nothing published yet
+            </div>
+            <div style={{ marginTop: "10px", fontSize: "14px", lineHeight: 1.6, color: "var(--ink-4)", maxWidth: "44ch" }}>
+              The first game to land on Habiv takes this spot.
+            </div>
+            <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
+              <Link href="/publish" style={primaryBtn}>
+                Publish a game
+              </Link>
+            </div>
           </div>
-          <div style={{ marginTop: "10px", fontSize: "14px", lineHeight: 1.6, color: "var(--ink-4)", maxWidth: "44ch" }}>
-            The first game to land on Habiv takes this spot.
-          </div>
-          <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
-            <Link href="/publish" style={primaryBtn}>
-              Publish a game
-            </Link>
-          </div>
-        </div>
-      )}
-      <FeaturedQueue featured={data.featured} heroId={hero?.id ?? null} setHeroId={setHeroId} />
-      <CategoryCells categories={data.categories} onPick={pick} />
-      <DailyCells daily={data.daily} />
-      <ChipsCell chips={chipsFor(data.categories)} chip={chip} setChip={pick} />
+        )}
+        <FeaturedQueue featured={data.featured} heroId={hero?.id ?? null} setHeroId={setHeroId} paused={paused} setPaused={setPaused} />
+        <CategoryCells categories={data.categories} onPick={pick} />
+        <DailyCells daily={data.daily} />
+        <ChipsCell chips={chipsFor(data.categories)} chip={chip} setChip={pick} />
+      </BentoGrid>
 
-      {sections.map((sec) => (
-        <SectionBlock key={sec.key} title={sec.title} note={sec.note}>
-          {sec.tiles.map((t) => (
-            <BentoTile key={`${sec.key}-${t.game.id}`} tile={t} cols={cols} />
+      {data.sections
+        .filter((sec) => sec.games.length > 0)
+        .map((sec) => (
+          <SectionBlock key={sec.key} title={sec.title} note={sec.note}>
+            {sec.games.map((g) => (
+              <GameCard key={`${sec.key}-${g.id}`} game={g} />
+            ))}
+          </SectionBlock>
+        ))}
+
+      <BentoGrid>
+        <SectionHeader title={chip === "All" ? "Keep discovering" : `${chip} games`} note="keeps loading as you scroll" />
+      </BentoGrid>
+      {visible.length || loadingMore ? (
+        <GameCards>
+          {visible.map((g, i) => (
+            <GameCard key={`feed-${g.id}-${i}`} game={g} />
           ))}
-        </SectionBlock>
-      ))}
-
-      <SectionHeader title={chip === "All" ? "Keep discovering" : `${chip} games`} note="keeps loading as you scroll" />
-      {packedFeed.tiles.map((t, i) => (
-        <BentoTile key={`feed-${t.game.id}-${i}`} tile={t} cols={cols} />
-      ))}
-      {skeletons.map((t, i) => (
-        <SkeletonTile key={`skeleton-${i}`} c={t.c} r={t.r} />
-      ))}
-      {done && !visible.length ? (
-        <div style={{ ...bpanel, gridColumn: "1 / -1", gridRow: "span 3", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-4)", fontSize: "14px" }}>
-          {chip === "All" ? "No games published yet." : `No ${chip} games yet.`}
-        </div>
+          {/* While a page loads, its cards render as skeletons in the same spots. */}
+          {loadingMore ? Array.from({ length: FEED_PAGE }, (_, i) => <SkeletonCard key={`skeleton-${i}`} />) : null}
+        </GameCards>
       ) : null}
+      <BentoGrid>
+        {done && !visible.length ? (
+          <div style={{ ...bpanel, gridColumn: "1 / -1", gridRow: "span 3", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--ink-4)", fontSize: "14px" }}>
+            {chip === "All" ? "No games published yet." : `No ${chip} games yet.`}
+          </div>
+        ) : null}
 
-      <div
-        ref={sentinel}
-        style={{ ...bpanel, gridColumn: "1 / -1", gridRow: "span 1", display: "flex", justifyContent: "center", alignItems: "center" }}
-      >
-        <button onClick={loadMore} disabled={loadingMore || nextOffset == null} style={{ ...pill(), opacity: loadingMore ? 0.6 : 1 }}>
-          {done ? "That is everything for now" : loadingMore ? "Loading more games…" : "Load more"}
-        </button>
-      </div>
-    </BentoGrid>
+        <div
+          ref={sentinel}
+          style={{ ...bpanel, gridColumn: "1 / -1", gridRow: "span 1", display: "flex", justifyContent: "center", alignItems: "center" }}
+        >
+          <button onClick={loadMore} disabled={loadingMore || nextOffset == null} style={{ ...pill(), opacity: loadingMore ? 0.6 : 1 }}>
+            {done ? "That is everything for now" : loadingMore ? "Loading more games…" : "Load more"}
+          </button>
+        </div>
+      </BentoGrid>
+    </BentoStack>
   );
 }
 
 function SectionBlock({ title, note, children }: { title: string; note: string; children: React.ReactNode }) {
   return (
     <>
-      <SectionHeader title={title} note={note} />
-      {children}
+      <BentoGrid>
+        <SectionHeader title={title} note={note} />
+      </BentoGrid>
+      <GameCards>{children}</GameCards>
     </>
   );
 }

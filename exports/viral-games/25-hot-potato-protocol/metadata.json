@@ -1,0 +1,33 @@
+{
+  "title": "Hot Potato Protocol",
+  "slug": "hot-potato-protocol",
+  "category": "Reaction",
+  "orientation": "any",
+  "duration_seconds": 35,
+  "tagline": "Pass the glowing potato before the protocol changes its mind.",
+  "description": "The potato gives off a different safe color every round. Tap to pass it to the matching bot, but ignore the fake instruction stamped in the corner.",
+  "objective": "Tap the bot with the current safe color.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Pass the potato"
+    },
+    {
+      "key": "Space",
+      "action": "Lock the pass"
+    },
+    {
+      "key": "R",
+      "action": "Restart"
+    }
+  ],
+  "tags": [
+    "reaction",
+    "party",
+    "timing"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "25-hot-potato-protocol.zip"
+}

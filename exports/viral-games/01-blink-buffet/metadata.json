@@ -1,0 +1,33 @@
+{
+  "title": "Blink Buffet",
+  "slug": "blink-buffet",
+  "category": "Reaction",
+  "orientation": "any",
+  "duration_seconds": 30,
+  "tagline": "A one-thumb feast of green lights and very rude decoys.",
+  "description": "The plate flashes a new order every round. Tap only the green bite before the kitchen timer snaps shut. The decoys get faster, the order gets stranger, and every clean streak makes the next serving smaller.",
+  "objective": "Find the green bite before the decoys fool you.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Hit the green bite"
+    },
+    {
+      "key": "R",
+      "action": "Restart"
+    },
+    {
+      "key": "P",
+      "action": "Pause"
+    }
+  ],
+  "tags": [
+    "one thumb",
+    "short loop",
+    "high score"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "01-blink-buffet.zip"
+}

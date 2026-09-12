@@ -1,0 +1,33 @@
+{
+  "title": "Pigeon Panic",
+  "slug": "pigeon-panic",
+  "category": "Arcade",
+  "orientation": "any",
+  "duration_seconds": 40,
+  "tagline": "Protect one very important chip from a flock with excellent timing.",
+  "description": "A street-food cart, one crispy chip, and an increasingly coordinated pigeon squad. Tap to shoo, hold to fake, and do not waste your last crumb.",
+  "objective": "Tap the hungry pigeon before it steals the chip.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Shush a pigeon"
+    },
+    {
+      "key": "Hold",
+      "action": "Fake a toss"
+    },
+    {
+      "key": "R",
+      "action": "Reset the cart"
+    }
+  ],
+  "tags": [
+    "arcade",
+    "funny",
+    "score attack"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "09-pigeon-panic.zip"
+}

@@ -1,0 +1,33 @@
+{
+  "title": "Kite String Theory",
+  "slug": "kite-string-theory",
+  "category": "Ambient",
+  "orientation": "any",
+  "duration_seconds": 115,
+  "tagline": "Guide a kite through the afternoon without tangling the thought.",
+  "description": "Pull a kite across a wide sky, catch warm currents, and keep the string away from trees. The longer you stay aloft, the more postcards drift by.",
+  "objective": "Collect the warm currents and leave the storm clouds alone.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Catch a current"
+    },
+    {
+      "key": "Drag",
+      "action": "Steer kite"
+    },
+    {
+      "key": "R",
+      "action": "Reset afternoon"
+    }
+  ],
+  "tags": [
+    "ambient",
+    "physics",
+    "sky"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "49-kite-string-theory.zip"
+}

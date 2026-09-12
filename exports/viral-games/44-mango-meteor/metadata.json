@@ -1,0 +1,33 @@
+{
+  "title": "Mango Meteor",
+  "slug": "mango-meteor",
+  "category": "Arcade",
+  "orientation": "any",
+  "duration_seconds": 33,
+  "tagline": "Slice the fruit, dodge the meteor, keep the juice contained.",
+  "description": "Mangoes fall from an optimistic sky while a meteor crosses the kitchen window. Slice the fruit in matching arcs and collect juice multipliers.",
+  "objective": "Tap the ripe mango and avoid the meteor.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Slice mango"
+    },
+    {
+      "key": "Drag",
+      "action": "Catch bonus"
+    },
+    {
+      "key": "R",
+      "action": "Restart sky"
+    }
+  ],
+  "tags": [
+    "arcade",
+    "fruit",
+    "fast"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "44-mango-meteor.zip"
+}

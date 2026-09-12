@@ -303,9 +303,15 @@ export function WatchView({ data }: { data: WatchData }) {
     setRankResult(null);
   };
 
+  // Keys only reach the game while its iframe has focus. Take it when play starts or resumes,
+  // and again after a player control (mute, theatre, fullscreen) pulls it back to the page.
+  useEffect(() => {
+    if (state === "playing") iframeRef.current?.focus({ preventScroll: true });
+  }, [state, muted, theatre, fullscreen]);
+
   const onOverlayPointerDown = () => {
     setInteracted(true);
-    iframeRef.current?.focus();
+    iframeRef.current?.focus({ preventScroll: true });
   };
 
   const nextGame = data.queue[0] ?? null;
@@ -1128,8 +1134,18 @@ export function WatchView({ data }: { data: WatchData }) {
           {/* Build stats */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "10px" }}>
             {[
-              { label: "Model", value: game.model || "—", note: game.model ? "generated the current build" : "model not recorded" },
-              { label: "Published with", value: game.tool || "—", note: game.versions ? `v${game.versions} is live` : "no live build" },
+              {
+                label: "Model",
+                value: game.model || "—",
+                note: game.model ? "generated the current build" : "model not recorded",
+                href: game.model ? `/explore?model=${encodeURIComponent(game.model)}` : undefined,
+              },
+              {
+                label: "Published with",
+                value: game.tool || "—",
+                note: game.versions ? `v${game.versions} is live` : "no live build",
+                href: game.tool ? `/explore?tool=${encodeURIComponent(game.tool)}` : undefined,
+              },
               { label: "Runtime", value: game.engine || "html", note: game.usesNetwork ? "talks to the network" : "no external requests" },
               { label: "Bundle", value: game.size, note: game.needsIsolation ? "runs cross-origin isolated" : "sandboxed iframe" },
               { label: "Versions", value: game.versions ? `v${game.versions}` : "—", note: `last push ${game.age}` },
@@ -1138,7 +1154,13 @@ export function WatchView({ data }: { data: WatchData }) {
               <div key={s.label} style={{ ...bpanel, borderRadius: "12px", padding: "12px 14px" }}>
                 <div style={statLabel}>{s.label}</div>
                 <div style={{ marginTop: "6px", fontSize: "14px", fontWeight: 600, color: "var(--ink)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {s.value}
+                  {s.href ? (
+                    <Link href={s.href} title={`More games made with ${s.value}`} style={{ color: "inherit", textDecoration: "underline", textDecorationColor: "var(--chip-2)", textUnderlineOffset: "3px" }}>
+                      {s.value}
+                    </Link>
+                  ) : (
+                    s.value
+                  )}
                 </div>
                 <div style={{ marginTop: "3px", fontSize: "12px", color: "var(--ink-5)" }}>{s.note}</div>
               </div>

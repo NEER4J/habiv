@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import type { PackedTile } from "@/lib/habiv/bento";
 import { spanFor } from "@/lib/habiv/bento";
 import {
   accentOf,
@@ -31,7 +30,7 @@ const blurChip: CSSProperties = {
   color: "#fff",
 };
 
-const shimmer: CSSProperties = {
+export const shimmer: CSSProperties = {
   background: "var(--skeleton)",
   backgroundSize: "420px 100%",
   animation: "hbShimmer 1.2s linear infinite",
@@ -91,57 +90,79 @@ export function ArtFrame({
   );
 }
 
-/** Placeholder with the exact footprint of a BentoTile, so loading never shifts the grid. */
-export function SkeletonTile({ c, r }: { c: number; r: number }) {
+/** Thumbnail height shared by every card at this bento width. */
+function cardArtHeight(cols: number) {
+  return cols === 6 ? 160 : cols === 8 ? 180 : 200;
+}
+
+const CARD_MIN_WIDTH = 220;
+
+/**
+ * A card is as wide as its thumbnail at the shared height, so a lone card never stretches
+ * across the page. Cards may grow up to a quarter wider to close a row.
+ */
+function cardBox(cols: number, aspect: number): CSSProperties {
+  if (cols === 2) return { minWidth: 0 };
+  const w = Math.max(CARD_MIN_WIDTH, Math.round(cardArtHeight(cols) * aspect));
+  return { flex: `1 1 ${w}px`, maxWidth: `${Math.round(w * 1.25)}px`, minWidth: `min(100%, ${CARD_MIN_WIDTH}px)` };
+}
+
+function cardArtStyle(cols: number): CSSProperties {
+  return cols === 2 ? { aspectRatio: "4 / 5", borderRadius: "10px" } : { height: `${cardArtHeight(cols)}px`, borderRadius: "10px" };
+}
+
+const cardShell: CSSProperties = { ...bpanel, display: "flex", flexDirection: "column", gap: "10px", padding: "10px", overflow: "hidden" };
+
+/** Vertical stack of grids and card lists, spaced like the bento gap. */
+export function BentoStack({ children }: { children: ReactNode }) {
+  const { cols } = useShell();
+  return <div style={{ display: "flex", flexDirection: "column", gap: cols === 2 ? "10px" : "12px" }}>{children}</div>;
+}
+
+/** A wrapping list of game cards that all share one thumbnail height. Phones get an even two-up grid. */
+export function GameCards({ children }: { children: ReactNode }) {
+  const { cols } = useShell();
   return (
-    <div
-      aria-hidden="true"
-      style={{
-        ...bpanel,
-        gridColumn: `span ${c}`,
-        gridRow: `span ${r}`,
-        display: "flex",
-        flexDirection: "column",
-        gap: "10px",
-        padding: "10px",
-        animation: "hbFade 200ms ease-out both",
-      }}
-    >
-      <div style={{ flex: 1, minHeight: 0, borderRadius: "10px", ...shimmer }} />
-      <div style={{ display: "flex", flexDirection: "column", gap: "7px", padding: "0 4px 6px" }}>
-        <div style={{ height: "13px", width: "68%", borderRadius: "5px", ...shimmer }} />
-        <div style={{ height: "9px", width: "38%", borderRadius: "4px", ...shimmer }} />
-        <div style={{ height: "9px", width: "52%", borderRadius: "4px", ...shimmer }} />
+    <div style={cols === 2 ? { display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "10px" } : { display: "flex", flexWrap: "wrap", gap: "12px" }}>
+      {children}
+    </div>
+  );
+}
+
+/** Placeholder with the footprint of a landscape GameCard, so loading never shifts the list. */
+export function SkeletonCard() {
+  const { cols } = useShell();
+  return (
+    <div aria-hidden="true" style={{ ...cardShell, ...cardBox(cols, 16 / 9), animation: "hbFade 200ms ease-out both" }}>
+      <div style={{ ...cardArtStyle(cols), ...shimmer }} />
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px", padding: "2px 4px 6px" }}>
+        <div style={{ height: "14px", width: "68%", borderRadius: "5px", ...shimmer }} />
+        <div style={{ height: "10px", width: "38%", borderRadius: "4px", ...shimmer }} />
+        <div style={{ height: "10px", width: "52%", borderRadius: "4px", ...shimmer }} />
       </div>
     </div>
   );
 }
 
-type TileProps = {
-  tile: PackedTile;
-  cols: number;
+type CardProps = {
+  game: Game;
   showModel?: boolean;
   showCreator?: boolean;
   showStats?: boolean;
 };
 
-/** A game tile in the bento grid; wide slots get the landscape cover, narrow ones the poster. */
-export function BentoTile({ tile, cols, showModel = true, showCreator = true, showStats = true }: TileProps) {
-  const { game: g, c, r, wide } = tile;
-  const src = wide ? art(g, 1000) : poster(g, 560);
+/** A game card: portrait games show the poster, landscape ones the cover, all at the same height. */
+export function GameCard({ game: g, showModel = true, showCreator = true, showStats = true }: CardProps) {
+  const { cols } = useShell();
+  const portrait = isPortrait(g);
+  const src = cols === 2 || portrait ? poster(g, 560) : art(g, 1000);
   return (
     <Link
       href={g.url}
       className="hb-lift"
       style={{
-        ...bpanel,
-        gridColumn: `span ${c}`,
-        gridRow: `span ${r}`,
-        display: "flex",
-        flexDirection: "column",
-        gap: "10px",
-        overflow: "hidden",
-        padding: "10px",
+        ...cardShell,
+        ...cardBox(cols, portrait ? 3 / 4 : 16 / 9),
         color: "var(--ink)",
         cursor: "pointer",
         textAlign: "left",
@@ -149,7 +170,7 @@ export function BentoTile({ tile, cols, showModel = true, showCreator = true, sh
         animation: "hbFade 320ms ease-out both",
       }}
     >
-      <ArtFrame src={src} style={{ flex: 1, minHeight: 0, borderRadius: "10px" }}>
+      <ArtFrame src={src} style={cardArtStyle(cols)}>
         <span style={{ ...blurChip, right: "8px", fontSize: "10.5px" }}>{g.duration}</span>
         {showModel ? (
           <span style={{ ...blurChip, left: "8px", fontSize: "9.5px", letterSpacing: "0.08em", color: "rgba(255,255,255,0.9)" }}>
@@ -160,7 +181,7 @@ export function BentoTile({ tile, cols, showModel = true, showCreator = true, sh
       <div style={{ display: "flex", flexDirection: "column", gap: "5px", padding: "0 4px 4px", minWidth: 0 }}>
         <div
           style={{
-            fontSize: wide && cols >= 8 ? "17px" : "14px",
+            fontSize: "14px",
             fontWeight: 600,
             lineHeight: 1.25,
             letterSpacing: "-0.01em",

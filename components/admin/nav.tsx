@@ -12,6 +12,7 @@ const items = [
   { href: "/admin/reports", label: "Reports" },
   { href: "/admin/categories", label: "Categories" },
   { href: "/admin/settings", label: "Settings" },
+  { href: "/experiment", label: "Thumbnail lab" },
 ];
 
 export function AdminNav() {

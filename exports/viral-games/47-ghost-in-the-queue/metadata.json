@@ -1,0 +1,33 @@
+{
+  "title": "Ghost in the Queue",
+  "slug": "ghost-in-the-queue",
+  "category": "Experimental",
+  "orientation": "any",
+  "duration_seconds": 95,
+  "tagline": "Someone keeps joining the line. They are not on the list.",
+  "description": "Manage a tiny ticket queue while an invisible guest moves between positions. Watch timestamps, ask one careful question, and decide when to serve the impossible ticket.",
+  "objective": "Call the tickets in the only safe order.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Inspect a ticket"
+    },
+    {
+      "key": "1–4",
+      "action": "Call the queue"
+    },
+    {
+      "key": "R",
+      "action": "New line"
+    }
+  ],
+  "tags": [
+    "experimental",
+    "mystery",
+    "queue"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "47-ghost-in-the-queue.zip"
+}

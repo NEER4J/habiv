@@ -3,6 +3,13 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { Json, TablesUpdate } from "@/lib/supabase/database.types";
+import { controlsSchema, toStoredControls } from "@/lib/contracts/game-details";
+import { normalizeAgent, normalizeModel } from "@/lib/ai/catalog";
+import { readSdk } from "@/lib/habiv/sdk";
+import { buildDetailsForTools, readBuildDetails } from "@/lib/habiv/build-details";
+import { readControls } from "@/lib/habiv/game-details";
+import { siteUrl } from "@/lib/site";
 import { buckets, completeMultipart, headObject, presignPart, putObject } from "@/lib/storage";
 import { createVersionForUpload, UploadError } from "@/lib/upload/create";
 import { enqueueIngest } from "@/lib/jobs/trigger";
@@ -21,16 +28,28 @@ const publishInput = z
   .object({
     title: z.string().min(1).max(80).describe("Game title"),
     tagline: z.string().max(140).optional(),
-    description: z.string().max(4000).optional(),
+    description: z.string().max(4000).optional().describe("About the game, shown on its page: the goal, how a round goes, tips and credits. Plain text; line breaks are kept"),
     category: category.optional(),
+    categories: z.array(category).min(1).max(3).optional().describe("Up to 3 categories, main one first, for games that fit more than one. Wins over category"),
     tags: z.array(z.string().max(24)).max(5).optional(),
-    orientation: orientation.default("any"),
+    orientation: orientation.optional(),
     prompt: z.string().max(8000).optional().describe("The prompt that generated the game (shown on the game page)"),
-    model: z.string().max(80).optional().describe("Model used, e.g. 'Claude Sonnet 4.5'"),
-    agent: z.string().max(80).optional().describe("Tool used, e.g. 'Claude Code'"),
+    model: z
+      .string()
+      .max(80)
+      .optional()
+      .describe("Model used, by name, e.g. 'Claude Sonnet 4.5'. Ids like 'claude-sonnet-4-5' are matched to Habiv's model list; anything else is saved as written"),
+    agent: z.string().max(80).optional().describe("Tool or agent used, e.g. 'Claude Code', 'Codex', 'Cursor'. Matched to Habiv's tool list the same way"),
+    controls: controlsSchema
+      .optional()
+      .describe("How to play: up to 6 { key, action } rows, e.g. { key: 'Space', action: 'Jump' }, plus an optional touch hint"),
+    duration_sec: z.number().int().min(1).max(3600).optional().describe("Typical run length in seconds (3600 = endless). Runs of 45 s or less appear in Quick play"),
     game_id: z.string().uuid().optional().describe("Publish as a new version of an existing game"),
     changelog: z.string().max(500).optional(),
-    publish_when_ready: z.boolean().default(true).describe("Publish automatically once processing succeeds"),
+    publish_when_ready: z
+      .boolean()
+      .default(false)
+      .describe("Make the game public automatically once processing succeeds. Leave false (the default) to save it as a draft the creator reviews and publishes; pass true only when the user asked for it to go live"),
     files: z
       .array(z.object({ path: z.string().regex(/^[\w\-./ ]{1,240}$/), content_base64: z.string() }))
       .min(1)
@@ -49,17 +68,20 @@ function sha256(bytes: Uint8Array) {
 
 async function applyMeta(gameId: string, versionId: string, input: z.infer<typeof publishInput>) {
   const admin = createAdminClient();
+  // Only fields the call sets: a new version of an existing game keeps the rest (new games get column defaults).
+  const patch: TablesUpdate<"games"> = { title: input.title };
+  if (input.tagline !== undefined) patch.tagline = input.tagline;
+  if (input.description !== undefined) patch.description = input.description;
+  if (input.category !== undefined) patch.category = input.category;
+  if (input.categories?.length) patch.categories = input.categories;
+  if (input.orientation !== undefined) patch.orientation = input.orientation;
+  if (input.controls !== undefined) patch.controls = toStoredControls(input.controls) as Json;
+  if (input.duration_sec !== undefined) patch.duration_sec = input.duration_sec;
+  await admin.from("games").update(patch).eq("id", gameId);
   await admin
-    .from("games")
-    .update({
-      title: input.title,
-      tagline: input.tagline ?? null,
-      description: input.description ?? null,
-      category: input.category ?? "arcade",
-      orientation: input.orientation,
-    })
-    .eq("id", gameId);
-  await admin.from("game_versions").update({ prompt: input.prompt ?? null, model: input.model ?? null, agent: input.agent ?? null, changelog: input.changelog ?? null, auto_publish: input.publish_when_ready }).eq("id", versionId);
+    .from("game_versions")
+    .update({ prompt: input.prompt ?? null, model: normalizeModel(input.model), agent: normalizeAgent(input.agent), changelog: input.changelog ?? null, auto_publish: input.publish_when_ready })
+    .eq("id", versionId);
   if (input.tags?.length) {
     const names = Array.from(new Set(input.tags.map((t) => t.toLowerCase().trim()).filter((t) => /^[a-z0-9][a-z0-9 -]{0,23}$/.test(t))));
     if (names.length) {
@@ -77,8 +99,12 @@ export function registerPublishTools(server: McpServer, auth: TokenAuth) {
     {
       title: "Publish a game to Habiv",
       description:
-        "Uploads a game (single index.html or a zip of html/js/assets) and publishes it under your handle once processing succeeds. " +
+        "Uploads a game (single index.html or a zip of html/js/assets) as a private draft under your handle. " +
+        "It goes public only with publish_when_ready: true, the publish_version tool, or the creator publishing it from My games. " +
         "Inline `files` must total under 3 MB decoded; for bigger bundles call create_upload first and pass its upload_id. " +
+        "Describe the game for its page: pass tagline, description (the goal, how a round goes, tips) and controls, and also put the same details in a habiv.json " +
+        `at the bundle root (or a <script type="application/habiv+json"> block in index.html) so they travel with the code (${siteUrl}/docs/details). ` +
+        "Arguments you pass win; habiv.json only fills fields that are still empty. " +
         "Returns ids and the canonical URL; poll get_publish_status until status is 'ready'.",
       inputSchema: publishInput,
     },
@@ -91,6 +117,18 @@ export function registerPublishTools(server: McpServer, auth: TokenAuth) {
         if (args.upload_id) {
           const { data: session } = await admin.from("upload_sessions").select("*").eq("id", args.upload_id).eq("user_id", auth.userId).maybeSingle();
           if (!session) throw new ToolError("Upload session not found.", "not_found");
+          if (session.status === "completed") {
+            // Idempotent: a retry after a lost response, or after ingest never started, re-kicks ingest.
+            await applyMeta(session.game_id, session.version_id, args);
+            const { data: v } = await admin.from("game_versions").select("status, ingest_run_id").eq("id", session.version_id).maybeSingle();
+            if (v && !v.ingest_run_id && (v.status === "processing" || v.status === "uploaded")) {
+              const run = await enqueueIngest(session.version_id);
+              await admin.from("game_versions").update({ status: "processing", ingest_run_id: run.id }).eq("id", session.version_id);
+            }
+            const status = !v || v.status === "uploaded" ? "processing" : v.status;
+            const g = await ownedGame(auth, session.game_id);
+            return ok({ game_id: g.id, version_id: session.version_id, short_id: g.short_id, status, ...gameUrls(await handleOf(auth.userId), g.slug, g.short_id), status_hint: "Call get_publish_status with version_id until status is 'ready'." });
+          }
           if (session.status !== "open") throw new ToolError(`Upload session is ${session.status}.`, "closed");
           if (session.mode === "multipart") {
             if (!args.upload_parts?.length || !session.r2_upload_id) throw new ToolError("upload_parts (part_number + etag) are required to finish a multipart upload.", "invalid");
@@ -221,7 +259,9 @@ export function registerPublishTools(server: McpServer, auth: TokenAuth) {
     "get_publish_status",
     {
       title: "Check processing status of a version",
-      description: "Returns the ingest status (uploaded, processing, ready, rejected), detected engine, warnings and URLs.",
+      description:
+        "Returns the ingest status (uploaded, processing, ready, rejected), detected engine, warnings, the Habiv SDK features found in the build " +
+        "(scores, runs, levels, beat, saves, happytime), the game details found in the build (habiv.json, or the page title and description) and URLs.",
       inputSchema: z.object({ version_id: z.string().uuid().optional(), game_id: z.string().uuid().optional() }).refine((v) => v.version_id || v.game_id, { message: "Pass version_id or game_id." }),
     },
     (args) =>
@@ -233,6 +273,21 @@ export function registerPublishTools(server: McpServer, auth: TokenAuth) {
         if (!v) throw new ToolError("Version not found.", "not_found");
         const g = await ownedGame(auth, v.game_id);
         const manifest = (v.manifest ?? null) as { warnings?: string[]; notes?: string[] } | null;
+        const sdk = readSdk(v.manifest);
+        const sdkHint =
+          v.status !== "ready" || !sdk
+            ? undefined
+            : sdk.features.includes("scores")
+              ? g.leaderboard_enabled
+                ? undefined
+                : "The build sends scores: turn the leaderboard on with update_game { leaderboard: { enabled: true } }."
+              : `No Habiv SDK score calls found, so a leaderboard would stay empty. To add one, call Habiv.scoreSubmit (see ${siteUrl}/docs/sdk).`;
+        const missing = [!g.description && "description", !readControls(g.controls).keys.length && "how-to-play controls", !g.tagline && "tagline"].filter(Boolean);
+        const detailsHint =
+          v.status !== "ready" || !missing.length
+            ? undefined
+            : `The game page has no ${missing.join(", ")} yet. Write them from what you know about the game and call update_game, ` +
+              `and add a habiv.json to the bundle so the next version carries them (${siteUrl}/docs/details).`;
         return ok({
           version_id: v.id,
           game_id: v.game_id,
@@ -246,6 +301,10 @@ export function registerPublishTools(server: McpServer, auth: TokenAuth) {
           file_count: v.file_count,
           uses_network: v.uses_network,
           needs_isolation: v.needs_isolation,
+          sdk_features: sdk?.features ?? null,
+          ...(sdkHint ? { sdk_hint: sdkHint } : {}),
+          build_details: buildDetailsForTools(readBuildDetails(v.manifest)),
+          ...(detailsHint ? { details_hint: detailsHint } : {}),
           game_status: g.status,
           preview_url: v.status === "ready" ? previewUrl(v.id) : null,
           ...gameUrls(await handleOf(auth.userId), g.slug, g.short_id),

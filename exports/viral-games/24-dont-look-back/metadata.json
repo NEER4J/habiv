@@ -1,0 +1,33 @@
+{
+  "title": "Don’t Look Back",
+  "slug": "dont-look-back",
+  "category": "Horror",
+  "orientation": "any",
+  "duration_seconds": 80,
+  "tagline": "Walk toward the exit without checking what is learning your pace.",
+  "description": "Cross a hallway where every sound arrives one beat late. Keep moving, listen for the false footsteps, and resist the sequence that turns the camera around.",
+  "objective": "Choose the safe footsteps without looking behind you.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Choose a step"
+    },
+    {
+      "key": "1–4",
+      "action": "Use a key"
+    },
+    {
+      "key": "Space",
+      "action": "Hold breath"
+    }
+  ],
+  "tags": [
+    "horror",
+    "tension",
+    "minimal"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "24-dont-look-back.zip"
+}

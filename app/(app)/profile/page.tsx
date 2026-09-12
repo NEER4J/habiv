@@ -2,13 +2,14 @@ import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnProfile } from "@/lib/db/profiles";
+import { ProfileSkeleton } from "@/components/habiv/skeletons";
 
-export const metadata = { title: "Profile — Habiv" };
+export const metadata = { title: "Profile", robots: { index: false } };
 
 /** /profile is the signed-in user's own page; it lives at /@handle. */
 export default function ProfilePage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<ProfileSkeleton />}>
       <Me />
     </Suspense>
   );

@@ -1,47 +1,43 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { Analytics } from "@vercel/analytics/next";
 import { themeInitScript } from "@/lib/habiv/theme";
+import { defaultOgImage, siteDescription, siteKeywords, siteName, siteTitle } from "@/lib/seo";
+import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
-const siteUrl = "https://habiv.vercel.app";
-const description =
-  "A browser-first marketplace for tiny AI-made games. Discover, play, remix, and share.";
-const heroImage = {
-  url: "/assets/tiny-game-hero.png",
-  width: 1536,
-  height: 1024,
-  alt: "A tiny astronaut jumping between floating game platforms toward a glowing star",
-};
-
+// No canonical or og:url here: children inherit them, which would point every page at "/".
+// Icons come from app/icon.svg and app/apple-icon.tsx, the manifest from app/manifest.ts.
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Habiv — A home for tiny games.",
-  description:
-    "Habiv is a browser-first marketplace for tiny AI-made games. Discover, play, remix, and share games that last 10–45 seconds.",
-  applicationName: "Habiv",
-  authors: [{ name: "Habiv" }],
-  alternates: { canonical: "/" },
-  icons: { icon: "/assets/brand/habiv-black.svg" },
+  title: { default: siteTitle, template: `%s · ${siteName}` },
+  description: siteDescription,
+  applicationName: siteName,
+  keywords: siteKeywords,
+  authors: [{ name: siteName, url: siteUrl }],
+  creator: siteName,
+  publisher: siteName,
+  category: "games",
+  formatDetection: { telephone: false, email: false, address: false },
   robots: {
     index: true,
     follow: true,
-    googleBot: { "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
   },
   openGraph: {
-    siteName: "Habiv",
-    title: "Habiv — A home for tiny games.",
-    description,
+    siteName,
+    title: siteTitle,
+    description: siteDescription,
     type: "website",
-    url: "/",
     locale: "en_US",
-    images: [heroImage],
+    images: [defaultOgImage],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Habiv — A home for tiny games.",
-    description,
-    images: [heroImage],
+    title: siteTitle,
+    description: siteDescription,
+    images: [defaultOgImage],
   },
 };
 
@@ -76,6 +72,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
           {children}
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );

@@ -1,0 +1,33 @@
+{
+  "title": "Moss & Mugs",
+  "slug": "moss-and-mugs",
+  "category": "Cozy",
+  "orientation": "any",
+  "duration_seconds": 150,
+  "tagline": "Run a rainy-window café for the gentlest customers online.",
+  "description": "Brew three drinks, arrange a mossy counter, and keep the sleepy café bell from ringing twice. Customers leave tiny notes that become tomorrow's décor.",
+  "objective": "Collect the orders and keep the café glowing.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Brew an order"
+    },
+    {
+      "key": "Drag",
+      "action": "Arrange the counter"
+    },
+    {
+      "key": "R",
+      "action": "New shift"
+    }
+  ],
+  "tags": [
+    "cozy",
+    "cafe",
+    "idle"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "07-moss-and-mugs.zip"
+}

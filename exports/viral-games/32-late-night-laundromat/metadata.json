@@ -1,0 +1,33 @@
+{
+  "title": "Late Night Laundromat",
+  "slug": "late-night-laundromat",
+  "category": "Cozy",
+  "orientation": "any",
+  "duration_seconds": 160,
+  "tagline": "Fold the quiet hours into something warm and useful.",
+  "description": "Sort lost socks, set friendly wash cycles, and learn which regulars leave notes inside their pockets. The machines keep turning while you decorate the corner plant.",
+  "objective": "Collect the right laundry tokens before the cycle ends.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Sort a laundry pile"
+    },
+    {
+      "key": "Drag",
+      "action": "Arrange machines"
+    },
+    {
+      "key": "R",
+      "action": "Start the night"
+    }
+  ],
+  "tags": [
+    "cozy",
+    "sim",
+    "laundry"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "32-late-night-laundromat.zip"
+}

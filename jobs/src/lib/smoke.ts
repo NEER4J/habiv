@@ -9,6 +9,8 @@ export type SmokeResult = {
   loadMs: number;
   consoleErrors: string[];
   pageErrors: string[];
+  /** Bridge message types the game posted during both loads (ready, run_start, score_submit, …). */
+  bridgeEvents: string[];
   landscape: Buffer | null;
   portrait: Buffer | null;
 };
@@ -37,7 +39,7 @@ export async function smokeTest(versionId: string, opts: { timeoutMs?: number } 
   const consoleErrors: string[] = [];
   const pageErrors: string[] = [];
   try {
-    const load = async (w: number, h: number, capture: boolean): Promise<{ ready: boolean; loadMs: number; shot: Buffer | null }> => {
+    const load = async (w: number, h: number, capture: boolean): Promise<{ ready: boolean; loadMs: number; shot: Buffer | null; events: string[] }> => {
       const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 1 });
       const page: Page = await ctx.newPage();
       await page.route(`${HARNESS_ORIGIN}/__smoke`, (route) => route.fulfill({ status: 200, contentType: "text/html", body: harnessHtml(src, w, h) }));
@@ -59,8 +61,9 @@ export async function smokeTest(versionId: string, opts: { timeoutMs?: number } 
       try { await page.locator("#f").click({ position: { x: Math.floor(w / 2), y: Math.floor(h / 2) }, timeout: 1000 }); } catch { /* ignore */ }
       await page.waitForTimeout(800);
       const shot = capture ? await page.locator("#f").screenshot({ type: "png" }) : null;
+      const events = ((await page.evaluate("window.__habiv ? window.__habiv.msgs : []").catch(() => [])) as unknown[]).filter((e): e is string => typeof e === "string");
       await ctx.close();
-      return { ready, loadMs, shot };
+      return { ready, loadMs, shot, events };
     };
     const land = await load(1280, 720, true);
     const port = await load(720, 1280, true);
@@ -72,6 +75,7 @@ export async function smokeTest(versionId: string, opts: { timeoutMs?: number } 
       loadMs: land.loadMs,
       consoleErrors: Array.from(new Set(consoleErrors)),
       pageErrors: Array.from(new Set(pageErrors)),
+      bridgeEvents: Array.from(new Set([...land.events, ...port.events])),
       landscape: land.shot,
       portrait: port.shot,
     };

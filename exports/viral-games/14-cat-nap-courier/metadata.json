@@ -1,0 +1,33 @@
+{
+  "title": "Cat Nap Courier",
+  "slug": "cat-nap-courier",
+  "category": "Cozy",
+  "orientation": "any",
+  "duration_seconds": 90,
+  "tagline": "Deliver tiny parcels without waking the neighborhood cats.",
+  "description": "Carry parcels across a quiet apartment block while every cat sleeps in a slightly different way. Choose routes, place treats, and learn who snores.",
+  "objective": "Collect parcels and deliver them to the sleepy cats.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Deliver a parcel"
+    },
+    {
+      "key": "Drag",
+      "action": "Choose a route"
+    },
+    {
+      "key": "R",
+      "action": "New route"
+    }
+  ],
+  "tags": [
+    "cats",
+    "cozy",
+    "delivery"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "14-cat-nap-courier.zip"
+}

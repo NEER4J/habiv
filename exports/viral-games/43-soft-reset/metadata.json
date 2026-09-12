@@ -1,0 +1,33 @@
+{
+  "title": "Soft Reset",
+  "slug": "soft-reset",
+  "category": "Ambient",
+  "orientation": "any",
+  "duration_seconds": 130,
+  "tagline": "Tidy a tiny digital room until it feels like morning.",
+  "description": "A desktop is cluttered with half-finished notes, blinking reminders, and a sleeping cursor. Sort the windows, archive the noise, and make one corner quiet.",
+  "objective": "Collect the calm tasks and clear the desktop.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Archive a note"
+    },
+    {
+      "key": "Drag",
+      "action": "Arrange a window"
+    },
+    {
+      "key": "R",
+      "action": "Reset desktop"
+    }
+  ],
+  "tags": [
+    "ambient",
+    "desktop",
+    "calm"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "43-soft-reset.zip"
+}

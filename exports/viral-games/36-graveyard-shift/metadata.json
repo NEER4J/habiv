@@ -1,0 +1,33 @@
+{
+  "title": "Graveyard Shift",
+  "slug": "graveyard-shift",
+  "category": "Horror",
+  "orientation": "any",
+  "duration_seconds": 90,
+  "tagline": "Ring up the dead politely. They hate waiting.",
+  "description": "Work the night desk at a cemetery gift shop. Stock candles, answer the bell, and never sell the same souvenir twice. Something is shopping after closing.",
+  "objective": "Serve the correct customer sequence before the bell rings.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Serve a customer"
+    },
+    {
+      "key": "1–4",
+      "action": "Choose a counter"
+    },
+    {
+      "key": "Space",
+      "action": "Check bell"
+    }
+  ],
+  "tags": [
+    "horror",
+    "shop",
+    "night"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "36-graveyard-shift.zip"
+}

@@ -3,6 +3,7 @@
  * (FeedGame / GameDetail); nothing here is static any more.
  */
 import type { FeedGame, GameDetail, GameVersionSummary, Orientation, RemixLicence } from "@/lib/db/types";
+import { shortModelName } from "@/lib/ai/catalog";
 
 export type Game = {
   id: string;
@@ -24,8 +25,10 @@ export type Game = {
   followers: number;
   /** display category name, e.g. "Arcade" */
   type: string;
-  /** category slug, e.g. "arcade" */
+  /** main category slug, e.g. "arcade" */
   category: string;
+  /** every category slug the game is listed in, main first */
+  categories: string[];
   hue: number;
   plays: number;
   runs: number;
@@ -120,6 +123,7 @@ export function fromFeedGame(f: FeedGame): Game {
     followers: f.creator.followersCount,
     type: categoryName(f.category),
     category: f.category,
+    categories: f.categories,
     hue: f.accentHue,
     plays: f.stats.plays,
     runs: f.stats.runs,
@@ -216,7 +220,7 @@ export function accentOf(g: Pick<Game, "hue">, l = 0.74, c = 0.16, a?: number) {
 
 export function shortModel(m: string | null | undefined) {
   if (!m) return "HTML";
-  return m.replace("Claude ", "").replace("Local ", "").toUpperCase();
+  return shortModelName(m);
 }
 
 export function fmt(n: number) {
@@ -250,7 +254,7 @@ export function orientLabel(g: Pick<Game, "orientation">) {
 export function matchesChip(g: Game, chip: string) {
   if (chip === "All") return true;
   if (chip === "Under 50 KB") return (g.sizeBytes ?? Infinity) < 50 * 1024;
-  if (g.type.toLowerCase() === chip.toLowerCase() || g.category === chip.toLowerCase()) return true;
+  if (g.type.toLowerCase() === chip.toLowerCase() || g.categories.includes(chip.toLowerCase())) return true;
   return g.model.toLowerCase() === chip.toLowerCase();
 }
 

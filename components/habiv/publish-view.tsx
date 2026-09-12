@@ -5,7 +5,23 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties, type Drag
 import { createSHA256 } from "hash-wasm";
 import { ACCEPTED_UPLOAD_EXT, extensionOf, MAX_UPLOAD_BYTES, type CreateUploadResponse, type VersionStatusResponse } from "@/lib/contracts/upload";
 import { publishVersion, setVersionMeta, updateGameMeta, updateLeaderboardConfig } from "@/lib/actions/games";
-import { formatBytes, type CategoryInfo } from "@/lib/habiv/games";
+import {
+  emptyExtraDetails,
+  extraDetailsFrom,
+  licences,
+  orientations,
+  toDetailsPatch,
+  type ExtraDetails,
+  type Licence,
+  type Orientation,
+} from "@/lib/habiv/game-details";
+import { durationLabel, formatBytes, type CategoryInfo } from "@/lib/habiv/games";
+import { AGENT_OPTIONS, MODEL_OPTIONS, normalizeAgent, normalizeModel } from "@/lib/ai/catalog";
+import { sdkFeatureLabel } from "@/lib/habiv/sdk";
+import { buildDetailsSourceLabel } from "@/lib/habiv/build-details";
+import type { GameMeta } from "@/lib/contracts/ingest";
+import { filesFromDrop, filesFromInput, isSingleBuild, packFiles, type PickedFile } from "@/lib/upload/pack-files";
+import type { GameEditData } from "@/lib/habiv/page-data";
 import {
   bpanel,
   chipBtn,
@@ -18,6 +34,11 @@ import {
 } from "@/lib/habiv/ui";
 import { siteUrl } from "@/lib/site";
 import { BentoAutoGrid, EmptyCell, PageHead } from "./game-card";
+import { CatalogField } from "./catalog-picker";
+import { CategoryChips } from "./category-chips";
+import { LeaderboardSettings, SdkFeatureTags, SdkUpgradePrompt } from "./sdk-features";
+import { GameArtFields, type GameArt } from "./game-art-fields";
+import { GameExtraFields } from "./game-extra-fields";
 import { useShell } from "./shell-context";
 
 const stepNames = ["Source", "Checks", "Details", "Art", "Review"];
@@ -34,20 +55,6 @@ const visLabel: Record<Visibility, string> = {
   draft: "Draft · private",
 };
 
-type Orientation = "portrait" | "landscape" | "any";
-type Licence = "open" | "no_remix";
-
-const orientations: { label: string; value: Orientation }[] = [
-  { label: "Vertical", value: "portrait" },
-  { label: "Landscape", value: "landscape" },
-  { label: "Any", value: "any" },
-];
-
-const licences: { label: string; value: Licence }[] = [
-  { label: "Open to remix", value: "open" },
-  { label: "No remixes", value: "no_remix" },
-];
-
 const rejectText: Record<string, string> = {
   no_entry: "No index.html found",
   too_many_files: "Over 1,000 files",
@@ -61,12 +68,96 @@ const rejectText: Record<string, string> = {
   aborted: "Upload was cancelled",
 };
 
-type UploadSession = Extract<CreateUploadResponse, { ok: true }>;
+/** `arrived` is set on a resumed single-PUT upload whose bytes already reached storage. */
+type UploadSession = Extract<CreateUploadResponse, { ok: true }> & { arrived?: boolean };
 type VersionStatus = Extract<VersionStatusResponse, { ok: true }>;
-type UploadPhase = "idle" | "hashing" | "creating" | "uploading" | "completing" | "done" | "error";
+type UploadPhase = "idle" | "hashing" | "creating" | "uploading" | "paused" | "completing" | "done" | "error";
 
 const HASH_CHUNK = 4 * 1024 * 1024;
 const PART_CONCURRENCY = 4;
+
+/* ---------- resumable drafts ---------- */
+
+// The wizard is mirrored to localStorage so a closed tab or dropped connection can continue later.
+// A browser cannot reopen a file by itself, so an unfinished upload asks for the same file again
+// and sends only the multipart parts storage has no ETag for.
+const DRAFT_VERSION = 1;
+const DRAFT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+
+type FileStamp = { name: string; size: number; lastModified: number };
+type DraftForm = {
+  title: string;
+  desc: string;
+  category: string;
+  /** Every picked category, main first; missing in drafts saved before multi-category. */
+  categories?: string[];
+  orient: Orientation;
+  licence: Licence;
+  extra: ExtraDetails;
+  model: string;
+  agent: string;
+  prompt: string;
+  changelog: string;
+  lbEnabled: boolean;
+  lbSort: "desc" | "asc";
+  visibility: Visibility;
+  art: GameArt;
+};
+type SavedDraft = {
+  v: typeof DRAFT_VERSION;
+  savedAt: number;
+  file: FileStamp;
+  sha256: string | null;
+  session: UploadSession | null;
+  parts: [number, string][];
+  /** Storage has the whole file and /api/upload/complete succeeded. */
+  uploaded: boolean;
+  step: number;
+  form: DraftForm;
+};
+
+const draftKey = (gameId: string | undefined) => `habiv:publish-draft:${gameId ?? "new"}`;
+
+function readDraft(key: string): SavedDraft | null {
+  try {
+    const d = JSON.parse(localStorage.getItem(key) ?? "null") as SavedDraft | null;
+    if (!d || d.v !== DRAFT_VERSION || !d.file || Date.now() - d.savedAt > DRAFT_MAX_AGE_MS) return null;
+    // An unfinished upload can only continue while its storage session is open.
+    if (!d.uploaded && (!d.session || Date.parse(d.session.expiresAt) <= Date.now())) return null;
+    return d;
+  } catch {
+    return null;
+  }
+}
+
+function writeDraft(key: string, d: SavedDraft) {
+  try {
+    localStorage.setItem(key, JSON.stringify(d));
+  } catch {
+    // Storage full or blocked: resuming is a convenience, the upload itself still works.
+  }
+}
+
+function clearDraft(key: string) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // ignore
+  }
+}
+
+const sameFile = (f: File, s: FileStamp) => f.name === s.name && f.size === s.size && f.lastModified === s.lastModified;
+
+function savedProgress(d: SavedDraft): number {
+  if (d.uploaded) return 1;
+  const s = d.session;
+  if (!s || s.mode !== "multipart" || !d.file.size) return 0;
+  let sent = 0;
+  for (const [n] of d.parts) sent += Math.min(s.partSize, d.file.size - (n - 1) * s.partSize);
+  return Math.min(1, sent / d.file.size);
+}
+
+const resumeStep = (d: SavedDraft) => Math.min(Math.max(d.step, 1), 4);
 
 const slugify = (s: string) =>
   s
@@ -200,6 +291,12 @@ function checkRows(status: VersionStatus | null): CheckRow[] {
   else if (status.usesNetwork) rows.push({ label: "External requests", value: "talks to the network", state: "warn" });
   else rows.push({ label: "External requests", value: "none", state: "ok" });
   if (status?.needsIsolation) rows.push({ label: "Cross-origin isolation", value: "required", state: "info" });
+  if (status?.status === "ready") {
+    const found = status.sdk?.features ?? [];
+    if (!status.sdk) rows.push({ label: "Habiv SDK", value: "not checked", state: "info" });
+    else if (found.length) rows.push({ label: `Habiv SDK: ${found.map(sdkFeatureLabel).join(", ").toLowerCase()}`, value: "detected", state: "ok" });
+    else rows.push({ label: "Habiv SDK", value: "not used", state: "info" });
+  }
   for (const w of status?.warnings ?? []) rows.push({ label: w, value: "check manually", state: "warn" });
   if (status?.status === "rejected") {
     const reason = status.rejectReason ?? "internal_error";
@@ -214,7 +311,8 @@ export function PublishView({
   handle,
 }: {
   categories: CategoryInfo[];
-  existingGame: { id: string; title: string } | null;
+  /** Set when publishing a new version: its current details prefill the form so nothing is lost. */
+  existingGame: GameEditData | null;
   handle: string;
 }) {
   const { showToast, openModal, setModalGameId } = useShell();
@@ -230,23 +328,33 @@ export function PublishView({
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
   const [session, setSession] = useState<UploadSession | null>(null);
+  const [art, setArt] = useState<GameArt>(() => ({ coverUrl: existingGame?.game.coverUrl ?? null, cardUrl: existingGame?.game.cardUrl ?? null }));
 
   // Checks
   const [status, setStatus] = useState<VersionStatus | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
 
   // Details
-  const [title, setTitle] = useState(existingGame?.title ?? "");
-  const [desc, setDesc] = useState("");
-  const [category, setCategory] = useState(categories[0]?.slug ?? "arcade");
-  const [orient, setOrient] = useState<Orientation>("portrait");
-  const [licence, setLicence] = useState<Licence>("open");
-  const [model, setModel] = useState("");
-  const [agent, setAgent] = useState("");
-  const [prompt, setPrompt] = useState("");
+  const eg = existingGame?.game;
+  const ev = existingGame?.version;
+  const [title, setTitle] = useState(eg?.title ?? "");
+  const [desc, setDesc] = useState(eg?.tagline ?? "");
+  const [cats, setCats] = useState<string[]>(eg?.categories ?? [categories[0]?.slug ?? "arcade"]);
+  const [orient, setOrient] = useState<Orientation>(eg?.orientation ?? "portrait");
+  const [licence, setLicence] = useState<Licence>(eg?.remixLicence ?? "open");
+  const [extra, setExtra] = useState<ExtraDetails>(() => (eg ? extraDetailsFrom(eg) : emptyExtraDetails));
+  const [model, setModel] = useState(ev?.model ?? "");
+  const [agent, setAgent] = useState(ev?.agent ?? "");
+  const [prompt, setPrompt] = useState(ev?.prompt ?? "");
   const [changelog, setChangelog] = useState("");
   const [lbEnabled, setLbEnabled] = useState(false);
   const [lbSort, setLbSort] = useState<"desc" | "asc">("desc");
+  // Scores found in the build switch the leaderboard on, unless the creator already chose.
+  const lbTouched = useRef(false);
+  const sdkScores = status?.status === "ready" && !!status.sdk?.features.includes("scores");
+  useEffect(() => {
+    if (sdkScores && !lbTouched.current) setLbEnabled(true);
+  }, [sdkScores]);
 
   // Review / publish
   const [visibility, setVisibility] = useState<Visibility>("public");
@@ -260,7 +368,28 @@ export function PublishView({
   const partsRef = useRef<Map<number, string>>(new Map());
   const xhrsRef = useRef<Set<XMLHttpRequest>>(new Set());
   const inputRef = useRef<HTMLInputElement>(null);
+  /** Game of a finished upload, so a replacement file becomes its next version instead of a second draft game. */
+  const keepGameRef = useRef<string | null>(null);
+  const [sdkPromptOpen, setSdkPromptOpen] = useState(false);
   const runIdRef = useRef(0);
+  const folderRef = useRef<HTMLInputElement | null>(null);
+  /** Set while a folder or several files are zipped in the browser, before the upload starts. */
+  const [packing, setPacking] = useState<string | null>(null);
+  // Build details (habiv.json …) fill the form once per version; chips the creator picked stay theirs.
+  const catsTouched = useRef(false);
+  const orientTouched = useRef(false);
+  const metaDoneFor = useRef<string | null>(null);
+  const [metaFilled, setMetaFilled] = useState<string[]>([]);
+
+  // Resume
+  const draftStorageKey = draftKey(existingGame?.game.id);
+  /** A saved draft found on load, offered until the creator continues or discards it. */
+  const [pending, setPending] = useState<SavedDraft | null>(null);
+  /** Set after continuing an unfinished upload: waiting for the same file to be picked again. */
+  const [resumeFor, setResumeFor] = useState<FileStamp | null>(null);
+  const stampRef = useRef<FileStamp | null>(null);
+  const uploadedRef = useRef(false);
+  const snapshotRef = useRef<() => SavedDraft | null>(() => null);
 
   const abortInFlight = useCallback(() => {
     runIdRef.current += 1;
@@ -269,6 +398,39 @@ export function PublishView({
   }, []);
 
   useEffect(() => () => abortInFlight(), [abortInFlight]);
+
+  useEffect(() => {
+    // localStorage is only readable after hydration.
+    setPending(readDraft(draftStorageKey));
+  }, [draftStorageKey]);
+
+  useEffect(() => {
+    snapshotRef.current = () =>
+      stampRef.current
+        ? {
+            v: DRAFT_VERSION,
+            savedAt: Date.now(),
+            file: stampRef.current,
+            sha256: shaRef.current,
+            session: sessionRef.current,
+            parts: [...partsRef.current],
+            uploaded: uploadedRef.current,
+            step,
+            form: { title, desc, category: cats[0], categories: cats, orient, licence, extra, model, agent, prompt, changelog, lbEnabled, lbSort, visibility, art },
+          }
+        : null;
+  });
+
+  const persist = useCallback(() => {
+    const d = snapshotRef.current();
+    if (d) writeDraft(draftStorageKey, d);
+  }, [draftStorageKey]);
+
+  // Saved on every step and field change; parts are saved as each one lands (see transfer).
+  // A draft offered on load is left alone until the creator decides what to do with it.
+  useEffect(() => {
+    if (!pending && step < 5) persist();
+  }, [pending, persist, step, session, phase, title, desc, cats, orient, licence, extra, model, agent, prompt, changelog, lbEnabled, lbSort, visibility, art]);
 
   const goto = (n: number) => {
     setStep(n);
@@ -286,19 +448,22 @@ export function PublishView({
     const alive = () => runIdRef.current === runId;
     const total = file.size;
     if (s.mode === "single") {
-      if (!s.putUrl) throw new Error("The server did not return an upload URL.");
-      let current: XMLHttpRequest | undefined;
-      await xhrPut(
-        s.putUrl,
-        file,
-        contentTypeFor(file.name),
-        (loaded) => alive() && setProgress(Math.min(1, loaded / total)),
-        (x) => {
-          register(x, current);
-          current = x ?? undefined;
-        },
-      );
-      if (!alive()) return;
+      // A resumed upload whose bytes already reached storage only needs closing.
+      if (!s.arrived) {
+        if (!s.putUrl) throw new Error("The server did not return an upload URL.");
+        let current: XMLHttpRequest | undefined;
+        await xhrPut(
+          s.putUrl,
+          file,
+          contentTypeFor(file.name),
+          (loaded) => alive() && setProgress(Math.min(1, loaded / total)),
+          (x) => {
+            register(x, current);
+            current = x ?? undefined;
+          },
+        );
+        if (!alive()) return;
+      }
       setPhase("completing");
       await postJson("/api/upload/complete", { key: s.key });
       return;
@@ -318,6 +483,8 @@ export function PublishView({
         setProgress(Math.min(1, sum / total));
       };
       const queue = Array.from({ length: count }, (_, i) => i + 1).filter((n) => !partsRef.current.has(n));
+      // A resumed upload starts the bar at what already landed.
+      bump();
       let firstError: Error | null = null;
       const worker = async () => {
         while (queue.length && alive() && !firstError) {
@@ -342,6 +509,7 @@ export function PublishView({
             );
             if (!etag) throw new Error("Storage did not return an ETag for a part. Check the bucket CORS ExposeHeaders.");
             partsRef.current.set(partNumber, etag);
+            persist();
             bump();
           } catch (e) {
             firstError = e instanceof Error ? e : new Error(String(e));
@@ -359,7 +527,7 @@ export function PublishView({
       return;
     }
     // dedupe: the server already has these bytes and has queued ingest.
-  }, []);
+  }, [persist]);
 
   const startUpload = useCallback(
     async (file: File) => {
@@ -384,8 +552,8 @@ export function PublishView({
             filename: file.name,
             size: file.size,
             sha256: shaRef.current,
-            title: existingGame?.title ?? file.name.replace(/\.[^.]+$/, "").slice(0, 80),
-            gameId: existingGame?.id,
+            title: existingGame?.game.title ?? file.name.replace(/\.[^.]+$/, "").slice(0, 80),
+            gameId: existingGame?.game.id ?? keepGameRef.current ?? undefined,
           });
           if (!alive()) return;
           s = created;
@@ -398,6 +566,7 @@ export function PublishView({
         setProgress(s.mode === "dedupe" ? 1 : 0);
         await transfer(file, s, runId);
         if (!alive()) return;
+        uploadedRef.current = true;
         setProgress(1);
         setPhase("done");
         showToast(s.mode === "dedupe" ? "Already on file · skipped upload" : "Upload complete");
@@ -422,6 +591,89 @@ export function PublishView({
     }).catch(() => undefined);
   }, []);
 
+  /** Puts a saved draft back into the wizard. A finished upload jumps to the step the creator was on. */
+  const restoreDraft = (d: SavedDraft) => {
+    const f = d.form;
+    setTitle(f.title);
+    setDesc(f.desc);
+    // Drafts saved before multi-category only have `category`.
+    setCats(f.categories?.length ? f.categories : [f.category]);
+    setOrient(f.orient);
+    setLicence(f.licence);
+    setExtra(f.extra);
+    setModel(f.model);
+    setAgent(f.agent);
+    setPrompt(f.prompt);
+    setChangelog(f.changelog);
+    setLbEnabled(f.lbEnabled);
+    setLbSort(f.lbSort);
+    setVisibility(f.visibility);
+    setArt(f.art);
+    // A saved draft already holds whatever the build's details filled in, plus the creator's edits.
+    catsTouched.current = true;
+    orientTouched.current = true;
+    metaDoneFor.current = d.session?.versionId ?? null;
+    stampRef.current = d.file;
+    shaRef.current = d.sha256;
+    sessionRef.current = d.session;
+    partsRef.current = new Map(d.parts);
+    uploadedRef.current = d.uploaded;
+    setSession(d.session);
+    setFileName(d.file.name);
+    setFileSize(d.file.size);
+    setUploadError(null);
+    setProgress(savedProgress(d));
+    setPending(null);
+    if (d.uploaded) {
+      setPhase("done");
+      goto(resumeStep(d));
+    } else {
+      setPhase("paused");
+      setResumeFor(d.file);
+    }
+  };
+
+  const discardDraft = (d: SavedDraft) => {
+    // A finished upload is already a draft game under My games, so only an unfinished one is cancelled.
+    if (!d.uploaded && d.session) abortSession(d.session);
+    clearDraft(draftStorageKey);
+    setPending(null);
+  };
+
+  /** Continues the current session with the file picked again: storage only gets what it is missing. */
+  const resumeUpload = async (file: File) => {
+    fileRef.current = file;
+    setResumeFor(null);
+    setUploadError(null);
+    const s = sessionRef.current;
+    if (s && s.mode !== "dedupe") {
+      try {
+        const r = await postJson<{ state: "open" | "completed" | "closed" | "expired"; arrived?: boolean; putUrl?: string | null }>("/api/upload/resume", { key: s.key });
+        if (r.state === "completed") {
+          uploadedRef.current = true;
+          setProgress(1);
+          setPhase("done");
+          goto(1);
+          return;
+        }
+        if (r.state === "open") {
+          if (s.mode === "single") sessionRef.current = { ...s, arrived: !!r.arrived, putUrl: r.putUrl ?? undefined };
+        } else {
+          if (r.state === "expired") abortSession(s);
+          sessionRef.current = null;
+          partsRef.current = new Map();
+          setSession(null);
+          showToast("The earlier upload expired · starting it again");
+        }
+      } catch (e) {
+        setPhase("error");
+        setUploadError(e instanceof Error ? e.message : "Could not resume the upload.");
+        return;
+      }
+    }
+    void startUpload(file);
+  };
+
   const pickFile = (file: File | null | undefined) => {
     if (!file) return;
     const ext = extensionOf(file.name);
@@ -438,8 +690,22 @@ export function PublishView({
       setUploadError("That file is empty.");
       return;
     }
+    // The file an unfinished upload was sending picks up where it stopped instead of starting over.
+    const waiting = resumeFor ?? (pending && !pending.uploaded ? pending.file : null);
+    if (waiting && sameFile(file, waiting)) {
+      if (pending) restoreDraft(pending);
+      void resumeUpload(file);
+      return;
+    }
+    if (pending) discardDraft(pending);
+    setResumeFor(null);
+    // After a finished upload (e.g. the AI added SDK calls), the new file is the same game's next version
+    // and everything typed so far stays.
+    if (sessionRef.current && phase === "done") keepGameRef.current = sessionRef.current.gameId;
     // A replacement file abandons any half-finished session.
     if (sessionRef.current && phase !== "done") abortSession(sessionRef.current);
+    stampRef.current = { name: file.name, size: file.size, lastModified: file.lastModified };
+    uploadedRef.current = false;
     fileRef.current = file;
     shaRef.current = null;
     sessionRef.current = null;
@@ -450,17 +716,66 @@ export function PublishView({
     void startUpload(file);
   };
 
+  /** A folder or several files are zipped here first, then uploaded like any zip. One .zip or .html goes straight through. */
+  const pickMany = async (load: PickedFile[] | Promise<PickedFile[]>) => {
+    let picked: PickedFile[];
+    try {
+      picked = await load;
+    } catch {
+      setUploadError("Could not read those files. Try choosing them again.");
+      return;
+    }
+    if (!picked.length) return;
+    if (isSingleBuild(picked, ACCEPTED_UPLOAD_EXT)) {
+      pickFile(picked[0].file);
+      return;
+    }
+    setUploadError(null);
+    setPacking(`Zipping ${picked.length.toLocaleString()} files…`);
+    // Let the label paint before zipping holds the page for a moment.
+    await new Promise((r) => setTimeout(r, 30));
+    try {
+      const { file, count } = await packFiles(picked);
+      if (file.size > MAX_UPLOAD_BYTES) throw new Error(`Zipped, those ${count.toLocaleString()} files come to ${formatBytes(file.size)}. The limit is ${formatBytes(MAX_UPLOAD_BYTES)}.`);
+      pickFile(file);
+    } catch (e) {
+      setUploadError(e instanceof Error ? e.message : "Could not zip those files.");
+    } finally {
+      setPacking(null);
+    }
+  };
+
+  const onPickInput = (input: HTMLInputElement) => {
+    if (input.files?.length) void pickMany(filesFromInput(input.files));
+    input.value = "";
+  };
+
   const retryUpload = () => {
     const f = fileRef.current;
     if (!f) {
       inputRef.current?.click();
       return;
     }
-    void startUpload(f);
+    // An open session is re-checked first: single-PUT URLs expire after an hour.
+    if (sessionRef.current && !uploadedRef.current) void resumeUpload(f);
+    else void startUpload(f);
+  };
+
+  /** "Upload the new build" in the SDK prompt: back to Source with the file picker open. */
+  const reupload = () => {
+    goto(0);
+    setSdkPromptOpen(false);
+    // The input only exists on step 0, so wait for it to render; the click still counts as the user's.
+    setTimeout(() => inputRef.current?.click(), 60);
   };
 
   const resetAll = () => {
     abortInFlight();
+    clearDraft(draftStorageKey);
+    keepGameRef.current = null;
+    stampRef.current = null;
+    uploadedRef.current = false;
+    setResumeFor(null);
     fileRef.current = null;
     shaRef.current = null;
     sessionRef.current = null;
@@ -474,9 +789,9 @@ export function PublishView({
     setSession(null);
     setStatus(null);
     setStatusError(null);
-    setTitle(existingGame?.title ?? "");
+    setTitle(existingGame?.game.title ?? "");
     setDesc("");
-    setCategory(categories[0]?.slug ?? "arcade");
+    setCats([categories[0]?.slug ?? "arcade"]);
     setOrient("portrait");
     setLicence("open");
     setModel("");
@@ -489,7 +804,17 @@ export function PublishView({
     setPublishing(false);
     setPublishError(null);
     setResult(null);
+    catsTouched.current = false;
+    orientTouched.current = false;
+    metaDoneFor.current = null;
+    setMetaFilled([]);
     goto(0);
+  };
+
+  /** Drops an unfinished upload (cancelling its storage session) and empties the wizard. */
+  const startOver = () => {
+    if (sessionRef.current && !uploadedRef.current) abortSession(sessionRef.current);
+    resetAll();
   };
 
   /* ---------- status polling ---------- */
@@ -498,7 +823,8 @@ export function PublishView({
   const settled = status?.status === "ready" || status?.status === "rejected";
 
   useEffect(() => {
-    if (step !== 1 || !versionId || settled) return;
+    // Steps 2-4 poll too: a resumed draft can land on any of them and Publish needs the ready status.
+    if (step < 1 || step > 4 || !versionId || settled) return;
     let stopped = false;
     const tick = async () => {
       try {
@@ -523,6 +849,73 @@ export function PublishView({
     };
   }, [step, versionId, settled]);
 
+  /* ---------- details from the build ---------- */
+
+  const buildMeta = status?.status === "ready" ? (status.meta ?? null) : null;
+
+  /** Copies the build's details into the form: only empty fields, or every one it has when `overwrite`. Returns what changed, for the note. */
+  const applyBuildMeta = (m: GameMeta, overwrite: boolean): string[] => {
+    const filled: string[] = [];
+    const take = (label: string, has: unknown, empty: boolean, set: () => void) => {
+      if (!has || !(overwrite || empty)) return;
+      set();
+      filled.push(label);
+    };
+    const fileTitle = fileName.replace(/\.[^.]+$/, "").slice(0, 80);
+    take("title", m.title, !title.trim() || (!existingGame && title === fileTitle), () => setTitle(m.title!));
+    take("one line", m.tagline, !desc.trim(), () => setDesc(m.tagline!));
+    const known = (m.categories ?? []).filter((s) => categories.some((c) => c.slug === s)).slice(0, 3);
+    take("categories", known.length, !existingGame && !catsTouched.current, () => setCats(known));
+    take("orientation", m.orientation, !existingGame && !orientTouched.current, () => setOrient(m.orientation!));
+    const ex: Partial<ExtraDetails> = {};
+    take("about", m.description, !extra.description.trim(), () => {
+      ex.description = m.description;
+    });
+    take("how to play", m.controls?.keys.length, !extra.keys.some((k) => k.key.trim() && k.action.trim()), () => {
+      ex.keys = m.controls!.keys.map((k) => ({ ...k }));
+    });
+    take("touch hint", m.controls?.touch, !extra.touch.trim(), () => {
+      ex.touch = m.controls!.touch!;
+    });
+    take("tags", m.tags?.length, !extra.tags.trim(), () => {
+      ex.tags = m.tags!.join(", ");
+    });
+    take("run length", m.durationSec, extra.durationSec == null, () => {
+      ex.durationSec = m.durationSec!;
+    });
+    if (Object.keys(ex).length) setExtra((e) => ({ ...e, ...ex }));
+    take("model", m.model, !model.trim(), () => setModel(normalizeModel(m.model) ?? m.model!));
+    take("tool", m.agent, !agent.trim(), () => setAgent(normalizeAgent(m.agent) ?? m.agent!));
+    take("prompt", m.prompt, !prompt.trim(), () => setPrompt(m.prompt!));
+    if (existingGame) take("changelog", m.changelog, !changelog.trim(), () => setChangelog(m.changelog!));
+    return filled;
+  };
+
+  useEffect(() => {
+    if (!buildMeta || !versionId || metaDoneFor.current === versionId) return;
+    metaDoneFor.current = versionId;
+    setMetaFilled(applyBuildMeta(buildMeta, false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per version, against the form as it is then
+  }, [buildMeta, versionId]);
+
+  /** The build says something the form doesn't (a new version's habiv.json, or a field the creator changed). */
+  const buildDiffers = (() => {
+    const m = buildMeta;
+    if (!m) return false;
+    const texts: [string | null | undefined, string][] = [
+      [m.title, title],
+      [m.tagline, desc],
+      [m.description, extra.description],
+      [m.controls?.touch, extra.touch],
+      [m.tags?.join(", "), extra.tags],
+      [m.prompt, prompt],
+    ];
+    if (texts.some(([a, b]) => !!a && a !== b.trim())) return true;
+    const keys = extra.keys.map((k) => ({ key: k.key.trim(), action: k.action.trim() })).filter((k) => k.key && k.action);
+    if (m.controls?.keys.length && JSON.stringify(m.controls.keys) !== JSON.stringify(keys)) return true;
+    return !!m.durationSec && m.durationSec !== extra.durationSec;
+  })();
+
   /* ---------- publish ---------- */
 
   const publish = async (vis: Visibility) => {
@@ -534,9 +927,11 @@ export function PublishView({
       const meta = await updateGameMeta(session.gameId, {
         title: title.trim(),
         tagline: desc.trim() || null,
-        category: category as Parameters<typeof updateGameMeta>[1]["category"],
+        category: cats[0] as Parameters<typeof updateGameMeta>[1]["category"],
+        categories: cats,
         orientation: orient,
         remixLicence: licence,
+        ...toDetailsPatch(extra),
       });
       if (!meta.ok) throw new Error(meta.error);
       const vmeta = await setVersionMeta(session.versionId, {
@@ -559,6 +954,7 @@ export function PublishView({
         setResult(null);
         showToast("Saved as draft");
       }
+      clearDraft(draftStorageKey);
       setStep(5);
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
@@ -572,7 +968,7 @@ export function PublishView({
 
   const slug = slugify(title);
   const descOut = desc || "Add a one line description.";
-  const categoryLabel = categories.find((c) => c.slug === category)?.name ?? category;
+  const categoryLabel = cats.map((s) => categories.find((c) => c.slug === s)?.name ?? s).join(", ");
   const orientLabel = orientations.find((o) => o.value === orient)?.label ?? orient;
   const licenceLabel = licences.find((l) => l.value === licence)?.label ?? licence;
   const rows = checkRows(status);
@@ -581,15 +977,22 @@ export function PublishView({
   const warningCount = (status?.warnings.length ?? 0) + (status?.usesNetwork ? 1 : 0);
   const titleOk = title.trim().length > 0;
 
+  const details = toDetailsPatch(extra);
   const reviewRows = [
     { k: "Title", v: title || "—" },
-    { k: "Description", v: desc || "—" },
-    { k: "Category", v: categoryLabel },
+    { k: "One line", v: desc || "—" },
+    { k: "About", v: details.description ? `${details.description.length.toLocaleString()} characters` : "—" },
+    { k: "How to play", v: details.controls.keys.map((c) => `${c.key} · ${c.action}`).join(", ") || "category defaults" },
+    { k: "Tags", v: details.tags.join(", ") || "—" },
+    { k: "Run length", v: details.durationSec ? durationLabel(details.durationSec) : "—" },
+    { k: cats.length > 1 ? "Categories" : "Category", v: categoryLabel },
     { k: "Orientation", v: orientLabel },
     { k: "Licence", v: licenceLabel },
+    { k: "Art", v: [art.coverUrl ? "your cover" : "automatic cover", art.cardUrl ? "your card" : "automatic card"].join(" · ") },
     { k: "Bundle", v: `${formatBytes(status?.sizeBytes ?? fileSize)} · v${session?.version ?? 1}` },
     { k: "Built with", v: [model, agent].filter(Boolean).join(" · ") || "—" },
     { k: "Leaderboard", v: lbEnabled ? `On · ${lbSort === "desc" ? "highest wins" : "lowest wins"}` : "Off" },
+    { k: "Game features", v: status?.sdk ? status.sdk.features.map(sdkFeatureLabel).join(", ") || "no SDK calls" : "—" },
     { k: "Visibility", v: visLabel[visibility] },
     { k: "Checks", v: ready ? `${warningCount} warning${warningCount === 1 ? "" : "s"}` : rejected ? "rejected" : "incomplete" },
   ];
@@ -598,18 +1001,28 @@ export function PublishView({
     idle: "",
     hashing: "Fingerprinting…",
     creating: "Opening upload…",
-    uploading: session?.mode === "dedupe" ? "Already on file" : `Uploading ${Math.round(progress * 100)}%`,
+    uploading: session?.mode === "dedupe" ? "Already on file" : `Uploading ${Math.round(progress * 100)}% · ${formatBytes(Math.round(progress * fileSize))} sent`,
+    paused: `Paused at ${Math.round(progress * 100)}%`,
     completing: "Finishing…",
     done: "Uploaded",
     error: "Failed",
   };
-  const busy = phase === "hashing" || phase === "creating" || phase === "uploading" || phase === "completing";
+  const busy = !!packing || phase === "hashing" || phase === "creating" || phase === "uploading" || phase === "completing";
+
+  // Leaving mid-upload loses nothing (the wizard resumes), but ask so nobody closes the tab by accident.
+  useEffect(() => {
+    if (!busy) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [busy]);
 
   const onDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setDragging(false);
     if (busy) return;
-    pickFile(e.dataTransfer.files?.[0]);
+    // Read synchronously: the browser empties dataTransfer once this handler returns.
+    void pickMany(filesFromDrop(e.dataTransfer));
   };
 
   const publicUrl = result ? `${siteUrl}${result.url}` : null;
@@ -637,7 +1050,7 @@ export function PublishView({
   return (
     <BentoAutoGrid>
       <PageHead
-        title={existingGame ? `New version · ${existingGame.title}` : "Publish a game"}
+        title={existingGame ? `New version · ${existingGame.game.title}` : "Publish a game"}
         sub="Five steps. Nothing goes public until the last one."
         auto
       >
@@ -662,17 +1075,53 @@ export function PublishView({
           <div style={cell.main}>
             <div style={{ fontSize: "17px", fontWeight: 600 }}>Where is your build?</div>
             <div style={{ marginTop: "6px", fontSize: "13.5px", color: "var(--ink-4)" }}>
-              One HTML file, or a ZIP with an index.html at the root. Assets must be local.
+              One HTML file, a ZIP, or the game&apos;s whole folder, with an index.html at the root. Assets must be local.{" "}
+              <Link href="/docs" style={{ color: "var(--ink)", textDecoration: "underline", textUnderlineOffset: "3px" }}>
+                Read the build guide
+              </Link>
             </div>
+            {pending ? (
+              <div
+                style={{
+                  marginTop: "18px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  flexWrap: "wrap",
+                  padding: "14px 16px",
+                  borderRadius: "12px",
+                  background: "var(--chip)",
+                }}
+              >
+                <div style={{ flex: "1 1 220px", minWidth: 0 }}>
+                  <div style={{ fontSize: "14px", fontWeight: 600 }}>Continue where you left off?</div>
+                  <div style={{ marginTop: "4px", fontSize: "12.5px", color: "var(--ink-4)", wordBreak: "break-all" }}>
+                    {pending.form.title || pending.file.name} ·{" "}
+                    {pending.uploaded
+                      ? `uploaded, you were on ${stepNames[resumeStep(pending)]}`
+                      : `${Math.round(savedProgress(pending) * 100)}% uploaded · pick the same file to finish`}
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                  <button onClick={() => restoreDraft(pending)} style={primaryBtn}>
+                    Continue
+                  </button>
+                  <button onClick={() => discardDraft(pending)} style={chipBtn}>
+                    Discard
+                  </button>
+                </div>
+              </div>
+            ) : null}
+            <input ref={inputRef} type="file" multiple hidden onChange={(e) => onPickInput(e.target)} />
             <input
-              ref={inputRef}
-              type="file"
-              accept=".zip,.html,.htm"
-              hidden
-              onChange={(e) => {
-                pickFile(e.target.files?.[0]);
-                e.target.value = "";
+              ref={(el) => {
+                folderRef.current = el;
+                // Not in React's input props; every current browser supports it.
+                el?.setAttribute("webkitdirectory", "");
               }}
+              type="file"
+              hidden
+              onChange={(e) => onPickInput(e.target)}
             />
             <div
               onDragOver={(e) => {
@@ -692,13 +1141,23 @@ export function PublishView({
                 transition: "background 120ms ease",
               }}
             >
-              {phase === "idle" ? (
+              {packing ? (
                 <>
-                  <div style={{ fontSize: "15px", fontWeight: 600 }}>Drop your file here</div>
-                  <div style={{ marginTop: "6px", fontSize: "13px", color: "var(--ink-5)" }}>or</div>
-                  <button onClick={() => inputRef.current?.click()} style={{ ...primaryBtn, marginTop: "16px" }}>
-                    Choose a file
-                  </button>
+                  <div style={{ fontSize: "15px", fontWeight: 600 }}>{packing}</div>
+                  <div style={{ marginTop: "6px", fontSize: "13px", color: "var(--ink-5)" }}>Packing them into one zip before the upload</div>
+                </>
+              ) : phase === "idle" ? (
+                <>
+                  <div style={{ fontSize: "15px", fontWeight: 600 }}>Drop your game here</div>
+                  <div style={{ marginTop: "6px", fontSize: "13px", color: "var(--ink-5)" }}>An HTML file, a zip, or the whole folder</div>
+                  <div style={{ display: "flex", gap: "8px", marginTop: "16px", flexWrap: "wrap", justifyContent: "center" }}>
+                    <button onClick={() => inputRef.current?.click()} style={primaryBtn}>
+                      Choose files
+                    </button>
+                    <button onClick={() => folderRef.current?.click()} style={chipBtn}>
+                      Choose a folder
+                    </button>
+                  </div>
                 </>
               ) : (
                 <>
@@ -720,6 +1179,22 @@ export function PublishView({
                       }}
                     />
                   </div>
+                  {phase === "paused" ? (
+                    <>
+                      <div style={{ margin: "14px auto 0", maxWidth: "46ch", fontSize: "13px", lineHeight: 1.5, color: "var(--ink-4)" }}>
+                        Select {fileName} again to finish.{" "}
+                        {progress > 0 ? "Only the part that has not arrived yet gets uploaded." : "It uploads from the start."}
+                      </div>
+                      <div style={{ display: "flex", gap: "8px", marginTop: "14px", flexWrap: "wrap", justifyContent: "center" }}>
+                        <button onClick={() => inputRef.current?.click()} style={primaryBtn}>
+                          Select file
+                        </button>
+                        <button onClick={startOver} style={chipBtn}>
+                          Start over
+                        </button>
+                      </div>
+                    </>
+                  ) : null}
                   {phase === "done" ? (
                     <div style={{ display: "flex", gap: "8px", marginTop: "16px", flexWrap: "wrap", justifyContent: "center" }}>
                       <button onClick={() => goto(1)} style={primaryBtn}>
@@ -748,18 +1223,23 @@ export function PublishView({
                 </div>
               ) : null}
               <div style={{ marginTop: "14px", fontFamily: mono, fontSize: "10.5px", color: "var(--ink-6)" }}>
-                MAX 50 MB · SANDBOXED IFRAME · NETWORK OFF BY DEFAULT
+                MAX 50 MB ZIPPED · SANDBOXED IFRAME · NETWORK OFF BY DEFAULT
               </div>
             </div>
           </div>
           <div style={cell.side}>
             <div style={{ fontSize: "15px", fontWeight: 600, alignSelf: "flex-start" }}>Or publish from your agent</div>
             <div style={{ fontSize: "13px", lineHeight: 1.55, color: "var(--ink-4)", alignSelf: "flex-start" }}>
-              Codex and Claude Code push straight to your profile over MCP. Each push becomes a new version.
+              Connect Claude or Codex once, then just ask it to publish. Each publish becomes a new version.
             </div>
-            <Link href="/settings?tab=api" style={{ ...chipBtn, alignSelf: "flex-start" }}>
-              Set up MCP
-            </Link>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignSelf: "flex-start" }}>
+              <Link href="/settings?tab=api" style={chipBtn}>
+                Connect your AI
+              </Link>
+              <Link href="/docs/mcp" style={{ ...chipBtn, background: "transparent", color: "var(--ink-3)" }}>
+                How it works
+              </Link>
+            </div>
             <div
               style={{
                 alignSelf: "stretch",
@@ -852,6 +1332,17 @@ export function PublishView({
             })}
           </div>
           {statusError ? <div style={{ marginTop: "12px", fontSize: "12.5px", color: "var(--danger-ink)" }}>{statusError}</div> : null}
+          {ready ? (
+            <SdkUpgradePrompt
+                sdk={status?.sdk ?? null}
+                hasDetails={!!status?.meta?.sources.some((s) => s !== "html")}
+                title={title}
+                sort={lbSort}
+                open={sdkPromptOpen}
+                onOpenChange={setSdkPromptOpen}
+                onReupload={reupload}
+              />
+          ) : null}
           <div style={{ display: "flex", gap: "8px", marginTop: "22px", flexWrap: "wrap" }}>
             {rejected ? (
               <button onClick={() => goto(0)} style={primaryBtn}>
@@ -873,9 +1364,44 @@ export function PublishView({
         <>
           <div style={cell.main}>
             <div style={{ fontSize: "17px", fontWeight: 600 }}>Game details</div>
+            {buildMeta ? (
+              <div
+                style={{
+                  marginTop: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "10px",
+                  flexWrap: "wrap",
+                  padding: "12px 14px",
+                  borderRadius: "10px",
+                  background: "var(--chip)",
+                  fontSize: "13px",
+                  lineHeight: 1.5,
+                  color: "var(--ink-3)",
+                }}
+              >
+                <span style={{ flex: "1 1 240px" }}>
+                  {metaFilled.length
+                    ? `Filled in from ${buildDetailsSourceLabel(buildMeta)}: ${metaFilled.join(", ")}. Check them before you publish.`
+                    : `Your build has details in ${buildDetailsSourceLabel(buildMeta)}. Fields you had already filled were kept.`}
+                </span>
+                {buildDiffers ? (
+                  <button type="button" onClick={() => setMetaFilled(applyBuildMeta(buildMeta, true))} style={chipBtn}>
+                    Use the build&apos;s details
+                  </button>
+                ) : null}
+              </div>
+            ) : ready ? (
+              <div style={{ marginTop: "8px", fontSize: "12.5px", lineHeight: 1.5, color: "var(--ink-5)" }}>
+                Tip: put a habiv.json in your build and this form fills itself in.{" "}
+                <Link href="/docs/details" style={{ color: "var(--ink)", textDecoration: "underline", textUnderlineOffset: "3px" }}>
+                  How it works
+                </Link>
+              </div>
+            ) : null}
             <div style={fieldLabelStyle}>Title</div>
             <input className="hb-input" value={title} maxLength={80} onChange={(e) => setTitle(e.target.value)} placeholder="Name your game" style={fieldStyle} />
-            <div style={fieldLabelStyle}>One line description</div>
+            <div style={fieldLabelStyle}>One line description · shown on cards</div>
             <input
               className="hb-input"
               value={desc}
@@ -884,18 +1410,26 @@ export function PublishView({
               placeholder="What does the player do?"
               style={fieldStyle}
             />
-            <div style={fieldLabelStyle}>Category</div>
-            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-              {categories.map((c) => (
-                <button key={c.slug} onClick={() => setCategory(c.slug)} style={chipStyle(category === c.slug)}>
-                  {c.name}
-                </button>
-              ))}
-            </div>
+            <div style={fieldLabelStyle}>Categories</div>
+            <CategoryChips
+              categories={categories}
+              value={cats}
+              onChange={(c) => {
+                catsTouched.current = true;
+                setCats(c);
+              }}
+            />
             <div style={fieldLabelStyle}>Orientation</div>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
               {orientations.map((o) => (
-                <button key={o.value} onClick={() => setOrient(o.value)} style={chipStyle(orient === o.value)}>
+                <button
+                  key={o.value}
+                  onClick={() => {
+                    orientTouched.current = true;
+                    setOrient(o.value);
+                  }}
+                  style={chipStyle(orient === o.value)}
+                >
                   {o.label}
                 </button>
               ))}
@@ -908,14 +1442,15 @@ export function PublishView({
                 </button>
               ))}
             </div>
+            <GameExtraFields value={extra} onChange={(patch) => setExtra((e) => ({ ...e, ...patch }))} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "0 12px" }}>
               <div>
                 <div style={fieldLabelStyle}>Model</div>
-                <input className="hb-input" value={model} maxLength={80} onChange={(e) => setModel(e.target.value)} placeholder="Claude Sonnet 4.5" style={fieldStyle} />
+                <CatalogField options={MODEL_OPTIONS} value={model} onChange={setModel} normalize={normalizeModel} placeholder="Search models, e.g. Sonnet" ariaLabel="Model" />
               </div>
               <div>
                 <div style={fieldLabelStyle}>Tool or agent</div>
-                <input className="hb-input" value={agent} maxLength={80} onChange={(e) => setAgent(e.target.value)} placeholder="Claude Code" style={fieldStyle} />
+                <CatalogField options={AGENT_OPTIONS} value={agent} onChange={setAgent} normalize={normalizeAgent} placeholder="Search tools, e.g. Claude Code" ariaLabel="Tool or agent" />
               </div>
             </div>
             <div style={fieldLabelStyle}>Prompt · shown on the game page</div>
@@ -933,29 +1468,31 @@ export function PublishView({
                 <input className="hb-input" value={changelog} maxLength={500} onChange={(e) => setChangelog(e.target.value)} placeholder="Fixed the jump, new level 3" style={fieldStyle} />
               </>
             ) : null}
-            <div style={fieldLabelStyle}>Leaderboard</div>
-            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
-              <button onClick={() => setLbEnabled(false)} style={chipStyle(!lbEnabled)}>
-                Off
-              </button>
-              <button onClick={() => setLbEnabled(true)} style={chipStyle(lbEnabled)}>
-                On
-              </button>
-              {lbEnabled ? (
-                <>
-                  <span style={{ fontFamily: mono, fontSize: "10.5px", letterSpacing: "0.1em", textTransform: "uppercase", color: "var(--ink-5)", margin: "0 4px" }}>sort</span>
-                  <button onClick={() => setLbSort("desc")} style={chipStyle(lbSort === "desc")}>
-                    Highest wins
-                  </button>
-                  <button onClick={() => setLbSort("asc")} style={chipStyle(lbSort === "asc")}>
-                    Lowest wins
-                  </button>
-                </>
-              ) : null}
-            </div>
-            <div style={{ marginTop: "8px", fontFamily: mono, fontSize: "10.5px", color: "var(--ink-6)" }}>
-              Your game submits scores through the Habiv bridge. Turn this on only if it reports a score.
-            </div>
+            <div style={fieldLabelStyle}>Game features · found in the build</div>
+            <SdkFeatureTags sdk={status?.sdk ?? null} checking={!ready && !rejected} />
+            {ready ? (
+              <SdkUpgradePrompt
+                sdk={status?.sdk ?? null}
+                hasDetails={!!status?.meta?.sources.some((s) => s !== "html")}
+                title={title}
+                sort={lbSort}
+                open={sdkPromptOpen}
+                onOpenChange={setSdkPromptOpen}
+                onReupload={reupload}
+              />
+            ) : null}
+            <LeaderboardSettings
+              onAddScores={() => setSdkPromptOpen(true)}
+              sdk={status?.sdk ?? null}
+              checking={!ready && !rejected}
+              enabled={lbEnabled}
+              sort={lbSort}
+              onEnabled={(on) => {
+                lbTouched.current = true;
+                setLbEnabled(on);
+              }}
+              onSort={setLbSort}
+            />
             <div style={{ display: "flex", gap: "8px", marginTop: "22px", flexWrap: "wrap" }}>
               <button onClick={() => goto(3)} disabled={!titleOk} style={{ ...primaryBtn, opacity: titleOk ? 1 : 0.45, cursor: titleOk ? "pointer" : "default" }}>
                 Continue to art
@@ -988,14 +1525,31 @@ export function PublishView({
           <div style={cell.main}>
             <div style={{ fontSize: "17px", fontWeight: 600 }}>Store art</div>
             <div style={{ marginTop: "6px", fontSize: "13.5px", color: "var(--ink-4)" }}>
-              This is your build running in the same sandbox players get. Covers and thumbnails are generated automatically after publishing; you can
-              upload your own later in My games.
+              Upload your own cover and card, pick a ready-made design made from your title, or leave a slot empty and we take a screenshot of
+              your game after publishing. Art saves as soon as you pick it. You can change it any time in My games.
+            </div>
+            <div style={{ marginTop: "16px" }}>
+              {session?.gameId ? (
+                <GameArtFields
+                  gameId={session.gameId}
+                  value={art}
+                  onChange={(patch) => setArt((a) => ({ ...a, ...patch }))}
+                  meta={{
+                    title,
+                    tagline: desc,
+                    category: categories.find((c) => c.slug === cats[0])?.name ?? cats[0] ?? null,
+                    engine: status?.engine ?? null,
+                    creator: handle,
+                    // A new game's hue is set server-side; a stable hash of its id stands in until then.
+                    hue: eg?.accentHue ?? [...session.gameId].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) % 360, 0),
+                  }}
+                />
+              ) : (
+                <div style={{ fontFamily: mono, fontSize: "10.5px", color: "var(--ink-5)" }}>Upload a build first to add art.</div>
+              )}
             </div>
             <div style={fieldLabelStyle}>Live preview · 16:9 · no runs or scores are recorded</div>
             {previewBox}
-            <div style={{ marginTop: "12px", fontFamily: mono, fontSize: "10.5px", color: "var(--ink-6)" }}>
-              Accent colour is picked from the cover once it exists.
-            </div>
             <div style={{ display: "flex", gap: "8px", marginTop: "22px", flexWrap: "wrap" }}>
               <button onClick={() => goto(4)} style={primaryBtn}>
                 Continue to review
@@ -1011,9 +1565,14 @@ export function PublishView({
                 Feed preview
               </div>
               <div style={{ padding: "8px", borderRadius: "14px", background: "var(--chip)" }}>
-                <div style={{ height: "190px", borderRadius: "14px", background: "var(--panel-2)", display: "grid", placeItems: "center", fontFamily: mono, fontSize: "10.5px", color: "var(--ink-5)", textAlign: "center", padding: "12px" }}>
-                  Cover generated after publish
-                </div>
+                {art.coverUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- art URLs come from the storage CDN
+                  <img src={art.coverUrl} alt="" style={{ display: "block", width: "100%", aspectRatio: "16 / 9", objectFit: "cover", borderRadius: "14px" }} />
+                ) : (
+                  <div style={{ height: "190px", borderRadius: "14px", background: "var(--panel-2)", display: "grid", placeItems: "center", fontFamily: mono, fontSize: "10.5px", color: "var(--ink-5)", textAlign: "center", padding: "12px" }}>
+                    Cover generated after publish
+                  </div>
+                )}
                 <div style={{ padding: "10px 4px 4px" }}>
                   <div style={{ fontSize: "14px", fontWeight: 600 }}>{title || "Untitled game"}</div>
                   <div style={{ marginTop: "5px", fontFamily: mono, fontSize: "10px", textTransform: "uppercase", color: "var(--ink-5)" }}>

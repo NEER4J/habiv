@@ -4,6 +4,8 @@ import { getRequestUser } from "@/lib/supabase/request-user";
 import { gameOrigin } from "@/lib/site";
 import type { VersionStatusResponse } from "@/lib/contracts/upload";
 import { fail } from "@/lib/upload/http";
+import { readSdk } from "@/lib/habiv/sdk";
+import { readBuildDetails } from "@/lib/habiv/build-details";
 
 /** Polling target for the publish wizard: GET /api/upload/status?versionId=... */
 export async function GET(request: NextRequest) {
@@ -34,6 +36,8 @@ export async function GET(request: NextRequest) {
     fileCount: v.file_count,
     rejectReason: v.reject_reason,
     warnings,
+    sdk: readSdk(v.manifest),
+    meta: readBuildDetails(v.manifest),
     previewUrl: v.status === "ready" && gameOrigin ? `${gameOrigin}/v/${v.id}/?mode=preview` : null,
   };
   return NextResponse.json(body, { headers: { "cache-control": "no-store" } });

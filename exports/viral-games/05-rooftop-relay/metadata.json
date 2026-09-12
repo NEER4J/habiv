@@ -1,0 +1,33 @@
+{
+  "title": "Rooftop Relay",
+  "slug": "rooftop-relay",
+  "category": "Racing",
+  "orientation": "any",
+  "duration_seconds": 45,
+  "tagline": "Two taps, one skyline, zero room for a missed gap.",
+  "description": "Sprint across a city of laundry lines, AC units, and neon signs. Pick the safest lane at the last second and hold the streak through three weather patterns.",
+  "objective": "Choose the correct rooftop lane before the runner arrives.",
+  "controls": [
+    {
+      "key": "← →",
+      "action": "Change lanes"
+    },
+    {
+      "key": "Tap",
+      "action": "Pick a lane"
+    },
+    {
+      "key": "R",
+      "action": "Run again"
+    }
+  ],
+  "tags": [
+    "speedrun",
+    "one button",
+    "city"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "05-rooftop-relay.zip"
+}

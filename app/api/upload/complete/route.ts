@@ -31,6 +31,17 @@ export async function POST(request: NextRequest) {
     .limit(1)
     .maybeSingle();
   if (!session) return fail("not_found", "Upload session not found.", 404);
+  if (session.status === "completed") {
+    // Idempotent: a retry after a lost response, or after ingest never started, re-kicks ingest.
+    const { data: v } = await admin.from("game_versions").select("status, ingest_run_id").eq("id", session.version_id).maybeSingle();
+    let jobRunId = v?.ingest_run_id ?? null;
+    if (v && !jobRunId && (v.status === "processing" || v.status === "uploaded")) {
+      jobRunId = (await enqueueIngest(session.version_id)).id;
+      await admin.from("game_versions").update({ status: "processing", ingest_run_id: jobRunId }).eq("id", session.version_id);
+    }
+    const status = !v || v.status === "uploaded" ? "processing" : v.status;
+    return ok({ versionId: session.version_id, gameId: session.game_id, status, jobRunId });
+  }
   if (session.status !== "open") return fail("closed", "Upload already completed.", 409);
 
   const b = buckets();

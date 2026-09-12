@@ -4,12 +4,13 @@ import { MyGamesView } from "@/components/habiv/my-games-view";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnProfile } from "@/lib/db/profiles";
 import { loadMyGames } from "@/lib/habiv/page-data";
+import { MyGamesSkeleton } from "@/components/habiv/skeletons";
 
-export const metadata = { title: "My games — Habiv" };
+export const metadata = { title: "My games", robots: { index: false } };
 
 export default function MyGamesPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<MyGamesSkeleton />}>
       <MyGames />
     </Suspense>
   );

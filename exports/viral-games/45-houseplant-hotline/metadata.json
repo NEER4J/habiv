@@ -1,0 +1,33 @@
+{
+  "title": "Houseplant Hotline",
+  "slug": "houseplant-hotline",
+  "category": "Cozy",
+  "orientation": "any",
+  "duration_seconds": 120,
+  "tagline": "Answer calls from plants who are mostly overreacting.",
+  "description": "Plants call in with mysterious symptoms: droopy, dramatic, or simply bored. Match each voice to a care plan and unlock increasingly specific personalities.",
+  "objective": "Tap the plant calling for the correct care action.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Answer a plant"
+    },
+    {
+      "key": "Drag",
+      "action": "Choose care"
+    },
+    {
+      "key": "R",
+      "action": "Open hotline"
+    }
+  ],
+  "tags": [
+    "cozy",
+    "plants",
+    "story"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "45-houseplant-hotline.zip"
+}

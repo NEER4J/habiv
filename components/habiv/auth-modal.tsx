@@ -214,7 +214,10 @@ export function AuthModal() {
         )}
 
         <div style={{ marginTop: "16px", fontFamily: mono, fontSize: "10.5px", lineHeight: 1.7, color: "var(--ink-6)" }}>
-          By continuing you agree to the content rules. Games are reviewed automatically before they go public.
+          By continuing you agree to the{" "}
+          <a href="/terms" target="_blank" rel="noopener" style={{ color: "var(--ink-4)", textDecoration: "underline" }}>Terms</a>,{" "}
+          <a href="/guidelines" target="_blank" rel="noopener" style={{ color: "var(--ink-4)", textDecoration: "underline" }}>Community Guidelines</a> and{" "}
+          <a href="/privacy" target="_blank" rel="noopener" style={{ color: "var(--ink-4)", textDecoration: "underline" }}>Privacy Policy</a>. Games are reviewed automatically before they go public.
         </div>
       </div>
     </div>

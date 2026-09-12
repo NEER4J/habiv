@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { art } from "@/lib/habiv/games";
 import { bpanel, mono, navStyleFor } from "@/lib/habiv/ui";
+import { legalPages } from "@/lib/legal";
 import { createClient } from "@/lib/supabase/client";
 import { Overlays } from "./overlays";
 import { useShell } from "./shell-context";
@@ -90,7 +91,7 @@ const secondaryItems = [
   },
   {
     href: "/settings?tab=api",
-    label: "Connect MCP",
+    label: "Connect AI",
     icon: (
       <>
         <circle cx="5" cy="9" r="2.5" />
@@ -109,6 +110,16 @@ const secondaryItems = [
       </>
     ),
   },
+  {
+    href: "/docs",
+    label: "Docs",
+    icon: (
+      <>
+        <path d="M2.8 3.8h4.4A1.8 1.8 0 0 1 9 5.6v9a1.5 1.5 0 0 0-1.5-1.5H2.8z" />
+        <path d="M15.2 3.8h-4.4A1.8 1.8 0 0 0 9 5.6v9a1.5 1.5 0 0 1 1.5-1.5h4.7z" />
+      </>
+    ),
+  },
 ];
 
 const adminItem = {
@@ -121,6 +132,23 @@ const adminItem = {
     </>
   ),
 };
+
+/**
+ * Whether a sidebar link matches the current route. Sections own their sub-pages (/docs/mcp lights
+ * Docs), /profile redirects to /@handle so the own-handle page lights Profile, and the two
+ * /settings links split on ?tab=api.
+ */
+function isNavActive(href: string, pathname: string, tab: string | null, ownHandle: string | null): boolean {
+  const [path, query] = href.split("?");
+  if (path === "/settings") {
+    if (pathname !== "/settings") return false;
+    const wantTab = new URLSearchParams(query ?? "").get("tab");
+    return wantTab ? tab === wantTab : tab !== "api";
+  }
+  if (path === "/") return pathname === "/";
+  if (path === "/profile" && ownHandle && decodeURIComponent(pathname) === `/@${ownHandle}`) return true;
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
 
 const NavIcon = ({ children }: { children: ReactNode }) => (
   <svg width="19" height="19" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ flex: "0 0 auto" }}>
@@ -161,6 +189,13 @@ function AccountMenu() {
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
   }, [open]);
+
+  // The menu navigates with router.push, which does not prefetch the way <Link> does.
+  const profileHref = profile.handleSet ? `/@${profile.handle}` : "/profile";
+  useEffect(() => {
+    if (!signedIn) return;
+    for (const href of [profileHref, "/my-games", "/settings"]) router.prefetch(href);
+  }, [signedIn, profileHref, router]);
 
   const initials = profile.name
     .split(/\s+/)
@@ -269,7 +304,7 @@ function AccountMenu() {
             ) : null}
           </div>
           <div style={{ height: "1px", margin: "0 6px 6px", background: "var(--chip)" }} />
-          <button role="menuitem" className="hb-row" onClick={() => go("/profile")} style={menuItemStyle}>
+          <button role="menuitem" className="hb-row" onClick={() => go(profileHref)} style={menuItemStyle}>
             Profile
           </button>
           <button role="menuitem" className="hb-row" onClick={() => go("/my-games")} style={menuItemStyle}>
@@ -444,7 +479,9 @@ function Header() {
 
 function Sidebar() {
   const { drawerMode, collapsed, sidebarOpen, toggleSidebar, closeSidebar, theatre, mobile, light, pinned, builtThisWeek, profile } = useShell();
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
+  const tab = useSearchParams().get("tab");
+  const active = (href: string) => isNavActive(href, pathname, tab, profile.handleSet ? profile.handle : null);
   const secondary = profile.isAdmin ? [...secondaryItems, adminItem] : secondaryItems;
 
   const sidebarStyle: CSSProperties = drawerMode
@@ -512,7 +549,8 @@ function Sidebar() {
               href={item.href}
               onClick={onNavigate}
               title={item.label}
-              style={navStyleFor(pathname === item.href, !showLabels)}
+              aria-current={active(item.href) ? "page" : undefined}
+              style={navStyleFor(active(item.href), !showLabels)}
             >
               <NavIcon>{item.icon}</NavIcon>
               {showLabels ? <span>{item.label}</span> : null}
@@ -566,7 +604,13 @@ function Sidebar() {
               </>
             ) : null}
             {secondary.map((item) => (
-              <Link key={item.label} href={item.href} onClick={onNavigate} style={navStyleFor(false, false)}>
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={onNavigate}
+                aria-current={active(item.href) ? "page" : undefined}
+                style={navStyleFor(active(item.href), false)}
+              >
                 <NavIcon>{item.icon}</NavIcon>
                 <span>{item.label}</span>
               </Link>
@@ -584,6 +628,41 @@ function Sidebar() {
                 Made with any model
               </div>
             </div>
+            {/* Native <details>: no state, and the links stay in the HTML for crawlers while collapsed. */}
+            <style>{`.hb-legal-menu>summary{list-style:none}.hb-legal-menu>summary::-webkit-details-marker{display:none}.hb-legal-menu[open] .hb-legal-chev{transform:rotate(180deg)}`}</style>
+            <details className="hb-legal-menu" style={{ margin: "8px 2px 0" }}>
+              <summary
+                className="hb-row"
+                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: "36px", padding: "0 12px", borderRadius: "9px", cursor: "pointer", fontSize: "13px", color: "var(--ink-4)" }}
+              >
+                About &amp; legal
+                <svg className="hb-legal-chev" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ transition: "transform 160ms ease" }}>
+                  <polyline points="3,4.5 6,7.5 9,4.5" />
+                </svg>
+              </summary>
+              <div style={{ display: "flex", flexDirection: "column", padding: "2px 0 4px" }}>
+                {legalPages.map((p) => (
+                  <Link
+                    key={p.href}
+                    href={p.href}
+                    onClick={onNavigate}
+                    className="hb-row"
+                    style={{ display: "block", padding: "7px 12px", borderRadius: "8px", fontSize: "13px", color: pathname === p.href ? "var(--ink)" : "var(--ink-5)" }}
+                  >
+                    {p.label}
+                  </Link>
+                ))}
+              </div>
+            </details>
+            <div style={{ height: "1px", margin: "10px 8px", background: "var(--chip)" }} />
+            <div style={{ padding: "2px 12px 6px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12.5px", fontWeight: 600, letterSpacing: "-0.02em", color: "var(--ink-4)" }}>
+                <HabivMark size={12} />
+                habiv
+                <span style={{ fontFamily: mono, fontSize: "9px", fontWeight: 400, letterSpacing: "0.1em", color: "var(--ink-6)" }}>BETA</span>
+              </div>
+              <div style={{ marginTop: "6px", fontSize: "11.5px", color: "var(--ink-6)" }}>© 2026 Habiv</div>
+            </div>
           </div>
         ) : null}
       </aside>
@@ -600,8 +679,9 @@ const bottomNavItems = [
 ];
 
 function BottomNav() {
-  const { mobile } = useShell();
-  const pathname = usePathname();
+  const { mobile, profile } = useShell();
+  const pathname = usePathname() ?? "";
+  const tab = useSearchParams().get("tab");
   if (!mobile) return null;
   return (
     <div
@@ -623,7 +703,7 @@ function BottomNav() {
       }}
     >
       {bottomNavItems.map((b) => {
-        const active = pathname === b.href;
+        const active = isNavActive(b.href, pathname, tab, profile.handleSet ? profile.handle : null);
         return (
           <Link
             key={b.href}
@@ -717,7 +797,7 @@ function Ambient() {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { mobile, theme } = useShell();
+  const { mobile, theme, drawerMode } = useShell();
 
   return (
     <div
@@ -727,8 +807,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     >
       <Ambient />
       <Header />
+      {/* The drawer lives outside the zIndex:1 content layer so it can stack above the sticky header. */}
+      {drawerMode ? <Sidebar /> : null}
       <div style={{ position: "relative", zIndex: 1, display: "flex", alignItems: "flex-start", gap: "12px", padding: "12px" }}>
-        <Sidebar />
+        {drawerMode ? null : <Sidebar />}
         <main style={{ flex: 1, minWidth: 0, paddingBottom: mobile ? "84px" : "12px" }}>{children}</main>
       </div>
       <BottomNav />

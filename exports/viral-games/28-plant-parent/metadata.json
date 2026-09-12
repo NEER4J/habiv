@@ -1,0 +1,33 @@
+{
+  "title": "Plant Parent",
+  "slug": "plant-parent",
+  "category": "Cozy",
+  "orientation": "any",
+  "duration_seconds": 140,
+  "tagline": "Text your plants, read their mood, and water with restraint.",
+  "description": "Three plants send dramatic messages about light, water, and the neighbor’s cat. Match their mood to the right care action and watch the windowsill change.",
+  "objective": "Tap the plant asking for today’s care action.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Choose plant care"
+    },
+    {
+      "key": "Drag",
+      "action": "Move a plant"
+    },
+    {
+      "key": "R",
+      "action": "New week"
+    }
+  ],
+  "tags": [
+    "cozy",
+    "plants",
+    "idle"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "28-plant-parent.zip"
+}

@@ -1,0 +1,33 @@
+{
+  "title": "Tiny Train Jam",
+  "slug": "tiny-train-jam",
+  "category": "Racing",
+  "orientation": "any",
+  "duration_seconds": 55,
+  "tagline": "Switch tracks, deliver snacks, and beat the sunset.",
+  "description": "A tiny train loops through a hand-drawn valley. Flip switches at the last second to collect every snack crate without clipping the slow freight.",
+  "objective": "Switch to the safe track before each crossing.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Switch tracks"
+    },
+    {
+      "key": "← →",
+      "action": "Choose a track"
+    },
+    {
+      "key": "R",
+      "action": "Run the line"
+    }
+  ],
+  "tags": [
+    "racing",
+    "train",
+    "timing"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "17-tiny-train-jam.zip"
+}

@@ -1,0 +1,33 @@
+{
+  "title": "Lucky Lanterns",
+  "slug": "lucky-lanterns",
+  "category": "Cozy",
+  "orientation": "any",
+  "duration_seconds": 75,
+  "tagline": "Light the right lanterns and let the river carry the wishes.",
+  "description": "Arrange lanterns by color and send them downstream in the order the village requests. The river changes one rule each evening while paper notes become more personal.",
+  "objective": "Collect the lanterns that match tonight’s wish.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Light a lantern"
+    },
+    {
+      "key": "Drag",
+      "action": "Arrange the river"
+    },
+    {
+      "key": "R",
+      "action": "Try again"
+    }
+  ],
+  "tags": [
+    "cozy",
+    "sorting",
+    "wishes"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "20-lucky-lanterns.zip"
+}

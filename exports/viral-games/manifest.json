@@ -1,0 +1,1702 @@
+[
+  {
+    "title": "Blink Buffet",
+    "slug": "blink-buffet",
+    "category": "Reaction",
+    "orientation": "any",
+    "duration_seconds": 30,
+    "tagline": "A one-thumb feast of green lights and very rude decoys.",
+    "description": "The plate flashes a new order every round. Tap only the green bite before the kitchen timer snaps shut. The decoys get faster, the order gets stranger, and every clean streak makes the next serving smaller.",
+    "objective": "Find the green bite before the decoys fool you.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Hit the green bite"
+      },
+      {
+        "key": "R",
+        "action": "Restart"
+      },
+      {
+        "key": "P",
+        "action": "Pause"
+      }
+    ],
+    "tags": [
+      "one thumb",
+      "short loop",
+      "high score"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "01-blink-buffet.zip",
+    "folder": "01-blink-buffet"
+  },
+  {
+    "title": "Jelly Stack",
+    "slug": "jelly-stack",
+    "category": "Puzzle",
+    "orientation": "any",
+    "duration_seconds": 90,
+    "tagline": "Drop soft colors, make a chain, and pray the wobble holds.",
+    "description": "Place one jelly at a time on a tiny tray. Matching colors clears space while mismatches lean until one brave move saves the tower or sends it sliding off screen.",
+    "objective": "Match the glowing jelly tile in each small board.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Choose a matching tile"
+      },
+      {
+        "key": "1–9",
+        "action": "Pick a tile"
+      },
+      {
+        "key": "R",
+        "action": "Restart"
+      }
+    ],
+    "tags": [
+      "merge",
+      "cozy",
+      "chain"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "02-jelly-stack.zip",
+    "folder": "02-jelly-stack"
+  },
+  {
+    "title": "Midnight Checkout",
+    "slug": "midnight-checkout",
+    "category": "Horror",
+    "orientation": "any",
+    "duration_seconds": 120,
+    "tagline": "Close the store before the last customer remembers your name.",
+    "description": "You are alone at a convenience store after midnight. Scan ordinary objects, watch the freezer reflection, and follow the correct closing sequence before the last customer stops being ordinary.",
+    "objective": "Repeat the closing sequence without looking away.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Choose an item"
+      },
+      {
+        "key": "1–4",
+        "action": "Use a register key"
+      },
+      {
+        "key": "P",
+        "action": "Pause"
+      }
+    ],
+    "tags": [
+      "horror",
+      "spot the oddity",
+      "night shift"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "03-midnight-checkout.zip",
+    "folder": "03-midnight-checkout"
+  },
+  {
+    "title": "Pocket Planet",
+    "slug": "pocket-planet",
+    "category": "Ambient",
+    "orientation": "any",
+    "duration_seconds": 180,
+    "tagline": "Nudge a tiny world through its first, very small sunrise.",
+    "description": "Spin a hand-sized planet and guide drifting seeds into the right climate bands. There is no wrong way to leave it; the satisfying part is finding a gentle rhythm between gravity, water, and the next orbit.",
+    "objective": "Collect the warm orbiting seeds and grow your world.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Catch a seed"
+      },
+      {
+        "key": "Drag",
+        "action": "Steer the cursor"
+      },
+      {
+        "key": "M",
+        "action": "Mute"
+      }
+    ],
+    "tags": [
+      "ambient",
+      "relaxing",
+      "idle"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "04-pocket-planet.zip",
+    "folder": "04-pocket-planet"
+  },
+  {
+    "title": "Rooftop Relay",
+    "slug": "rooftop-relay",
+    "category": "Racing",
+    "orientation": "any",
+    "duration_seconds": 45,
+    "tagline": "Two taps, one skyline, zero room for a missed gap.",
+    "description": "Sprint across a city of laundry lines, AC units, and neon signs. Pick the safest lane at the last second and hold the streak through three weather patterns.",
+    "objective": "Choose the correct rooftop lane before the runner arrives.",
+    "controls": [
+      {
+        "key": "← →",
+        "action": "Change lanes"
+      },
+      {
+        "key": "Tap",
+        "action": "Pick a lane"
+      },
+      {
+        "key": "R",
+        "action": "Run again"
+      }
+    ],
+    "tags": [
+      "speedrun",
+      "one button",
+      "city"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "05-rooftop-relay.zip",
+    "folder": "05-rooftop-relay"
+  },
+  {
+    "title": "Two-Tap Tango",
+    "slug": "two-tap-tango",
+    "category": "Rhythm",
+    "orientation": "any",
+    "duration_seconds": 60,
+    "tagline": "A tiny dance floor with only left, right, and one dangerous chorus.",
+    "description": "Follow a two-lane beat that starts friendly and ends in a syncopated trap. The pattern is short enough to learn by ear, but the last eight beats are built for a perfect-streak replay.",
+    "objective": "Tap the lane that flashes on the beat.",
+    "controls": [
+      {
+        "key": "← →",
+        "action": "Choose a lane"
+      },
+      {
+        "key": "Space",
+        "action": "Hit the beat"
+      },
+      {
+        "key": "M",
+        "action": "Mute"
+      }
+    ],
+    "tags": [
+      "rhythm",
+      "music",
+      "perfect streak"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "06-two-tap-tango.zip",
+    "folder": "06-two-tap-tango"
+  },
+  {
+    "title": "Moss & Mugs",
+    "slug": "moss-and-mugs",
+    "category": "Cozy",
+    "orientation": "any",
+    "duration_seconds": 150,
+    "tagline": "Run a rainy-window café for the gentlest customers online.",
+    "description": "Brew three drinks, arrange a mossy counter, and keep the sleepy café bell from ringing twice. Customers leave tiny notes that become tomorrow's décor.",
+    "objective": "Collect the orders and keep the café glowing.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Brew an order"
+      },
+      {
+        "key": "Drag",
+        "action": "Arrange the counter"
+      },
+      {
+        "key": "R",
+        "action": "New shift"
+      }
+    ],
+    "tags": [
+      "cozy",
+      "cafe",
+      "idle"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "07-moss-and-mugs.zip",
+    "folder": "07-moss-and-mugs"
+  },
+  {
+    "title": "Emoji Alibi",
+    "slug": "emoji-alibi",
+    "category": "Puzzle",
+    "orientation": "any",
+    "duration_seconds": 75,
+    "tagline": "Decode the group chat before the typing bubble comes back.",
+    "description": "Four emojis describe a tiny scene, but one clue is lying. Cross-reference the order, the weather, and the suspiciously specific snack to find the impossible alibi.",
+    "objective": "Tap the emoji that breaks the story.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Pick the false clue"
+      },
+      {
+        "key": "1–9",
+        "action": "Pick a clue"
+      },
+      {
+        "key": "H",
+        "action": "Use a hint"
+      }
+    ],
+    "tags": [
+      "daily puzzle",
+      "emoji",
+      "social"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "08-emoji-alibi.zip",
+    "folder": "08-emoji-alibi"
+  },
+  {
+    "title": "Pigeon Panic",
+    "slug": "pigeon-panic",
+    "category": "Arcade",
+    "orientation": "any",
+    "duration_seconds": 40,
+    "tagline": "Protect one very important chip from a flock with excellent timing.",
+    "description": "A street-food cart, one crispy chip, and an increasingly coordinated pigeon squad. Tap to shoo, hold to fake, and do not waste your last crumb.",
+    "objective": "Tap the hungry pigeon before it steals the chip.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Shush a pigeon"
+      },
+      {
+        "key": "Hold",
+        "action": "Fake a toss"
+      },
+      {
+        "key": "R",
+        "action": "Reset the cart"
+      }
+    ],
+    "tags": [
+      "arcade",
+      "funny",
+      "score attack"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "09-pigeon-panic.zip",
+    "folder": "09-pigeon-panic"
+  },
+  {
+    "title": "Cloud Save",
+    "slug": "cloud-save",
+    "category": "Ambient",
+    "orientation": "any",
+    "duration_seconds": 120,
+    "tagline": "Catch small weather, stack it gently, and never let the sky empty.",
+    "description": "Guide a paper boat beneath drifting clouds and catch rain, sunbeams, and the occasional thunder pearl. Discover which weather combinations make a new little sky.",
+    "objective": "Catch the glowing weather and avoid the static.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Catch weather"
+      },
+      {
+        "key": "Drag",
+        "action": "Steer the boat"
+      },
+      {
+        "key": "M",
+        "action": "Mute"
+      }
+    ],
+    "tags": [
+      "ambient",
+      "rain",
+      "relaxing"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "10-cloud-save.zip",
+    "folder": "10-cloud-save"
+  },
+  {
+    "title": "Orbit Snack",
+    "slug": "orbit-snack",
+    "category": "Arcade",
+    "orientation": "any",
+    "duration_seconds": 35,
+    "tagline": "Feed a hungry moon without breaking the orbit.",
+    "description": "Launch snacks into a circular gravity well and time the release so each one lands on the tiny moon. Miss the window and the snack becomes a comet; hit the streak and the moon gets a ridiculous hat.",
+    "objective": "Tap the snack in the green orbit window.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Launch a snack"
+      },
+      {
+        "key": "Space",
+        "action": "Use the boost"
+      },
+      {
+        "key": "R",
+        "action": "Restart"
+      }
+    ],
+    "tags": [
+      "arcade",
+      "gravity",
+      "one tap"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "11-orbit-snack.zip",
+    "folder": "11-orbit-snack"
+  },
+  {
+    "title": "Color Debt",
+    "slug": "color-debt",
+    "category": "Puzzle",
+    "orientation": "any",
+    "duration_seconds": 100,
+    "tagline": "Borrow a color now. Pay it back before the board closes.",
+    "description": "Every move borrows one color from the future. Match tiles to pay the debt, but matching too quickly leaves a bigger balance for the final row.",
+    "objective": "Match the debt color before the board locks.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Swap two tiles"
+      },
+      {
+        "key": "Z",
+        "action": "Undo"
+      },
+      {
+        "key": "R",
+        "action": "Reset"
+      }
+    ],
+    "tags": [
+      "logic",
+      "small board",
+      "daily"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "12-color-debt.zip",
+    "folder": "12-color-debt"
+  },
+  {
+    "title": "One More Tile",
+    "slug": "one-more-tile",
+    "category": "Puzzle",
+    "orientation": "any",
+    "duration_seconds": 80,
+    "tagline": "The path is almost complete. One tile keeps moving.",
+    "description": "Rotate a six-tile path to connect a spark to its exit. The last tile slides clockwise after every move, turning a gentle pipe puzzle into a miniature panic.",
+    "objective": "Choose the tile that completes the moving path.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Rotate a tile"
+      },
+      {
+        "key": "Z",
+        "action": "Undo"
+      },
+      {
+        "key": "R",
+        "action": "New layout"
+      }
+    ],
+    "tags": [
+      "logic",
+      "rotate",
+      "minimal"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "13-one-more-tile.zip",
+    "folder": "13-one-more-tile"
+  },
+  {
+    "title": "Cat Nap Courier",
+    "slug": "cat-nap-courier",
+    "category": "Cozy",
+    "orientation": "any",
+    "duration_seconds": 90,
+    "tagline": "Deliver tiny parcels without waking the neighborhood cats.",
+    "description": "Carry parcels across a quiet apartment block while every cat sleeps in a slightly different way. Choose routes, place treats, and learn who snores.",
+    "objective": "Collect parcels and deliver them to the sleepy cats.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Deliver a parcel"
+      },
+      {
+        "key": "Drag",
+        "action": "Choose a route"
+      },
+      {
+        "key": "R",
+        "action": "New route"
+      }
+    ],
+    "tags": [
+      "cats",
+      "cozy",
+      "delivery"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "14-cat-nap-courier.zip",
+    "folder": "14-cat-nap-courier"
+  },
+  {
+    "title": "Beat the Buzzer",
+    "slug": "beat-the-buzzer",
+    "category": "Reaction",
+    "orientation": "any",
+    "duration_seconds": 25,
+    "tagline": "The timer is polite once. Then it starts lying.",
+    "description": "Watch the buzzer, read the color cue, and tap on the exact safe beat. Fake-outs arrive after the third round, so stop trusting your first instinct.",
+    "objective": "Hit the safe buzzer and ignore the fake cue.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Answer the cue"
+      },
+      {
+        "key": "Space",
+        "action": "Start a round"
+      },
+      {
+        "key": "R",
+        "action": "Reset"
+      }
+    ],
+    "tags": [
+      "reflex",
+      "reaction",
+      "speed"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "15-beat-the-buzzer.zip",
+    "folder": "15-beat-the-buzzer"
+  },
+  {
+    "title": "Doomscroll Dungeon",
+    "slug": "doomscroll-dungeon",
+    "category": "Experimental",
+    "orientation": "any",
+    "duration_seconds": 120,
+    "tagline": "Swipe through cursed posts until one of them swipes back.",
+    "description": "A tiny dungeon crawler disguised as a feed. Swipe past traps, save the weirdest creature, and decide which rumor is actually a map.",
+    "objective": "Follow the safe sequence through the cursed feed.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Open a post"
+      },
+      {
+        "key": "1–4",
+        "action": "Choose a post"
+      },
+      {
+        "key": "R",
+        "action": "Regenerate"
+      }
+    ],
+    "tags": [
+      "experimental",
+      "story",
+      "scroll"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "16-doomscroll-dungeon.zip",
+    "folder": "16-doomscroll-dungeon"
+  },
+  {
+    "title": "Tiny Train Jam",
+    "slug": "tiny-train-jam",
+    "category": "Racing",
+    "orientation": "any",
+    "duration_seconds": 55,
+    "tagline": "Switch tracks, deliver snacks, and beat the sunset.",
+    "description": "A tiny train loops through a hand-drawn valley. Flip switches at the last second to collect every snack crate without clipping the slow freight.",
+    "objective": "Switch to the safe track before each crossing.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Switch tracks"
+      },
+      {
+        "key": "← →",
+        "action": "Choose a track"
+      },
+      {
+        "key": "R",
+        "action": "Run the line"
+      }
+    ],
+    "tags": [
+      "racing",
+      "train",
+      "timing"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "17-tiny-train-jam.zip",
+    "folder": "17-tiny-train-jam"
+  },
+  {
+    "title": "Scream Test 1999",
+    "slug": "scream-test-1999",
+    "category": "Horror",
+    "orientation": "any",
+    "duration_seconds": 100,
+    "tagline": "A forgotten desktop asks one question: did you hear that?",
+    "description": "Run diagnostics on a beige computer, watch the waveform, and keep the volume low enough that the thing behind the monitor does not notice you listening.",
+    "objective": "Repeat the diagnostic sequence before the signal changes.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Run a diagnostic"
+      },
+      {
+        "key": "1–4",
+        "action": "Choose a test"
+      },
+      {
+        "key": "Space",
+        "action": "Mute the room"
+      }
+    ],
+    "tags": [
+      "horror",
+      "retro",
+      "found footage"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "18-scream-test-1999.zip",
+    "folder": "18-scream-test-1999"
+  },
+  {
+    "title": "Pondbound",
+    "slug": "pondbound",
+    "category": "Arcade",
+    "orientation": "any",
+    "duration_seconds": 45,
+    "tagline": "Hop lily pads, dodge the ripples, keep the crown dry.",
+    "description": "A tiny frog has one afternoon to cross the pond before the wind reverses. Tap a pad, read the ripple rings, and chain clean landings for a shinier crown.",
+    "objective": "Tap the safe lily pad before the ripple arrives.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Hop to a pad"
+      },
+      {
+        "key": "Hold",
+        "action": "Aim the tongue"
+      },
+      {
+        "key": "R",
+        "action": "Reset"
+      }
+    ],
+    "tags": [
+      "arcade",
+      "frog",
+      "timing"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "19-pondbound.zip",
+    "folder": "19-pondbound"
+  },
+  {
+    "title": "Lucky Lanterns",
+    "slug": "lucky-lanterns",
+    "category": "Cozy",
+    "orientation": "any",
+    "duration_seconds": 75,
+    "tagline": "Light the right lanterns and let the river carry the wishes.",
+    "description": "Arrange lanterns by color and send them downstream in the order the village requests. The river changes one rule each evening while paper notes become more personal.",
+    "objective": "Collect the lanterns that match tonight’s wish.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Light a lantern"
+      },
+      {
+        "key": "Drag",
+        "action": "Arrange the river"
+      },
+      {
+        "key": "R",
+        "action": "Try again"
+      }
+    ],
+    "tags": [
+      "cozy",
+      "sorting",
+      "wishes"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "20-lucky-lanterns.zip",
+    "folder": "20-lucky-lanterns"
+  },
+  {
+    "title": "Beat Bloom",
+    "slug": "beat-bloom",
+    "category": "Rhythm",
+    "orientation": "any",
+    "duration_seconds": 70,
+    "tagline": "Grow a neon garden by hitting every downbeat.",
+    "description": "Each accurate beat grows a stem, opens a flower, and adds a new layer to the loop. Miss too many and the garden folds itself closed.",
+    "objective": "Tap the glowing garden lane on each beat.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Hit the bloom ring"
+      },
+      {
+        "key": "← →",
+        "action": "Change lanes"
+      },
+      {
+        "key": "M",
+        "action": "Mute"
+      }
+    ],
+    "tags": [
+      "rhythm",
+      "music",
+      "garden"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "21-beat-bloom.zip",
+    "folder": "21-beat-bloom"
+  },
+  {
+    "title": "Traffic Ghost",
+    "slug": "traffic-ghost",
+    "category": "Racing",
+    "orientation": "any",
+    "duration_seconds": 40,
+    "tagline": "Race your last run through a city that keeps changing lanes.",
+    "description": "Drive a translucent car through a three-lane night route and try to outrun your own ghost. The traffic pattern stays readable for one run, then shuffles.",
+    "objective": "Pick the open lane before the ghost reaches it.",
+    "controls": [
+      {
+        "key": "← →",
+        "action": "Change lanes"
+      },
+      {
+        "key": "Tap",
+        "action": "Steer"
+      },
+      {
+        "key": "R",
+        "action": "Race again"
+      }
+    ],
+    "tags": [
+      "racing",
+      "ghost",
+      "time trial"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "22-traffic-ghost.zip",
+    "folder": "22-traffic-ghost"
+  },
+  {
+    "title": "Shelf Life",
+    "slug": "shelf-life",
+    "category": "Puzzle",
+    "orientation": "any",
+    "duration_seconds": 110,
+    "tagline": "Stock the tiny shop before every label becomes a clue.",
+    "description": "Match products to shelves using shape, color, and one suspiciously specific expiry date. Every correct row reveals part of the shop’s story.",
+    "objective": "Pick the product that belongs on the highlighted shelf.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Place a product"
+      },
+      {
+        "key": "Z",
+        "action": "Undo"
+      },
+      {
+        "key": "R",
+        "action": "Restock"
+      }
+    ],
+    "tags": [
+      "organization",
+      "logic",
+      "shop"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "23-shelf-life.zip",
+    "folder": "23-shelf-life"
+  },
+  {
+    "title": "Don’t Look Back",
+    "slug": "dont-look-back",
+    "category": "Horror",
+    "orientation": "any",
+    "duration_seconds": 80,
+    "tagline": "Walk toward the exit without checking what is learning your pace.",
+    "description": "Cross a hallway where every sound arrives one beat late. Keep moving, listen for the false footsteps, and resist the sequence that turns the camera around.",
+    "objective": "Choose the safe footsteps without looking behind you.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Choose a step"
+      },
+      {
+        "key": "1–4",
+        "action": "Use a key"
+      },
+      {
+        "key": "Space",
+        "action": "Hold breath"
+      }
+    ],
+    "tags": [
+      "horror",
+      "tension",
+      "minimal"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "24-dont-look-back.zip",
+    "folder": "24-dont-look-back"
+  },
+  {
+    "title": "Hot Potato Protocol",
+    "slug": "hot-potato-protocol",
+    "category": "Reaction",
+    "orientation": "any",
+    "duration_seconds": 35,
+    "tagline": "Pass the glowing potato before the protocol changes its mind.",
+    "description": "The potato gives off a different safe color every round. Tap to pass it to the matching bot, but ignore the fake instruction stamped in the corner.",
+    "objective": "Tap the bot with the current safe color.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Pass the potato"
+      },
+      {
+        "key": "Space",
+        "action": "Lock the pass"
+      },
+      {
+        "key": "R",
+        "action": "Restart"
+      }
+    ],
+    "tags": [
+      "reaction",
+      "party",
+      "timing"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "25-hot-potato-protocol.zip",
+    "folder": "25-hot-potato-protocol"
+  },
+  {
+    "title": "Snack Attack",
+    "slug": "snack-attack",
+    "category": "Arcade",
+    "orientation": "any",
+    "duration_seconds": 30,
+    "tagline": "Catch every snack. Miss one and the lunchbox judges you.",
+    "description": "Move a lunchbox beneath falling snacks while the conveyor belt changes speed every five seconds. Golden snacks add a multiplier; broccoli subtracts it.",
+    "objective": "Tap the falling snack before it hits the floor.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Grab a snack"
+      },
+      {
+        "key": "← →",
+        "action": "Move the box"
+      },
+      {
+        "key": "R",
+        "action": "Restart lunch"
+      }
+    ],
+    "tags": [
+      "arcade",
+      "score",
+      "fast"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "26-snack-attack.zip",
+    "folder": "26-snack-attack"
+  },
+  {
+    "title": "Orbiting Room",
+    "slug": "orbiting-room",
+    "category": "Ambient",
+    "orientation": "any",
+    "duration_seconds": 150,
+    "tagline": "Rearrange one room as the window drifts around the planet.",
+    "description": "A quiet room floats in a slow orbit. Move furniture into the light, collect postcards from passing satellites, and let the day cycle do the rest.",
+    "objective": "Collect the objects that drift into the window light.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Open a postcard"
+      },
+      {
+        "key": "Drag",
+        "action": "Move an object"
+      },
+      {
+        "key": "R",
+        "action": "Rewind"
+      }
+    ],
+    "tags": [
+      "ambient",
+      "interior",
+      "slow"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "27-orbiting-room.zip",
+    "folder": "27-orbiting-room"
+  },
+  {
+    "title": "Plant Parent",
+    "slug": "plant-parent",
+    "category": "Cozy",
+    "orientation": "any",
+    "duration_seconds": 140,
+    "tagline": "Text your plants, read their mood, and water with restraint.",
+    "description": "Three plants send dramatic messages about light, water, and the neighbor’s cat. Match their mood to the right care action and watch the windowsill change.",
+    "objective": "Tap the plant asking for today’s care action.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Choose plant care"
+      },
+      {
+        "key": "Drag",
+        "action": "Move a plant"
+      },
+      {
+        "key": "R",
+        "action": "New week"
+      }
+    ],
+    "tags": [
+      "cozy",
+      "plants",
+      "idle"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "28-plant-parent.zip",
+    "folder": "28-plant-parent"
+  },
+  {
+    "title": "Loop Detective",
+    "slug": "loop-detective",
+    "category": "Experimental",
+    "orientation": "any",
+    "duration_seconds": 100,
+    "tagline": "The same ten seconds keep happening. Find the frame that changed.",
+    "description": "A hallway security feed repeats every ten seconds. Compare each loop, mark the single frame that should not exist, and decide whether to break the loop.",
+    "objective": "Choose the changed frame in the correct order.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Mark a frame"
+      },
+      {
+        "key": "← →",
+        "action": "Scrub the loop"
+      },
+      {
+        "key": "R",
+        "action": "Reset"
+      }
+    ],
+    "tags": [
+      "experimental",
+      "mystery",
+      "loop"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "29-loop-detective.zip",
+    "folder": "29-loop-detective"
+  },
+  {
+    "title": "Quickdraw Postcard",
+    "slug": "quickdraw-postcard",
+    "category": "Reaction",
+    "orientation": "any",
+    "duration_seconds": 28,
+    "tagline": "Draw the shape the postcard asks for before the ink dries.",
+    "description": "A postcard flashes a tiny icon and gives you one breath to trace it with the pointer. Accuracy beats speed until the last round reverses the prompt.",
+    "objective": "Tap the postcard stamp when the signal is green.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Stamp the postcard"
+      },
+      {
+        "key": "Drag",
+        "action": "Trace the shape"
+      },
+      {
+        "key": "R",
+        "action": "Draw another"
+      }
+    ],
+    "tags": [
+      "drawing",
+      "reaction",
+      "shareable"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "30-quickdraw-postcard.zip",
+    "folder": "30-quickdraw-postcard"
+  },
+  {
+    "title": "Moonbase Merge",
+    "slug": "moonbase-merge",
+    "category": "Puzzle",
+    "orientation": "any",
+    "duration_seconds": 100,
+    "tagline": "Merge tiny machines until the moonbase can make breakfast.",
+    "description": "Slide solar panels, rovers, and coffee modules into a compact moonbase grid. Equal machines combine into smarter ones, but every merge uses floor space.",
+    "objective": "Pick the machine that completes the moonbase pair.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Merge a machine"
+      },
+      {
+        "key": "← →",
+        "action": "Slide the base"
+      },
+      {
+        "key": "Z",
+        "action": "Undo"
+      }
+    ],
+    "tags": [
+      "merge",
+      "space",
+      "grid"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "31-moonbase-merge.zip",
+    "folder": "31-moonbase-merge"
+  },
+  {
+    "title": "Late Night Laundromat",
+    "slug": "late-night-laundromat",
+    "category": "Cozy",
+    "orientation": "any",
+    "duration_seconds": 160,
+    "tagline": "Fold the quiet hours into something warm and useful.",
+    "description": "Sort lost socks, set friendly wash cycles, and learn which regulars leave notes inside their pockets. The machines keep turning while you decorate the corner plant.",
+    "objective": "Collect the right laundry tokens before the cycle ends.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Sort a laundry pile"
+      },
+      {
+        "key": "Drag",
+        "action": "Arrange machines"
+      },
+      {
+        "key": "R",
+        "action": "Start the night"
+      }
+    ],
+    "tags": [
+      "cozy",
+      "sim",
+      "laundry"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "32-late-night-laundromat.zip",
+    "folder": "32-late-night-laundromat"
+  },
+  {
+    "title": "Neon Noodle",
+    "slug": "neon-noodle",
+    "category": "Arcade",
+    "orientation": "any",
+    "duration_seconds": 38,
+    "tagline": "Stretch the noodle, dodge the chopsticks, serve the perfect bowl.",
+    "description": "Guide one impossible noodle through a busy neon kitchen. Collect broth bubbles, bend around chopsticks, and deliver the strand before the timer turns spicy.",
+    "objective": "Tap the broth bubble that keeps the noodle moving.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Grab broth"
+      },
+      {
+        "key": "Drag",
+        "action": "Steer the noodle"
+      },
+      {
+        "key": "R",
+        "action": "Cook again"
+      }
+    ],
+    "tags": [
+      "arcade",
+      "food",
+      "neon"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "33-neon-noodle.zip",
+    "folder": "33-neon-noodle"
+  },
+  {
+    "title": "Soundcheck 404",
+    "slug": "soundcheck-404",
+    "category": "Rhythm",
+    "orientation": "any",
+    "duration_seconds": 55,
+    "tagline": "Tune a broken signal until the missing beat comes through.",
+    "description": "A broadcast tower has lost its rhythm. Tap visible pulses to tune the signal, then catch the glitch beat that hides between them.",
+    "objective": "Tap the signal lane exactly on the pulse.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Tune the pulse"
+      },
+      {
+        "key": "← →",
+        "action": "Adjust channel"
+      },
+      {
+        "key": "M",
+        "action": "Mute static"
+      }
+    ],
+    "tags": [
+      "rhythm",
+      "signal",
+      "glitch"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "34-soundcheck-404.zip",
+    "folder": "34-soundcheck-404"
+  },
+  {
+    "title": "Paper Plane Panic",
+    "slug": "paper-plane-panic",
+    "category": "Arcade",
+    "orientation": "any",
+    "duration_seconds": 32,
+    "tagline": "One fold, one breeze, one office full of obstacles.",
+    "description": "Pilot a paper plane through an office after everyone has gone home. Ride fan gusts, avoid the stapler, and collect sticky-note messages on the way to the open window.",
+    "objective": "Switch to the open office lane before impact.",
+    "controls": [
+      {
+        "key": "← →",
+        "action": "Pitch the plane"
+      },
+      {
+        "key": "Tap",
+        "action": "Catch a gust"
+      },
+      {
+        "key": "R",
+        "action": "Refold"
+      }
+    ],
+    "tags": [
+      "arcade",
+      "office",
+      "flight"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "35-paper-plane-panic.zip",
+    "folder": "35-paper-plane-panic"
+  },
+  {
+    "title": "Graveyard Shift",
+    "slug": "graveyard-shift",
+    "category": "Horror",
+    "orientation": "any",
+    "duration_seconds": 90,
+    "tagline": "Ring up the dead politely. They hate waiting.",
+    "description": "Work the night desk at a cemetery gift shop. Stock candles, answer the bell, and never sell the same souvenir twice. Something is shopping after closing.",
+    "objective": "Serve the correct customer sequence before the bell rings.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Serve a customer"
+      },
+      {
+        "key": "1–4",
+        "action": "Choose a counter"
+      },
+      {
+        "key": "Space",
+        "action": "Check bell"
+      }
+    ],
+    "tags": [
+      "horror",
+      "shop",
+      "night"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "36-graveyard-shift.zip",
+    "folder": "36-graveyard-shift"
+  },
+  {
+    "title": "Marble Runaway",
+    "slug": "marble-runaway",
+    "category": "Racing",
+    "orientation": "any",
+    "duration_seconds": 45,
+    "tagline": "Tilt the track and get one marble home in record time.",
+    "description": "A marble is already rolling. Rotate ramps, open shortcuts, and use bumpers to keep momentum through a toy-box course.",
+    "objective": "Choose the ramp that keeps the marble on track.",
+    "controls": [
+      {
+        "key": "← →",
+        "action": "Tilt track"
+      },
+      {
+        "key": "Tap",
+        "action": "Flip bumper"
+      },
+      {
+        "key": "R",
+        "action": "Reset course"
+      }
+    ],
+    "tags": [
+      "racing",
+      "marble",
+      "physics"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "37-marble-runaway.zip",
+    "folder": "37-marble-runaway"
+  },
+  {
+    "title": "Signal / Noise",
+    "slug": "signal-noise",
+    "category": "Experimental",
+    "orientation": "any",
+    "duration_seconds": 85,
+    "tagline": "Separate a real message from a very convincing hum.",
+    "description": "A waveform hides a short message inside layers of noise. Tune the filters until the pattern stabilizes, then repeat the decoded phrase before the screen scrambles it.",
+    "objective": "Choose the clean signal steps in order.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Lock a signal"
+      },
+      {
+        "key": "← →",
+        "action": "Tune filter"
+      },
+      {
+        "key": "R",
+        "action": "Resample"
+      }
+    ],
+    "tags": [
+      "experimental",
+      "audio",
+      "decode"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "38-signal-noise.zip",
+    "folder": "38-signal-noise"
+  },
+  {
+    "title": "Bubble Wrap Boss",
+    "slug": "bubble-wrap-boss",
+    "category": "Arcade",
+    "orientation": "any",
+    "duration_seconds": 25,
+    "tagline": "Pop the perfect line before the boss notices the noise.",
+    "description": "A satisfying bubble-wrap grid hides a boss pattern. Pop only the bubbles in the active row, build a clean streak, and ignore the one extra bubble that looks too tempting.",
+    "objective": "Tap the active bubble and avoid the decoy.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Pop a bubble"
+      },
+      {
+        "key": "Space",
+        "action": "Pop a bonus row"
+      },
+      {
+        "key": "R",
+        "action": "Reset sheet"
+      }
+    ],
+    "tags": [
+      "arcade",
+      "satisfying",
+      "pattern"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "39-bubble-wrap-boss.zip",
+    "folder": "39-bubble-wrap-boss"
+  },
+  {
+    "title": "Daily Doodle Duel",
+    "slug": "daily-doodle-duel",
+    "category": "Reaction",
+    "orientation": "any",
+    "duration_seconds": 60,
+    "tagline": "Draw the prompt in ten seconds. The judge is a little triangle.",
+    "description": "A prompt arrives, the clock starts, and a simple shape waits for your best interpretation. Accuracy, speed, and personality all matter.",
+    "objective": "Tap the prompt that matches the daily doodle.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Submit doodle"
+      },
+      {
+        "key": "Drag",
+        "action": "Draw"
+      },
+      {
+        "key": "R",
+        "action": "Practice"
+      }
+    ],
+    "tags": [
+      "drawing",
+      "daily",
+      "challenge"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "40-daily-doodle-duel.zip",
+    "folder": "40-daily-doodle-duel"
+  },
+  {
+    "title": "Tidepool Tactics",
+    "slug": "tidepool-tactics",
+    "category": "Puzzle",
+    "orientation": "any",
+    "duration_seconds": 105,
+    "tagline": "Move the tide, save the tiny creatures, leave the shells.",
+    "description": "Shift tide tiles to guide water into dry pools without washing away shells. Three small creatures each need a different depth, making every solution a gentle rescue mission.",
+    "objective": "Pick the tide tile that completes the rescue.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Change a tide tile"
+      },
+      {
+        "key": "Z",
+        "action": "Undo tide"
+      },
+      {
+        "key": "R",
+        "action": "Reset pool"
+      }
+    ],
+    "tags": [
+      "puzzle",
+      "ocean",
+      "rescue"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "41-tidepool-tactics.zip",
+    "folder": "41-tidepool-tactics"
+  },
+  {
+    "title": "Night Market Dash",
+    "slug": "night-market-dash",
+    "category": "Racing",
+    "orientation": "any",
+    "duration_seconds": 50,
+    "tagline": "Thread a scooter through lanterns, steam, and one loose basket.",
+    "description": "Race through a closing night market to deliver the last order. Brake for vendors, duck under signs, and choose between the crowded shortcut and quiet long lane.",
+    "objective": "Choose the open market lane before the turn.",
+    "controls": [
+      {
+        "key": "← →",
+        "action": "Steer scooter"
+      },
+      {
+        "key": "Tap",
+        "action": "Brake"
+      },
+      {
+        "key": "R",
+        "action": "Start dash"
+      }
+    ],
+    "tags": [
+      "racing",
+      "market",
+      "delivery"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "42-night-market-dash.zip",
+    "folder": "42-night-market-dash"
+  },
+  {
+    "title": "Soft Reset",
+    "slug": "soft-reset",
+    "category": "Ambient",
+    "orientation": "any",
+    "duration_seconds": 130,
+    "tagline": "Tidy a tiny digital room until it feels like morning.",
+    "description": "A desktop is cluttered with half-finished notes, blinking reminders, and a sleeping cursor. Sort the windows, archive the noise, and make one corner quiet.",
+    "objective": "Collect the calm tasks and clear the desktop.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Archive a note"
+      },
+      {
+        "key": "Drag",
+        "action": "Arrange a window"
+      },
+      {
+        "key": "R",
+        "action": "Reset desktop"
+      }
+    ],
+    "tags": [
+      "ambient",
+      "desktop",
+      "calm"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "43-soft-reset.zip",
+    "folder": "43-soft-reset"
+  },
+  {
+    "title": "Mango Meteor",
+    "slug": "mango-meteor",
+    "category": "Arcade",
+    "orientation": "any",
+    "duration_seconds": 33,
+    "tagline": "Slice the fruit, dodge the meteor, keep the juice contained.",
+    "description": "Mangoes fall from an optimistic sky while a meteor crosses the kitchen window. Slice the fruit in matching arcs and collect juice multipliers.",
+    "objective": "Tap the ripe mango and avoid the meteor.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Slice mango"
+      },
+      {
+        "key": "Drag",
+        "action": "Catch bonus"
+      },
+      {
+        "key": "R",
+        "action": "Restart sky"
+      }
+    ],
+    "tags": [
+      "arcade",
+      "fruit",
+      "fast"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "44-mango-meteor.zip",
+    "folder": "44-mango-meteor"
+  },
+  {
+    "title": "Houseplant Hotline",
+    "slug": "houseplant-hotline",
+    "category": "Cozy",
+    "orientation": "any",
+    "duration_seconds": 120,
+    "tagline": "Answer calls from plants who are mostly overreacting.",
+    "description": "Plants call in with mysterious symptoms: droopy, dramatic, or simply bored. Match each voice to a care plan and unlock increasingly specific personalities.",
+    "objective": "Tap the plant calling for the correct care action.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Answer a plant"
+      },
+      {
+        "key": "Drag",
+        "action": "Choose care"
+      },
+      {
+        "key": "R",
+        "action": "Open hotline"
+      }
+    ],
+    "tags": [
+      "cozy",
+      "plants",
+      "story"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "45-houseplant-hotline.zip",
+    "folder": "45-houseplant-hotline"
+  },
+  {
+    "title": "Four Beat Forecast",
+    "slug": "four-beat-forecast",
+    "category": "Rhythm",
+    "orientation": "any",
+    "duration_seconds": 65,
+    "tagline": "Read the weather, then play the forecast.",
+    "description": "Clouds, wind, rain, and sun each have a four-beat pattern. Tap the correct lane to move the forecast from stormy to golden hour.",
+    "objective": "Play the weather lane on the downbeat.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Play weather beat"
+      },
+      {
+        "key": "← →",
+        "action": "Change lane"
+      },
+      {
+        "key": "M",
+        "action": "Mute weather"
+      }
+    ],
+    "tags": [
+      "rhythm",
+      "weather",
+      "music"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "46-four-beat-forecast.zip",
+    "folder": "46-four-beat-forecast"
+  },
+  {
+    "title": "Ghost in the Queue",
+    "slug": "ghost-in-the-queue",
+    "category": "Experimental",
+    "orientation": "any",
+    "duration_seconds": 95,
+    "tagline": "Someone keeps joining the line. They are not on the list.",
+    "description": "Manage a tiny ticket queue while an invisible guest moves between positions. Watch timestamps, ask one careful question, and decide when to serve the impossible ticket.",
+    "objective": "Call the tickets in the only safe order.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Inspect a ticket"
+      },
+      {
+        "key": "1–4",
+        "action": "Call the queue"
+      },
+      {
+        "key": "R",
+        "action": "New line"
+      }
+    ],
+    "tags": [
+      "experimental",
+      "mystery",
+      "queue"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "47-ghost-in-the-queue.zip",
+    "folder": "47-ghost-in-the-queue"
+  },
+  {
+    "title": "Mirror Match",
+    "slug": "mirror-match",
+    "category": "Puzzle",
+    "orientation": "any",
+    "duration_seconds": 70,
+    "tagline": "Make the reflection match before it decides to improvise.",
+    "description": "Rotate symbols until the left side and its mirror agree. Every fourth move, the reflection quietly changes one tile, so watch for the drift.",
+    "objective": "Tap the tile that restores the reflection.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Rotate a symbol"
+      },
+      {
+        "key": "Z",
+        "action": "Undo turn"
+      },
+      {
+        "key": "R",
+        "action": "New reflection"
+      }
+    ],
+    "tags": [
+      "puzzle",
+      "mirror",
+      "pattern"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "48-mirror-match.zip",
+    "folder": "48-mirror-match"
+  },
+  {
+    "title": "Kite String Theory",
+    "slug": "kite-string-theory",
+    "category": "Ambient",
+    "orientation": "any",
+    "duration_seconds": 115,
+    "tagline": "Guide a kite through the afternoon without tangling the thought.",
+    "description": "Pull a kite across a wide sky, catch warm currents, and keep the string away from trees. The longer you stay aloft, the more postcards drift by.",
+    "objective": "Collect the warm currents and leave the storm clouds alone.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Catch a current"
+      },
+      {
+        "key": "Drag",
+        "action": "Steer kite"
+      },
+      {
+        "key": "R",
+        "action": "Reset afternoon"
+      }
+    ],
+    "tags": [
+      "ambient",
+      "physics",
+      "sky"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "49-kite-string-theory.zip",
+    "folder": "49-kite-string-theory"
+  },
+  {
+    "title": "Lucky Number 13",
+    "slug": "lucky-number-13",
+    "category": "Reaction",
+    "orientation": "any",
+    "duration_seconds": 45,
+    "tagline": "Pick the lucky card. The deck has opinions.",
+    "description": "A thirteen-card deck reveals one number at a time. Tap when the running total reaches the lucky range, but beware the card that reverses the count.",
+    "objective": "Tap the lucky card and ignore the reversal.",
+    "controls": [
+      {
+        "key": "Tap",
+        "action": "Draw next card"
+      },
+      {
+        "key": "Space",
+        "action": "Call lucky"
+      },
+      {
+        "key": "R",
+        "action": "Shuffle deck"
+      }
+    ],
+    "tags": [
+      "reaction",
+      "cards",
+      "luck"
+    ],
+    "network": false,
+    "entry": "index.html",
+    "thumbnail": "thumbnail.png",
+    "upload_zip": "50-lucky-number-13.zip",
+    "folder": "50-lucky-number-13"
+  }
+]

@@ -140,6 +140,7 @@ button {
 @keyframes hbRise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes hbShimmer { from { background-position: -420px 0; } to { background-position: 420px 0; } }
 @keyframes hbBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+@keyframes hbProgress { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @keyframes hbFade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes hbZoomIn { from { opacity: 0; transform: scale(0.965); } to { opacity: 1; transform: scale(1); } }
 @keyframes hbZoomOut { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(0.975); } }

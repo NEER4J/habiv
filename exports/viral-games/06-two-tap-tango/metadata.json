@@ -1,0 +1,33 @@
+{
+  "title": "Two-Tap Tango",
+  "slug": "two-tap-tango",
+  "category": "Rhythm",
+  "orientation": "any",
+  "duration_seconds": 60,
+  "tagline": "A tiny dance floor with only left, right, and one dangerous chorus.",
+  "description": "Follow a two-lane beat that starts friendly and ends in a syncopated trap. The pattern is short enough to learn by ear, but the last eight beats are built for a perfect-streak replay.",
+  "objective": "Tap the lane that flashes on the beat.",
+  "controls": [
+    {
+      "key": "← →",
+      "action": "Choose a lane"
+    },
+    {
+      "key": "Space",
+      "action": "Hit the beat"
+    },
+    {
+      "key": "M",
+      "action": "Mute"
+    }
+  ],
+  "tags": [
+    "rhythm",
+    "music",
+    "perfect streak"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "06-two-tap-tango.zip"
+}

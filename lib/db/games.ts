@@ -4,6 +4,7 @@ import { createAnonClient } from "@/lib/supabase/anon";
 import type { Database, Tables } from "@/lib/supabase/database.types";
 import type { Views } from "@/lib/supabase/helpers";
 import { cdnUrl } from "@/lib/site";
+import { modelNamesForLab } from "@/lib/ai/catalog";
 import type { CreatorGame, FeedGame, FeedSort, GameCategory, GameDetail, GameStatsSummary, GameVersionSummary, Orientation, RemixLicence, VersionStatus } from "@/lib/db/types";
 
 export const FEED_TAG = "feed";
@@ -30,6 +31,7 @@ export function toFeedGame(r: FeedRow): FeedGame {
     title: r.title,
     tagline: r.tagline,
     category: r.category as GameCategory,
+    categories: (r.categories?.length ? r.categories : [r.category]) as GameCategory[],
     orientation: r.orientation as Orientation,
     accentHue: r.accent_hue,
     coverUrl: cdnUrl(r.cover_path),
@@ -74,7 +76,9 @@ function toVersionSummary(v: Pick<Tables<"game_versions">, "id" | "version" | "s
 }
 
 /** Public feed. Cached for about a minute; invalidated with FEED_TAG on publish. */
-export async function getFeed(opts: { limit?: number; offset?: number; category?: GameCategory | null; sort?: FeedSort } = {}): Promise<{ items: FeedGame[]; nextOffset: number | null }> {
+export async function getFeed(
+  opts: { limit?: number; offset?: number; category?: GameCategory | null; sort?: FeedSort; model?: string | null; agent?: string | null } = {},
+): Promise<{ items: FeedGame[]; nextOffset: number | null }> {
   "use cache";
   cacheTag(FEED_TAG);
   cacheLife("minutes");
@@ -83,7 +87,12 @@ export async function getFeed(opts: { limit?: number; offset?: number; category?
   const sort = opts.sort ?? "new";
   const supabase = createAnonClient();
   let q = supabase.from("game_feed_v").select("*");
-  if (opts.category) q = q.eq("category", opts.category);
+  // A game is listed under each of its categories, not only the main one.
+  if (opts.category) q = q.contains("categories", [opts.category]);
+  // model is a catalog name, or "lab:<id>" for every model from one lab (lib/ai/catalog.ts).
+  if (opts.model?.startsWith("lab:")) q = q.in("model", modelNamesForLab(opts.model.slice(4)));
+  else if (opts.model) q = q.eq("model", opts.model);
+  if (opts.agent) q = q.eq("agent", opts.agent);
   if (sort === "trending") q = q.order("trending_score", { ascending: false }).order("published_at", { ascending: false });
   else if (sort === "hot") q = q.order("hot_score", { ascending: false }).order("published_at", { ascending: false });
   else if (sort === "plays") q = q.order("plays", { ascending: false }).order("published_at", { ascending: false });
@@ -170,15 +179,27 @@ export async function getOwnGames(supabase: SupabaseClient<Database>): Promise<C
   const { data: games } = await supabase.from("games").select("*").eq("creator_id", uid).order("updated_at", { ascending: false });
   if (!games?.length) return [];
   const ids = games.map((g) => g.id);
-  const [{ data: versions }, { data: stats }] = await Promise.all([
-    supabase.from("game_versions").select("id, game_id, version, status, reject_reason, engine").in("game_id", ids).order("version", { ascending: false }),
+  const [{ data: versions }, { data: stats }, { data: me }] = await Promise.all([
+    supabase
+      .from("game_versions")
+      .select("id, game_id, version, status, reject_reason, engine, created_at, updated_at, warnings:manifest->warnings")
+      .in("game_id", ids)
+      .order("version", { ascending: false }),
     supabase.from("game_stats").select("*").in("game_id", ids),
+    supabase.from("profiles").select("handle").eq("id", uid).maybeSingle(),
   ]);
   const latestByGame = new Map<string, NonNullable<typeof versions>[number]>();
   for (const v of versions ?? []) if (!latestByGame.has(v.game_id)) latestByGame.set(v.game_id, v);
   const statsByGame = new Map((stats ?? []).map((s) => [s.game_id, s]));
-  const { data: me } = await supabase.from("profiles").select("handle").eq("id", uid).maybeSingle();
   const handle = me?.handle ?? "";
+  // An "uploaded" version is only still uploading while its storage session is open.
+  const uploadingIds = [...latestByGame.values()].filter((v) => v.status === "uploaded").map((v) => v.id);
+  const { data: sessions } = uploadingIds.length
+    ? await supabase.from("upload_sessions").select("version_id, expires_at").in("version_id", uploadingIds).eq("status", "open")
+    : { data: [] as { version_id: string; expires_at: string }[] };
+  const uploadExpiry = new Map((sessions ?? []).map((s) => [s.version_id, s.expires_at]));
+  // Rejects keep the human-readable reason as the first manifest warning (jobs/src/lib/ingest.ts reject()).
+  const firstWarning = (w: unknown) => (Array.isArray(w) && typeof w[0] === "string" ? w[0] : null);
 
   return games.map((g) => {
     const lv = latestByGame.get(g.id);
@@ -198,7 +219,19 @@ export async function getOwnGames(supabase: SupabaseClient<Database>): Promise<C
       hiddenReason: g.hidden_reason,
       remixLicence: g.remix_licence as RemixLicence,
       currentVersionId: g.current_version_id,
-      latestVersion: lv ? { id: lv.id, version: lv.version, status: lv.status as VersionStatus, rejectReason: lv.reject_reason, engine: lv.engine } : null,
+      latestVersion: lv
+        ? {
+            id: lv.id,
+            version: lv.version,
+            status: lv.status as VersionStatus,
+            rejectReason: lv.reject_reason,
+            rejectMessage: lv.status === "rejected" ? firstWarning(lv.warnings) : null,
+            engine: lv.engine,
+            createdAt: lv.created_at,
+            updatedAt: lv.updated_at,
+            uploadExpiresAt: uploadExpiry.get(lv.id) ?? null,
+          }
+        : null,
       stats: s
         ? { plays: s.plays, uniquePlayers: s.unique_players, runs: s.runs, completions: s.completions, likes: s.likes, saves: s.saves, remixes: s.remixes, comments: s.comments, bestScore: s.best_score }
         : null,
@@ -222,6 +255,20 @@ export async function getCategoryCounts(): Promise<{ slug: string; name: string;
   cacheLife("minutes");
   const { data } = await createAnonClient().rpc("category_counts");
   return (data ?? []).map((c) => ({ slug: c.slug, name: c.name, icon: c.icon, games: Number(c.games) }));
+}
+
+/** Published games per model and per tool, most used first, for the explore filters. Cached with the feed. */
+export async function getBuiltWithCounts(): Promise<{ models: [string, number][]; agents: [string, number][] }> {
+  "use cache";
+  cacheTag(FEED_TAG, "built-with");
+  cacheLife("minutes");
+  const { data } = await createAnonClient().from("game_feed_v").select("model, agent").limit(5000);
+  const tally = (key: "model" | "agent"): [string, number][] => {
+    const n = new Map<string, number>();
+    for (const r of data ?? []) if (r[key]) n.set(r[key], (n.get(r[key]) ?? 0) + 1);
+    return [...n].sort((a, b) => b[1] - a[1]);
+  };
+  return { models: tally("model"), agents: tally("agent") };
 }
 
 /** Title / creator / tagline / model search over published games. Not cached (query is user input). */

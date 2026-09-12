@@ -1,0 +1,33 @@
+{
+  "title": "Shelf Life",
+  "slug": "shelf-life",
+  "category": "Puzzle",
+  "orientation": "any",
+  "duration_seconds": 110,
+  "tagline": "Stock the tiny shop before every label becomes a clue.",
+  "description": "Match products to shelves using shape, color, and one suspiciously specific expiry date. Every correct row reveals part of the shop’s story.",
+  "objective": "Pick the product that belongs on the highlighted shelf.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Place a product"
+    },
+    {
+      "key": "Z",
+      "action": "Undo"
+    },
+    {
+      "key": "R",
+      "action": "Restock"
+    }
+  ],
+  "tags": [
+    "organization",
+    "logic",
+    "shop"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "23-shelf-life.zip"
+}

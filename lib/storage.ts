@@ -5,6 +5,7 @@ import {
   CopyObjectCommand,
   CreateMultipartUploadCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
   HeadObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -75,6 +76,17 @@ export async function headObject(bucket: string, key: string): Promise<{ size: n
   try {
     const res = await storage().send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
     return { size: res.ContentLength ?? 0, etag: res.ETag ?? null, contentType: res.ContentType ?? null };
+  } catch (e) {
+    const name = (e as { name?: string }).name;
+    if (name === "NotFound" || name === "NoSuchKey") return null;
+    throw e;
+  }
+}
+
+export async function getObjectBytes(bucket: string, key: string): Promise<Uint8Array | null> {
+  try {
+    const res = await storage().send(new GetObjectCommand({ Bucket: bucket, Key: key }));
+    return res.Body ? await res.Body.transformToByteArray() : null;
   } catch (e) {
     const name = (e as { name?: string }).name;
     if (name === "NotFound" || name === "NoSuchKey") return null;

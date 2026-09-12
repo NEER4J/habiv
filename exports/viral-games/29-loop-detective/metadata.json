@@ -1,0 +1,33 @@
+{
+  "title": "Loop Detective",
+  "slug": "loop-detective",
+  "category": "Experimental",
+  "orientation": "any",
+  "duration_seconds": 100,
+  "tagline": "The same ten seconds keep happening. Find the frame that changed.",
+  "description": "A hallway security feed repeats every ten seconds. Compare each loop, mark the single frame that should not exist, and decide whether to break the loop.",
+  "objective": "Choose the changed frame in the correct order.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Mark a frame"
+    },
+    {
+      "key": "← →",
+      "action": "Scrub the loop"
+    },
+    {
+      "key": "R",
+      "action": "Reset"
+    }
+  ],
+  "tags": [
+    "experimental",
+    "mystery",
+    "loop"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "29-loop-detective.zip"
+}

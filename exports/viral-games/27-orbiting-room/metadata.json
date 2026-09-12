@@ -1,0 +1,33 @@
+{
+  "title": "Orbiting Room",
+  "slug": "orbiting-room",
+  "category": "Ambient",
+  "orientation": "any",
+  "duration_seconds": 150,
+  "tagline": "Rearrange one room as the window drifts around the planet.",
+  "description": "A quiet room floats in a slow orbit. Move furniture into the light, collect postcards from passing satellites, and let the day cycle do the rest.",
+  "objective": "Collect the objects that drift into the window light.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Open a postcard"
+    },
+    {
+      "key": "Drag",
+      "action": "Move an object"
+    },
+    {
+      "key": "R",
+      "action": "Rewind"
+    }
+  ],
+  "tags": [
+    "ambient",
+    "interior",
+    "slow"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "27-orbiting-room.zip"
+}

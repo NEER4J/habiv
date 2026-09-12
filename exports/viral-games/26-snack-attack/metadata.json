@@ -1,0 +1,33 @@
+{
+  "title": "Snack Attack",
+  "slug": "snack-attack",
+  "category": "Arcade",
+  "orientation": "any",
+  "duration_seconds": 30,
+  "tagline": "Catch every snack. Miss one and the lunchbox judges you.",
+  "description": "Move a lunchbox beneath falling snacks while the conveyor belt changes speed every five seconds. Golden snacks add a multiplier; broccoli subtracts it.",
+  "objective": "Tap the falling snack before it hits the floor.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Grab a snack"
+    },
+    {
+      "key": "← →",
+      "action": "Move the box"
+    },
+    {
+      "key": "R",
+      "action": "Restart lunch"
+    }
+  ],
+  "tags": [
+    "arcade",
+    "score",
+    "fast"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "26-snack-attack.zip"
+}

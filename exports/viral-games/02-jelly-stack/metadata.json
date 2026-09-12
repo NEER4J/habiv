@@ -1,0 +1,33 @@
+{
+  "title": "Jelly Stack",
+  "slug": "jelly-stack",
+  "category": "Puzzle",
+  "orientation": "any",
+  "duration_seconds": 90,
+  "tagline": "Drop soft colors, make a chain, and pray the wobble holds.",
+  "description": "Place one jelly at a time on a tiny tray. Matching colors clears space while mismatches lean until one brave move saves the tower or sends it sliding off screen.",
+  "objective": "Match the glowing jelly tile in each small board.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Choose a matching tile"
+    },
+    {
+      "key": "1–9",
+      "action": "Pick a tile"
+    },
+    {
+      "key": "R",
+      "action": "Restart"
+    }
+  ],
+  "tags": [
+    "merge",
+    "cozy",
+    "chain"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "02-jelly-stack.zip"
+}

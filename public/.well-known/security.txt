@@ -1,0 +1,5 @@
+Contact: mailto:support@habiv.com
+Expires: 2027-09-12T00:00:00.000Z
+Preferred-Languages: en
+Policy: https://habiv.com/terms
+Canonical: https://habiv.com/.well-known/security.txt

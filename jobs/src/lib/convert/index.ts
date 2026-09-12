@@ -3,28 +3,12 @@
  * Each returns extra files to write and, when it generates an entry, the new index.html.
  */
 import type { EngineId } from "../../contracts/ingest";
+import type { ConversionResult } from "./needs";
 import { ruffleFiles, ruffleIndexHtml } from "./ruffle";
 import { packageScratch } from "./turbowarp";
 import { buildLove } from "./love";
 
-export type ExtraFile = { path: string; body: Buffer };
-
-export type ConversionResult = {
-  /** Files to add to the bundle (in addition to the originals, unless `replaceAll`). */
-  extra: ExtraFile[];
-  /** When true, only `extra` is uploaded (the source archive was consumed). */
-  replaceAll: boolean;
-  /** Generated entry html, if any (already includes nothing; the bridge is injected afterwards). */
-  indexHtml?: string;
-  notes: string[];
-};
-
-export function needsConversion(engine: EngineId, paths: string[]): boolean {
-  if (engine === "flash") return !paths.some((p) => /^index\.html?$/i.test(p));
-  if (engine === "scratch") return paths.some((p) => /\.sb3$/i.test(p)) && !paths.some((p) => /^index\.html?$/i.test(p));
-  if (engine === "love") return paths.some((p) => /\.love$/i.test(p)) && !paths.some((p) => /love\.wasm$/i.test(p));
-  return false;
-}
+export { needsConversion, type ConversionResult, type ConvertFn, type ExtraFile } from "./needs";
 
 export async function convert(engine: EngineId, paths: string[], read: (path: string) => Promise<Buffer>, title: string): Promise<ConversionResult> {
   if (engine === "flash") {

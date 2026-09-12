@@ -1,0 +1,33 @@
+{
+  "title": "Lucky Number 13",
+  "slug": "lucky-number-13",
+  "category": "Reaction",
+  "orientation": "any",
+  "duration_seconds": 45,
+  "tagline": "Pick the lucky card. The deck has opinions.",
+  "description": "A thirteen-card deck reveals one number at a time. Tap when the running total reaches the lucky range, but beware the card that reverses the count.",
+  "objective": "Tap the lucky card and ignore the reversal.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Draw next card"
+    },
+    {
+      "key": "Space",
+      "action": "Call lucky"
+    },
+    {
+      "key": "R",
+      "action": "Shuffle deck"
+    }
+  ],
+  "tags": [
+    "reaction",
+    "cards",
+    "luck"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "50-lucky-number-13.zip"
+}

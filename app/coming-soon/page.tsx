@@ -1,12 +1,16 @@
 import Image from "next/image";
+import { siteUrl } from "@/lib/site";
+
+// The old launch page duplicates the home page's pitch, so it stays out of search.
+export const metadata = { title: "Coming soon", robots: { index: false, follow: true } };
 
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   name: "Habiv",
-  url: "https://habiv.vercel.app/",
+  url: `${siteUrl}/`,
   description: "A browser-first marketplace for tiny AI-made games.",
-  publisher: { "@type": "Organization", name: "Habiv", url: "https://habiv.vercel.app/" },
+  publisher: { "@type": "Organization", name: "Habiv", url: `${siteUrl}/` },
 };
 
 export default function Home() {

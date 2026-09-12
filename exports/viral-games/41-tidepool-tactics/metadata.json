@@ -1,0 +1,33 @@
+{
+  "title": "Tidepool Tactics",
+  "slug": "tidepool-tactics",
+  "category": "Puzzle",
+  "orientation": "any",
+  "duration_seconds": 105,
+  "tagline": "Move the tide, save the tiny creatures, leave the shells.",
+  "description": "Shift tide tiles to guide water into dry pools without washing away shells. Three small creatures each need a different depth, making every solution a gentle rescue mission.",
+  "objective": "Pick the tide tile that completes the rescue.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Change a tide tile"
+    },
+    {
+      "key": "Z",
+      "action": "Undo tide"
+    },
+    {
+      "key": "R",
+      "action": "Reset pool"
+    }
+  ],
+  "tags": [
+    "puzzle",
+    "ocean",
+    "rescue"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "41-tidepool-tactics.zip"
+}

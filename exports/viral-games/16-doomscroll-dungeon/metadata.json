@@ -1,0 +1,33 @@
+{
+  "title": "Doomscroll Dungeon",
+  "slug": "doomscroll-dungeon",
+  "category": "Experimental",
+  "orientation": "any",
+  "duration_seconds": 120,
+  "tagline": "Swipe through cursed posts until one of them swipes back.",
+  "description": "A tiny dungeon crawler disguised as a feed. Swipe past traps, save the weirdest creature, and decide which rumor is actually a map.",
+  "objective": "Follow the safe sequence through the cursed feed.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Open a post"
+    },
+    {
+      "key": "1–4",
+      "action": "Choose a post"
+    },
+    {
+      "key": "R",
+      "action": "Regenerate"
+    }
+  ],
+  "tags": [
+    "experimental",
+    "story",
+    "scroll"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "16-doomscroll-dungeon.zip"
+}

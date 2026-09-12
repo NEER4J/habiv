@@ -1,0 +1,33 @@
+{
+  "title": "Neon Noodle",
+  "slug": "neon-noodle",
+  "category": "Arcade",
+  "orientation": "any",
+  "duration_seconds": 38,
+  "tagline": "Stretch the noodle, dodge the chopsticks, serve the perfect bowl.",
+  "description": "Guide one impossible noodle through a busy neon kitchen. Collect broth bubbles, bend around chopsticks, and deliver the strand before the timer turns spicy.",
+  "objective": "Tap the broth bubble that keeps the noodle moving.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Grab broth"
+    },
+    {
+      "key": "Drag",
+      "action": "Steer the noodle"
+    },
+    {
+      "key": "R",
+      "action": "Cook again"
+    }
+  ],
+  "tags": [
+    "arcade",
+    "food",
+    "neon"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "33-neon-noodle.zip"
+}

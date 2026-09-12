@@ -1,0 +1,33 @@
+{
+  "title": "Pocket Planet",
+  "slug": "pocket-planet",
+  "category": "Ambient",
+  "orientation": "any",
+  "duration_seconds": 180,
+  "tagline": "Nudge a tiny world through its first, very small sunrise.",
+  "description": "Spin a hand-sized planet and guide drifting seeds into the right climate bands. There is no wrong way to leave it; the satisfying part is finding a gentle rhythm between gravity, water, and the next orbit.",
+  "objective": "Collect the warm orbiting seeds and grow your world.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Catch a seed"
+    },
+    {
+      "key": "Drag",
+      "action": "Steer the cursor"
+    },
+    {
+      "key": "M",
+      "action": "Mute"
+    }
+  ],
+  "tags": [
+    "ambient",
+    "relaxing",
+    "idle"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "04-pocket-planet.zip"
+}

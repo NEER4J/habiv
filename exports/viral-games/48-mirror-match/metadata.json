@@ -1,0 +1,33 @@
+{
+  "title": "Mirror Match",
+  "slug": "mirror-match",
+  "category": "Puzzle",
+  "orientation": "any",
+  "duration_seconds": 70,
+  "tagline": "Make the reflection match before it decides to improvise.",
+  "description": "Rotate symbols until the left side and its mirror agree. Every fourth move, the reflection quietly changes one tile, so watch for the drift.",
+  "objective": "Tap the tile that restores the reflection.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Rotate a symbol"
+    },
+    {
+      "key": "Z",
+      "action": "Undo turn"
+    },
+    {
+      "key": "R",
+      "action": "New reflection"
+    }
+  ],
+  "tags": [
+    "puzzle",
+    "mirror",
+    "pattern"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "48-mirror-match.zip"
+}

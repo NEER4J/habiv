@@ -1,0 +1,33 @@
+{
+  "title": "Night Market Dash",
+  "slug": "night-market-dash",
+  "category": "Racing",
+  "orientation": "any",
+  "duration_seconds": 50,
+  "tagline": "Thread a scooter through lanterns, steam, and one loose basket.",
+  "description": "Race through a closing night market to deliver the last order. Brake for vendors, duck under signs, and choose between the crowded shortcut and quiet long lane.",
+  "objective": "Choose the open market lane before the turn.",
+  "controls": [
+    {
+      "key": "← →",
+      "action": "Steer scooter"
+    },
+    {
+      "key": "Tap",
+      "action": "Brake"
+    },
+    {
+      "key": "R",
+      "action": "Start dash"
+    }
+  ],
+  "tags": [
+    "racing",
+    "market",
+    "delivery"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "42-night-market-dash.zip"
+}

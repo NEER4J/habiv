@@ -1,0 +1,33 @@
+{
+  "title": "Daily Doodle Duel",
+  "slug": "daily-doodle-duel",
+  "category": "Reaction",
+  "orientation": "any",
+  "duration_seconds": 60,
+  "tagline": "Draw the prompt in ten seconds. The judge is a little triangle.",
+  "description": "A prompt arrives, the clock starts, and a simple shape waits for your best interpretation. Accuracy, speed, and personality all matter.",
+  "objective": "Tap the prompt that matches the daily doodle.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Submit doodle"
+    },
+    {
+      "key": "Drag",
+      "action": "Draw"
+    },
+    {
+      "key": "R",
+      "action": "Practice"
+    }
+  ],
+  "tags": [
+    "drawing",
+    "daily",
+    "challenge"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "40-daily-doodle-duel.zip"
+}

@@ -4,14 +4,15 @@ import { OnboardingView } from "@/components/habiv/onboarding-view";
 import { createClient } from "@/lib/supabase/server";
 import { getOwnProfile } from "@/lib/db/profiles";
 import { safeNextPath } from "@/lib/auth/post-sign-in";
+import { FormSkeleton } from "@/components/habiv/skeletons";
 
-export const metadata = { title: "Welcome — Habiv" };
+export const metadata = { title: "Welcome", robots: { index: false } };
 
 type SearchParams = Promise<{ step?: string; next?: string; suggest?: string }>;
 
 export default function OnboardingPage({ searchParams }: { searchParams: SearchParams }) {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<FormSkeleton title="Create your player profile" sub="Takes about twenty seconds. Playing never needs an account." fields={2} />}>
       <Onboarding searchParams={searchParams} />
     </Suspense>
   );

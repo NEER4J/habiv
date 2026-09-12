@@ -1,0 +1,33 @@
+{
+  "title": "Cloud Save",
+  "slug": "cloud-save",
+  "category": "Ambient",
+  "orientation": "any",
+  "duration_seconds": 120,
+  "tagline": "Catch small weather, stack it gently, and never let the sky empty.",
+  "description": "Guide a paper boat beneath drifting clouds and catch rain, sunbeams, and the occasional thunder pearl. Discover which weather combinations make a new little sky.",
+  "objective": "Catch the glowing weather and avoid the static.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Catch weather"
+    },
+    {
+      "key": "Drag",
+      "action": "Steer the boat"
+    },
+    {
+      "key": "M",
+      "action": "Mute"
+    }
+  ],
+  "tags": [
+    "ambient",
+    "rain",
+    "relaxing"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "10-cloud-save.zip"
+}

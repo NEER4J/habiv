@@ -1,0 +1,33 @@
+{
+  "title": "Signal / Noise",
+  "slug": "signal-noise",
+  "category": "Experimental",
+  "orientation": "any",
+  "duration_seconds": 85,
+  "tagline": "Separate a real message from a very convincing hum.",
+  "description": "A waveform hides a short message inside layers of noise. Tune the filters until the pattern stabilizes, then repeat the decoded phrase before the screen scrambles it.",
+  "objective": "Choose the clean signal steps in order.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Lock a signal"
+    },
+    {
+      "key": "← →",
+      "action": "Tune filter"
+    },
+    {
+      "key": "R",
+      "action": "Resample"
+    }
+  ],
+  "tags": [
+    "experimental",
+    "audio",
+    "decode"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "38-signal-noise.zip"
+}

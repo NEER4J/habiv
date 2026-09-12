@@ -28,13 +28,13 @@ export type VersionRow = {
   uses_network: boolean;
   manifest: unknown;
   auto_publish: boolean;
-  games: { id: string; creator_id: string; status: string; cover_path: string | null; title: string } | null;
+  games: { id: string; creator_id: string; status: string; cover_path: string | null; card_path: string | null; title: string } | null;
 };
 
 export async function loadVersion(versionId: string): Promise<VersionRow | null> {
   const { data, error } = await admin()
     .from("game_versions")
-    .select("id, game_id, version, status, source, upload_key, bundle_prefix, entry_path, size_bytes, sha256, engine, needs_isolation, uses_network, manifest, auto_publish, games!game_versions_game_id_fkey(id, creator_id, status, cover_path, title)")
+    .select("id, game_id, version, status, source, upload_key, bundle_prefix, entry_path, size_bytes, sha256, engine, needs_isolation, uses_network, manifest, auto_publish, games!game_versions_game_id_fkey(id, creator_id, status, cover_path, card_path, title)")
     .eq("id", versionId)
     .maybeSingle();
   if (error) throw error;

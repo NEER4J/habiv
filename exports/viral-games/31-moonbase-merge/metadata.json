@@ -1,0 +1,33 @@
+{
+  "title": "Moonbase Merge",
+  "slug": "moonbase-merge",
+  "category": "Puzzle",
+  "orientation": "any",
+  "duration_seconds": 100,
+  "tagline": "Merge tiny machines until the moonbase can make breakfast.",
+  "description": "Slide solar panels, rovers, and coffee modules into a compact moonbase grid. Equal machines combine into smarter ones, but every merge uses floor space.",
+  "objective": "Pick the machine that completes the moonbase pair.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Merge a machine"
+    },
+    {
+      "key": "← →",
+      "action": "Slide the base"
+    },
+    {
+      "key": "Z",
+      "action": "Undo"
+    }
+  ],
+  "tags": [
+    "merge",
+    "space",
+    "grid"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "31-moonbase-merge.zip"
+}

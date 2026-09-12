@@ -716,6 +716,7 @@ export type Database = {
         Row: {
           accent_hue: number
           card_path: string | null
+          categories: string[]
           category: string
           controls: Json
           cover_path: string | null
@@ -743,6 +744,7 @@ export type Database = {
         Insert: {
           accent_hue?: number
           card_path?: string | null
+          categories?: string[]
           category?: string
           controls?: Json
           cover_path?: string | null
@@ -770,6 +772,7 @@ export type Database = {
         Update: {
           accent_hue?: number
           card_path?: string | null
+          categories?: string[]
           category?: string
           controls?: Json
           cover_path?: string | null
@@ -1548,6 +1551,7 @@ export type Database = {
           agent: string | null
           best_score: number | null
           card_path: string | null
+          categories: string[] | null
           category: string | null
           comments: number | null
           completions: number | null
@@ -1719,6 +1723,7 @@ export type Database = {
         Returns: {
           accent_hue: number
           card_path: string | null
+          categories: string[]
           category: string
           controls: Json
           cover_path: string | null
@@ -1779,6 +1784,7 @@ export type Database = {
           agent: string | null
           best_score: number | null
           card_path: string | null
+          categories: string[] | null
           category: string | null
           comments: number | null
           completions: number | null

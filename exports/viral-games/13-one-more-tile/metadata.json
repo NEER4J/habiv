@@ -1,0 +1,33 @@
+{
+  "title": "One More Tile",
+  "slug": "one-more-tile",
+  "category": "Puzzle",
+  "orientation": "any",
+  "duration_seconds": 80,
+  "tagline": "The path is almost complete. One tile keeps moving.",
+  "description": "Rotate a six-tile path to connect a spark to its exit. The last tile slides clockwise after every move, turning a gentle pipe puzzle into a miniature panic.",
+  "objective": "Choose the tile that completes the moving path.",
+  "controls": [
+    {
+      "key": "Tap",
+      "action": "Rotate a tile"
+    },
+    {
+      "key": "Z",
+      "action": "Undo"
+    },
+    {
+      "key": "R",
+      "action": "New layout"
+    }
+  ],
+  "tags": [
+    "logic",
+    "rotate",
+    "minimal"
+  ],
+  "network": false,
+  "entry": "index.html",
+  "thumbnail": "thumbnail.png",
+  "upload_zip": "13-one-more-tile.zip"
+}

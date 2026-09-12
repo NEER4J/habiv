@@ -22,16 +22,16 @@ import {
   pill,
   primaryBtn,
 } from "@/lib/habiv/ui";
-import { siteUrl } from "@/lib/site";
+import { connectPrompt, connectSteps, manualSetup, mcpUrl } from "@/lib/connect-ai";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "./avatar";
 import { BentoAutoGrid, PageHead } from "./game-card";
 import { useShell } from "./shell-context";
 
-const tabs = ["Account", "API & MCP", "Playback", "Safety"] as const;
+const tabs = ["Account", "Connect AI", "Playback", "Safety"] as const;
 type Tab = (typeof tabs)[number];
 
-const tabKeys: Record<Tab, string> = { Account: "account", "API & MCP": "api", Playback: "playback", Safety: "safety" };
+const tabKeys: Record<Tab, string> = { Account: "account", "Connect AI": "api", Playback: "playback", Safety: "safety" };
 
 function tabFromKey(key: string | undefined): Tab {
   const found = tabs.find((t) => tabKeys[t] === key);
@@ -57,11 +57,6 @@ const safetyItems = [
   { label: "Downloads, popups, top navigation", value: "blocked" },
   { label: "Every publish stored as a version", value: "rollback" },
 ];
-
-const mcpUrl = `${siteUrl}/api/mcp`;
-const mcpConfig = JSON.stringify({ mcpServers: { habiv: { type: "http", url: mcpUrl } } }, null, 2);
-
-const mcpTools = ["publish_game", "create_upload", "get_publish_status", "get_game", "list_my_games", "update_game", "unpublish_game"];
 
 const panel: CSSProperties = { ...bpanel, gridColumn: "1 / -1", borderRadius: "14px", padding: "22px" };
 
@@ -346,6 +341,21 @@ function AccountPanel({ data }: { data: SettingsData }) {
   );
 }
 
+function CopyBlock({ text, label }: { text: string; label: string }) {
+  const { showToast } = useShell();
+  return (
+    <div style={{ position: "relative" }}>
+      <div style={{ ...codeWell, marginTop: "8px", paddingRight: "72px" }}>{text}</div>
+      <button
+        onClick={() => void copyText(text).then(() => showToast(`${label} copied`))}
+        style={{ ...chipBtn, position: "absolute", top: "16px", right: "8px", height: "28px", padding: "0 11px", fontSize: "12px" }}
+      >
+        Copy
+      </button>
+    </div>
+  );
+}
+
 function ApiPanel({ initialTokens }: { initialTokens: ApiTokenSummary[] }) {
   const { showToast } = useShell();
   const [tokens, setTokens] = useState(() => initialTokens.filter((t) => !t.revokedAt));
@@ -353,6 +363,7 @@ function ApiPanel({ initialTokens }: { initialTokens: ApiTokenSummary[] }) {
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
   const [reveal, setReveal] = useState<{ name: string; token: string } | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const create = async () => {
     const name = newName.trim();
@@ -381,23 +392,49 @@ function ApiPanel({ initialTokens }: { initialTokens: ApiTokenSummary[] }) {
     showToast("Token revoked");
   };
 
+  const copyPrompt = () =>
+    void copyText(connectPrompt).then(() => {
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    });
+
   return (
     <div style={panel}>
-      <div style={{ fontSize: "16px", fontWeight: 600 }}>Publish from Codex or Claude Code</div>
+      <div style={{ fontSize: "16px", fontWeight: 600 }}>Connect your AI to Habiv</div>
       <div style={{ marginTop: "8px", fontSize: "14px", lineHeight: 1.6, color: "var(--ink-4)", maxWidth: "64ch" }}>
-        Add the habiv MCP server to your agent (in Claude Code: <code style={{ fontFamily: mono, fontSize: "12.5px" }}>claude mcp add --transport http habiv {mcpUrl}</code>). The first
-        time it connects, Habiv opens in your browser so you can approve it; the connection then shows up in the list below. Tokens are only
-        needed for CI and scripts. Tools available: {mcpTools.join(", ")}.
+        Copy the message below and paste it into Claude Code or Codex. It sets everything up for you. Once it&apos;s connected, just ask
+        it to &ldquo;publish this game to Habiv&rdquo; and it goes straight to your profile.
       </div>
-      <div style={{ position: "relative" }}>
-        <div style={codeWell}>{mcpConfig}</div>
-        <button
-          onClick={() => void copyText(mcpConfig).then(() => showToast("Config copied"))}
-          style={{ ...chipBtn, position: "absolute", top: "24px", right: "8px", height: "28px", padding: "0 11px", fontSize: "12px" }}
-        >
-          Copy
-        </button>
+
+      <ol style={{ display: "flex", gap: "8px", flexWrap: "wrap", margin: "16px 0 0", padding: 0, listStyle: "none" }}>
+        {connectSteps.map((s, i) => (
+          <li key={s} style={{ ...chipStyle, display: "flex", alignItems: "center", gap: "8px", fontSize: "13px" }}>
+            <span style={{ fontFamily: mono, fontSize: "11px", color: "var(--ink-5)" }}>{i + 1}</span>
+            {s}
+          </li>
+        ))}
+      </ol>
+
+      <div style={{ ...codeWell, whiteSpace: "pre-wrap", maxHeight: "240px", overflowY: "auto" }}>{connectPrompt}</div>
+      <button onClick={copyPrompt} style={{ ...primaryBtn, marginTop: "12px" }}>
+        {copied ? "Copied" : "Copy message"}
+      </button>
+
+      <div style={{ marginTop: "22px", fontSize: "14px", lineHeight: 1.6, color: "var(--ink-4)", maxWidth: "64ch" }}>
+        <span style={{ fontWeight: 600, color: "var(--ink)" }}>Using the Claude app on the web or desktop?</span> Open Settings → Connectors → Add custom
+        connector, name it Habiv and paste this link:
       </div>
+      <CopyBlock text={mcpUrl} label="Link" />
+
+      <details style={{ marginTop: "18px" }}>
+        <summary style={{ cursor: "pointer", fontSize: "13px", color: "var(--ink-4)" }}>Prefer to set it up yourself?</summary>
+        {manualSetup.map((m) => (
+          <div key={m.label} style={{ marginTop: "14px" }}>
+            <div style={{ fontSize: "13px", fontWeight: 600 }}>{m.label}</div>
+            <CopyBlock text={m.text} label={m.label} />
+          </div>
+        ))}
+      </details>
 
       {reveal ? (
         <div style={{ marginTop: "18px", padding: "14px 16px", borderRadius: "10px", background: "var(--pos-bg)", color: "var(--pos-ink)" }}>
@@ -418,12 +455,15 @@ function ApiPanel({ initialTokens }: { initialTokens: ApiTokenSummary[] }) {
       ) : null}
 
       <div style={{ marginTop: "22px", fontFamily: mono, fontSize: "10.5px", letterSpacing: "0.12em", textTransform: "uppercase", color: "var(--ink-5)" }}>
-        API tokens
+        Connected apps and tokens
+      </div>
+      <div style={{ marginTop: "8px", fontSize: "13px", lineHeight: 1.55, color: "var(--ink-5)", maxWidth: "64ch" }}>
+        Every app you approve shows up here. Revoke one to disconnect it. You only need to create a token for scripts or CI.
       </div>
       <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
         {tokens.length === 0 ? (
           <div style={{ padding: "12px 14px", borderRadius: "10px", background: "var(--chip)", fontSize: "13px", color: "var(--ink-5)" }}>
-            No tokens yet. Create one to publish from an agent.
+            Nothing connected yet.
           </div>
         ) : null}
         {tokens.map((t) => (
@@ -596,12 +636,15 @@ function SafetyPanel() {
 }
 
 export function SettingsView({ initialTab, data }: { initialTab?: string; data: SettingsData }) {
-  const router = useRouter();
   const [tab, setTab] = useState<Tab>(() => tabFromKey(initialTab));
 
+  // A link to /settings?tab=… while already here re-renders with a new initialTab.
+  useEffect(() => setTab(tabFromKey(initialTab)), [initialTab]);
+
+  // Tabs are client-only: keep the URL shareable without a server round trip per click.
   const pick = (t: Tab) => {
     setTab(t);
-    router.replace(`/settings?tab=${tabKeys[t]}`, { scroll: false });
+    window.history.replaceState(null, "", `/settings?tab=${tabKeys[t]}`);
   };
 
   return (
@@ -615,7 +658,7 @@ export function SettingsView({ initialTab, data }: { initialTab?: string; data: 
         ))}
       </div>
       {tab === "Account" ? <AccountPanel data={data} /> : null}
-      {tab === "API & MCP" ? <ApiPanel initialTokens={data.tokens} /> : null}
+      {tab === "Connect AI" ? <ApiPanel initialTokens={data.tokens} /> : null}
       {tab === "Playback" ? <PlaybackPanel /> : null}
       {tab === "Safety" ? <SafetyPanel /> : null}
     </BentoAutoGrid>
