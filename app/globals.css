@@ -91,6 +91,12 @@ html.hb-light .hb-theme {
   color-scheme: light;
 }
 
+/* Keep anything the browser scrolls into view clear of the sticky header (12px top + 60px + gap).
+   Games focus elements inside their iframe on start, which scrolls the page to the iframe. */
+html {
+  scroll-padding-top: 84px;
+}
+
 body {
   background: #0c0c0e;
   color: #f1f1f1;
